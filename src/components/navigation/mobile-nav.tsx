@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Menu, X } from "lucide-react";
 
 import {
@@ -33,6 +34,23 @@ const serviceCategories = serviceCategoryOrder
     items: servicePages.filter((service) => service.category === category),
   }))
   .filter((group) => group.items.length > 0);
+
+/**
+ * `useSyncExternalStore` como "hasMounted" (mesmo padrão de
+ * `cookie-consent-banner.tsx`/`WJBAssistant.tsx`) — evita o lint
+ * `react-hooks/set-state-in-effect` que um `useEffect(() => setState(true))`
+ * disparia, já que aqui não há nenhuma store real pra assinar (o "estado"
+ * é só client-vs-server).
+ */
+function subscribeNoop() {
+  return () => {};
+}
+function getClientMounted() {
+  return true;
+}
+function getServerMounted() {
+  return false;
+}
 
 interface MobileDisclosureProps {
   label: string;
@@ -69,17 +87,17 @@ function MobileDisclosure({
           )}
         />
       </button>
-      <div
+      <motion.div
         id={contentId}
         aria-hidden={!open}
         inert={!open}
-        className={cn(
-          "grid transition-all duration-300 ease-in-out",
-          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
-        )}
+        initial={false}
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        style={{ overflow: "hidden" }}
       >
-        <div className="overflow-hidden">{children}</div>
-      </div>
+        {children}
+      </motion.div>
     </div>
   );
 }
@@ -93,6 +111,15 @@ export function MobileNav() {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerButtonRef = useRef<HTMLButtonElement>(null);
+  // `createPortal` precisa de `document.body`, que não existe durante o SSR
+  // — a `AnimatePresence` do diálogo agora fica sempre montada (só assim ela
+  // consegue animar a saída quando `open` vira `false`), então o próprio
+  // portal só pode ser criado depois da hidratação no cliente.
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    getClientMounted,
+    getServerMounted,
+  );
 
   function handleClose() {
     setOpen(false);
@@ -160,173 +187,181 @@ export function MobileNav() {
        * dele mesmo sendo `aria-modal="true"`. O portal renderiza o diálogo
        * direto em `document.body`, fora da árvore do header.
        */}
-      {open
-        ? createPortal(
-            <div
-              id="mobile-menu"
-              ref={panelRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Menu principal"
-              className="animate-enter bg-background fixed inset-0 z-50 flex flex-col overflow-y-auto"
-            >
-              <div className="border-border flex items-center justify-between border-b px-4 py-3">
-                <span className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-                  Menu
-                </span>
-                <button
-                  ref={closeButtonRef}
-                  type="button"
-                  onClick={handleClose}
-                  aria-label="Fechar menu"
-                  className="hover:bg-muted focus-visible:ring-primary text-foreground flex h-11 w-11 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                >
-                  <X aria-hidden="true" className="h-6 w-6" />
-                </button>
-              </div>
-
-              <nav
-                aria-label="Menu mobile"
-                className="flex flex-1 flex-col gap-1 px-4 py-4"
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {open ? (
+              <motion.div
+                key="mobile-menu"
+                id="mobile-menu"
+                ref={panelRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Menu principal"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="bg-background fixed inset-0 z-50 flex flex-col overflow-y-auto"
               >
-                {/*
-                 * Empresa (2026-09-14, a pedido do usuário, print de
-                 * referência) — antes os 4 itens (Sobre/Como
-                 * funciona/Conteúdos/Dúvidas) apareciam soltos como links
-                 * planos no meio do menu mobile, fora de ordem em relação
-                 * ao dropdown "Empresa" do desktop. Agora viram uma seção
-                 * expansível própria (mesmo padrão de Serviços/Soluções/
-                 * Área do Cliente), lendo direto de `empresaDropdown.items`
-                 * — mesma fonte de dados do desktop, então a ordem
-                 * (Sobre, Como funciona, Conteúdos, Dúvidas) nunca diverge
-                 * entre os dois. Posicionada primeiro na lista, espelhando
-                 * a ordem do header desktop (Empresa, Serviços, Soluções).
-                 */}
-                <MobileDisclosure
-                  label={empresaDropdown.label}
-                  contentId="mobile-empresa"
-                  open={empresaOpen}
-                  onToggle={() => setEmpresaOpen((v) => !v)}
-                >
-                  <div className="flex flex-col gap-1 pt-1 pb-2 pl-3">
-                    {empresaDropdown.items.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={handleClose}
-                        className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center rounded-md px-3 text-sm transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </MobileDisclosure>
+                <div className="border-border flex items-center justify-between border-b px-4 py-3">
+                  <span className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
+                    Menu
+                  </span>
+                  <button
+                    ref={closeButtonRef}
+                    type="button"
+                    onClick={handleClose}
+                    aria-label="Fechar menu"
+                    className="hover:bg-muted focus-visible:ring-primary text-foreground flex h-11 w-11 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  >
+                    <X aria-hidden="true" className="h-6 w-6" />
+                  </button>
+                </div>
 
-                <MobileDisclosure
-                  label="Serviços"
-                  contentId="mobile-services"
-                  open={servicesOpen}
-                  onToggle={() => setServicesOpen((v) => !v)}
+                <nav
+                  aria-label="Menu mobile"
+                  className="flex flex-1 flex-col gap-1 px-4 py-4"
                 >
-                  <div className="flex flex-col gap-4 pt-1 pb-2 pl-3">
-                    {serviceCategories.map((group) => (
-                      <div key={group.category}>
-                        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                          {group.category}
-                        </p>
-                        <div className="mt-1 flex flex-col gap-1">
-                          {group.items.map((service) => (
-                            <Link
-                              key={service.slug}
-                              href={`/servicos/${service.slug}`}
-                              onClick={handleClose}
-                              className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center gap-2 rounded-md px-3 text-sm transition-colors"
-                            >
-                              <Check
-                                aria-hidden="true"
-                                className="text-primary h-3.5 w-3.5 shrink-0"
-                              />
-                              {service.title}
-                            </Link>
-                          ))}
+                  {/*
+                   * Empresa (2026-09-14, a pedido do usuário, print de
+                   * referência) — antes os 4 itens (Sobre/Como
+                   * funciona/Conteúdos/Dúvidas) apareciam soltos como links
+                   * planos no meio do menu mobile, fora de ordem em relação
+                   * ao dropdown "Empresa" do desktop. Agora viram uma seção
+                   * expansível própria (mesmo padrão de Serviços/Soluções/
+                   * Área do Cliente), lendo direto de `empresaDropdown.items`
+                   * — mesma fonte de dados do desktop, então a ordem
+                   * (Sobre, Como funciona, Conteúdos, Dúvidas) nunca diverge
+                   * entre os dois. Posicionada primeiro na lista, espelhando
+                   * a ordem do header desktop (Empresa, Serviços, Soluções).
+                   */}
+                  <MobileDisclosure
+                    label={empresaDropdown.label}
+                    contentId="mobile-empresa"
+                    open={empresaOpen}
+                    onToggle={() => setEmpresaOpen((v) => !v)}
+                  >
+                    <div className="flex flex-col gap-1 pt-1 pb-2 pl-3">
+                      {empresaDropdown.items.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={handleClose}
+                          className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center rounded-md px-3 text-sm transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </MobileDisclosure>
+
+                  <MobileDisclosure
+                    label="Serviços"
+                    contentId="mobile-services"
+                    open={servicesOpen}
+                    onToggle={() => setServicesOpen((v) => !v)}
+                  >
+                    <div className="flex flex-col gap-4 pt-1 pb-2 pl-3">
+                      {serviceCategories.map((group) => (
+                        <div key={group.category}>
+                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                            {group.category}
+                          </p>
+                          <div className="mt-1 flex flex-col gap-1">
+                            {group.items.map((service) => (
+                              <Link
+                                key={service.slug}
+                                href={`/servicos/${service.slug}`}
+                                onClick={handleClose}
+                                className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center gap-2 rounded-md px-3 text-sm transition-colors"
+                              >
+                                <Check
+                                  aria-hidden="true"
+                                  className="text-primary h-3.5 w-3.5 shrink-0"
+                                />
+                                {service.title}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    <Link
-                      href="/servicos"
-                      onClick={handleClose}
-                      className="text-primary hover:bg-muted flex min-h-11 items-center rounded-md px-3 text-sm font-medium transition-colors"
-                    >
-                      Ver todos os serviços →
-                    </Link>
-                  </div>
-                </MobileDisclosure>
-
-                <MobileDisclosure
-                  label="Soluções"
-                  contentId="mobile-solucoes"
-                  open={solucoesOpen}
-                  onToggle={() => setSolucoesOpen((v) => !v)}
-                >
-                  <div className="flex flex-col gap-1 pt-1 pb-2 pl-3">
-                    {solucoesDropdown.items.map((item) => (
+                      ))}
                       <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={handleClose}
-                        className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center rounded-md px-3 text-sm transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                    {solucoesDropdown.footer ? (
-                      <Link
-                        href={solucoesDropdown.footer.href}
+                        href="/servicos"
                         onClick={handleClose}
                         className="text-primary hover:bg-muted flex min-h-11 items-center rounded-md px-3 text-sm font-medium transition-colors"
                       >
-                        {solucoesDropdown.footer.label} →
+                        Ver todos os serviços →
                       </Link>
-                    ) : null}
-                  </div>
-                </MobileDisclosure>
+                    </div>
+                  </MobileDisclosure>
 
-                {mainNavLinks.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={handleClose}
-                    className="hover:bg-muted text-foreground flex min-h-11 items-center rounded-md px-3 text-base font-medium transition-colors"
+                  <MobileDisclosure
+                    label="Soluções"
+                    contentId="mobile-solucoes"
+                    open={solucoesOpen}
+                    onToggle={() => setSolucoesOpen((v) => !v)}
                   >
-                    {item.label}
-                  </Link>
-                ))}
+                    <div className="flex flex-col gap-1 pt-1 pb-2 pl-3">
+                      {solucoesDropdown.items.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={handleClose}
+                          className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center rounded-md px-3 text-sm transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                      {solucoesDropdown.footer ? (
+                        <Link
+                          href={solucoesDropdown.footer.href}
+                          onClick={handleClose}
+                          className="text-primary hover:bg-muted flex min-h-11 items-center rounded-md px-3 text-sm font-medium transition-colors"
+                        >
+                          {solucoesDropdown.footer.label} →
+                        </Link>
+                      ) : null}
+                    </div>
+                  </MobileDisclosure>
 
-                <MobileDisclosure
-                  label={clientAreaNav.label}
-                  contentId="mobile-client-area"
-                  open={clientAreaOpen}
-                  onToggle={() => setClientAreaOpen((v) => !v)}
-                  bordered
-                >
-                  <div className="flex flex-col gap-1 pt-1 pb-2 pl-3">
-                    {clientAreaNav.children.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={handleClose}
-                        className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center rounded-md px-3 text-sm transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </MobileDisclosure>
-              </nav>
-            </div>,
-            document.body,
-          )
-        : null}
+                  {mainNavLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={handleClose}
+                      className="hover:bg-muted text-foreground flex min-h-11 items-center rounded-md px-3 text-base font-medium transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+
+                  <MobileDisclosure
+                    label={clientAreaNav.label}
+                    contentId="mobile-client-area"
+                    open={clientAreaOpen}
+                    onToggle={() => setClientAreaOpen((v) => !v)}
+                    bordered
+                  >
+                    <div className="flex flex-col gap-1 pt-1 pb-2 pl-3">
+                      {clientAreaNav.children.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={handleClose}
+                          className="text-muted-foreground hover:bg-muted hover:text-foreground flex min-h-11 items-center rounded-md px-3 text-sm transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </MobileDisclosure>
+                </nav>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>,
+          document.body,
+        )}
     </div>
   );
 }

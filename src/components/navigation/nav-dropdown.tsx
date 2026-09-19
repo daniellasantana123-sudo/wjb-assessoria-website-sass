@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
@@ -36,44 +37,54 @@ export function NavDropdown({ label, items, footer }: NavDropdownGroup) {
         />
       </button>
 
-      {open ? (
-        <>
-          {/* Ponte invisível — sem ela, o gap entre o botão e o painel faz o
-              mouse "sair" do dropdown (mouseleave) antes de alcançar o
-              painel, fechando o menu antes do usuário conseguir clicar num
-              item. */}
-          <div className="absolute inset-x-0 top-full h-3" aria-hidden="true" />
-          <div
-            id={panelId}
-            className="animate-enter border-border bg-background absolute top-full left-0 z-40 mt-3 w-56 rounded-md border p-3 shadow-lg"
-          >
-            <ul className="flex flex-col gap-1">
-              {items.map((item) => (
-                <li key={item.href}>
+      <AnimatePresence>
+        {open ? (
+          <>
+            {/* Ponte invisível — sem ela, o gap entre o botão e o painel faz o
+                mouse "sair" do dropdown (mouseleave) antes de alcançar o
+                painel, fechando o menu antes do usuário conseguir clicar num
+                item. */}
+            <div
+              className="absolute inset-x-0 top-full h-3"
+              aria-hidden="true"
+            />
+            <motion.div
+              key="panel"
+              id={panelId}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="border-border bg-background absolute top-full left-0 z-40 mt-3 w-56 rounded-md border p-3 shadow-lg"
+            >
+              <ul className="flex flex-col gap-1">
+                {items.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="hover:bg-muted hover:text-primary focus-visible:ring-primary text-foreground flex min-h-9 items-center rounded-md px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {footer ? (
+                <div className="border-border mt-2 border-t pt-2">
                   <Link
-                    href={item.href}
+                    href={footer.href}
                     onClick={() => setOpen(false)}
-                    className="hover:bg-muted hover:text-primary focus-visible:ring-primary text-foreground flex min-h-9 items-center rounded-md px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                    className="text-primary flex min-h-9 items-center rounded-md px-3 text-sm font-medium hover:underline"
                   >
-                    {item.label}
+                    {footer.label} →
                   </Link>
-                </li>
-              ))}
-            </ul>
-            {footer ? (
-              <div className="border-border mt-2 border-t pt-2">
-                <Link
-                  href={footer.href}
-                  onClick={() => setOpen(false)}
-                  className="text-primary flex min-h-9 items-center rounded-md px-3 text-sm font-medium hover:underline"
-                >
-                  {footer.label} →
-                </Link>
-              </div>
-            ) : null}
-          </div>
-        </>
-      ) : null}
+                </div>
+              ) : null}
+            </motion.div>
+          </>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
