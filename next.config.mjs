@@ -1,5 +1,3 @@
-import type { NextConfig } from "next";
-
 /**
  * Seção 38 — baseline de segurança. CSP permite 'unsafe-inline' em script/style
  * porque o JSON-LD (seção 20) usa <script> inline e o Next injeta estilos
@@ -16,6 +14,12 @@ import type { NextConfig } from "next";
  * ("React will never use eval() in production mode", confirmado no
  * próprio erro). Liberar isso só em dev não muda a postura de segurança
  * do site publicado.
+ *
+ * Convertido de next.config.ts para next.config.mjs em 2026-09-18: o
+ * ambiente de build da Hostinger usa um glibc mais antigo que o exigido
+ * pelo binário nativo do SWC (@next/swc-linux-x64-gnu), o que quebrava a
+ * transpilação do next.config.ts durante `next build`. Um config em JS
+ * puro não precisa de transpilação nenhuma para ser carregado.
  */
 const isDev = process.env.NODE_ENV === "development";
 const securityHeaders = [
@@ -46,7 +50,8 @@ const securityHeaders = [
   },
 ];
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     /**
      * 2026-09-14, a pedido do usuário ("aumente a resolução/qualidade das
