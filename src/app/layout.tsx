@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_Thai } from "next/font/google";
+import { Lexend, Noto_Sans_Thai, Source_Sans_3 } from "next/font/google";
 
 import { SkipLink } from "@/components/layout/skip-link";
 import { CookieConsentBanner } from "@/components/shared/cookie-consent-banner";
@@ -8,9 +8,22 @@ import { getSiteUrl } from "@/lib/seo/site-url";
 
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+/**
+ * Troca de tipografia (2026-09-19, a pedido do usuário — redesign visual
+ * via skill `ui-ux-pro-max`, mantendo os mesmos componentes): o par
+ * "Corporate Trust" (Lexend para títulos + Source Sans 3 para texto) é a
+ * recomendação da skill para o estilo "Trust & Authority" (financeiro/
+ * consultoria/serviços profissionais) — troca só os tokens de fonte, cor
+ * da marca (`#194382`, o azul real do logo) permanece intocada.
+ */
+const sourceSans3 = Source_Sans_3({
+  variable: "--font-source-sans-3",
+  subsets: ["latin", "latin-ext"],
+});
+
+const lexend = Lexend({
+  variable: "--font-lexend",
+  subsets: ["latin", "latin-ext"],
 });
 
 /**
@@ -63,7 +76,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} ${notoSansThai.variable} h-full antialiased`}
+      className={`${sourceSans3.variable} ${lexend.variable} ${notoSansThai.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <noscript>

@@ -176,9 +176,40 @@
   --color-muted: var(--color-neutral-100);
   --color-muted-foreground: var(--color-neutral-600);
 
-  --font-sans: var(--font-inter);
-  /* Noto Sans Thai (2026-09-17) — usada só no H1 do Hero (`font-noto-sans-thai`), ver layout.tsx. */
+  /*
+   * Tipografia "Corporate Trust" (2026-09-19, redesign via skill
+   * `ui-ux-pro-max`) — Source Sans 3 no corpo, Lexend nos títulos (regra
+   * global logo abaixo, fora do @theme). Substitui Inter em todo o site;
+   * Noto Sans Thai continua isolada no H1 do Hero (`font-noto-sans-thai`,
+   * decisão anterior e separada do usuário, não alterada aqui).
+   */
+  --font-sans: var(--font-source-sans-3);
+  --font-heading: var(--font-lexend);
   --font-noto-sans-thai: var(--font-noto-sans-thai);
+}
+
+/*
+ * Aplica a fonte de título globalmente a todo heading semântico (h1-h6)
+ * — evita precisar tocar em cada componente/página que usa <h1>-<h6>
+ * (é assim que o redesign de tipografia troca "a mesma estrutura de
+ * componentes" sem editar dezenas de arquivos). `@layer base` é
+ * obrigatório aqui: o Tailwind v4 gera suas classes utilitárias dentro de
+ * `@layer utilities`, e uma regra CSS solta (fora de qualquer @layer, como
+ * o resto deste arquivo) tem prioridade MÁXIMA na cascata de camadas,
+ * acima de qualquer utility — não importa a especificidade do seletor.
+ * Sem este `@layer base`, esta regra venceria `font-noto-sans-thai` no H1
+ * do Hero (bug real, encontrado ao testar no navegador) em vez de perder
+ * para ela como esperado.
+ */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
 }
 
 /*

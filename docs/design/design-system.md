@@ -127,11 +127,13 @@ Tema padrão do site: **light** (confirmado pelo usuário em 2026-08-30). Dark m
 
 ## Tipografia
 
-> Fonte: Google Fonts, indicado pelo usuário em 2026-08-30 (`fonts.google.com/specimen/Inter`).
+> Fonte: par "Corporate Trust" recomendado pela skill `ui-ux-pro-max` para o estilo "Trust & Authority" (financeiro/consultoria/serviços profissionais), aplicado em 2026-09-19 a pedido do usuário — redesign visual mantendo os mesmos componentes. Substitui a Inter única usada até então (indicada pelo usuário em 2026-08-30).
 
-- **Família única: Inter** — usar para toda a UI (títulos, corpo de texto, labels, botões, formulários).
-- Fallback stack: `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`.
-- Pesos recomendados a carregar: 400 (regular), 500 (medium), 600 (semibold), 700 (bold) — ajustar conforme necessidade real dos componentes na FASE 1.
+- **Títulos (h1-h6): Lexend** — aplicada globalmente via seletor de elemento em `globals.css` (`h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading) }`), não por classe em cada componente. Desenhada para legibilidade/acessibilidade, alinhada à regra de WCAG 2.2 AA do projeto.
+- **Corpo de texto: Source Sans 3** — token `--font-sans`, usada em `body` (herdada por todo o resto: parágrafos, labels, botões, formulários).
+- Fallback stack: `"Lexend", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` (títulos) / `"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` (corpo).
+- Pesos recomendados a carregar: 400 (regular), 500 (medium), 600 (semibold), 700 (bold) — mesma faixa de antes, ambas via `next/font/google` (self-host, sem layout shift).
+- **Exceção**: o H1 do Hero continua em **Noto Sans Thai** (`font-noto-sans-thai`, decisão separada e anterior do usuário, 2026-09-17) — não foi alterado por este redesign, vence a regra global de heading pela cascata normal do CSS (classe mais específica que seletor de elemento).
 - Fonte monoespaçada: **[CONFIRMAR]** — não definida pelo usuário. Usar stack padrão do sistema (`ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`) até definição, caso necessário (ex.: valores tabulares, código).
 - Travessão (`—`): não usar em texto visível do site (2026-08-30, a pedido do usuário) — usar hífen normal (`-`) em qualquer conteúdo novo (JSX, strings, `alt`/`aria-label`). Vale só para conteúdo renderizado; comentários de código continuam livres para usar `—`.
 - **Títulos grandes (H1 de página e H2 de seção, classe `text-3xl`/`text-4xl`/`text-2xl` combinada com `tracking-tight`) usam `font-bold` (700)**, não `font-semibold` (2026-08-31, a pedido do usuário — antes eram `font-semibold`). Vale para todo H1/H2 de destaque, incluindo `SectionHeading` (`src/components/sections/section-heading.tsx`), `Hero`, `CtaFinal`, `PlanDetails` e os títulos de cada página. Subtítulos menores (`text-lg`/`text-xl` `font-semibold`, ex.: títulos de card, "O que inclui") continuam `font-semibold` — a regra é só para os títulos grandes.
