@@ -33,7 +33,7 @@ export function ContentPreview() {
           itemClassName="h-full"
         >
           {featuredPosts.map((post) => (
-            <PostCard key={post.slug} post={post} />
+            <PostCard key={post.slug} post={post} variant="teaser" />
           ))}
         </RevealStagger>
         <div className="mt-8 flex justify-center">

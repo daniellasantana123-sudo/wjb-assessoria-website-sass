@@ -6,13 +6,22 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { JsonLd } from "@/components/shared/json-ld";
+import { PostCard } from "@/components/shared/post-card";
+import { RevealStagger } from "@/components/shared/reveal-on-scroll";
+import { ShareButtons } from "@/components/shared/share-buttons";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { getBlogOgImage } from "@/config/images";
 import { headerCtas } from "@/config/navigation";
 import { getServicePage } from "@/config/service-pages";
-import { type BlogBlock, blogPosts, getBlogPost } from "@/content/blog/posts";
+import {
+  type BlogBlock,
+  blogPosts,
+  getBlogPost,
+  slugifyHeading,
+} from "@/content/blog/posts";
 import { getArticleSchema, getBreadcrumbSchema } from "@/lib/seo/schema";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
@@ -51,7 +60,12 @@ function ContentBlock({ block }: { block: BlogBlock }) {
       return block.level === 3 ? (
         <h3 className="text-foreground mt-6 text-base font-semibold">{block.text}</h3>
       ) : (
-        <h2 className="text-foreground mt-8 text-xl font-semibold">{block.text}</h2>
+        <h2
+          id={slugifyHeading(block.text)}
+          className="text-foreground mt-8 scroll-mt-24 text-xl font-semibold"
+        >
+          {block.text}
+        </h2>
       );
     case "paragraph":
       return <p className="text-foreground mt-3">{block.text}</p>;
@@ -115,24 +129,22 @@ export default async function BlogPostPage({
     { label: post.title },
   ];
 
+  const postUrl = `${getSiteUrl()}/blog/${post.slug}`;
+
+  /** Sumário automático (conceito de blog, 2026-09-19) — só a partir de 2 seções h2. */
+  const tocItems = post.content
+    .filter((block): block is Extract<BlogBlock, { type: "heading" }> =>
+      block.type === "heading" ? block.level !== 3 : false,
+    )
+    .map((block) => ({ text: block.text, id: slugifyHeading(block.text) }));
+
   return (
     <Container className="py-12 sm:py-16">
       <JsonLd data={getArticleSchema(post)} />
       <JsonLd data={getBreadcrumbSchema(breadcrumbItems)} />
       <Breadcrumb items={breadcrumbItems} />
 
-      <div className="group relative mt-6 aspect-video max-w-3xl overflow-hidden rounded-[10px]">
-        <Image
-          src={post.image.src}
-          alt={post.image.alt}
-          fill
-          priority
-          sizes="(min-width: 1024px) 768px, 100vw"
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-        />
-      </div>
-
-      <article className="mt-8 max-w-2xl">
+      <article className="mt-6 max-w-2xl">
         <Badge tone="neutral">{post.category}</Badge>
         <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
           {post.title}
@@ -161,6 +173,35 @@ export default async function BlogPostPage({
           </p>
         ) : null}
         <p className="text-muted-foreground mt-4 text-lg">{post.excerpt}</p>
+
+        <div className="group relative mt-6 aspect-video w-full overflow-hidden rounded-[10px]">
+          <Image
+            src={post.image.src}
+            alt={post.image.alt}
+            fill
+            priority
+            sizes="(min-width: 1024px) 672px, 100vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+        </div>
+
+        {tocItems.length >= 2 ? (
+          <nav
+            aria-label="Sumário do artigo"
+            className="border-border bg-muted/30 mt-8 rounded-md border p-6"
+          >
+            <p className="text-foreground font-medium">Nesta página</p>
+            <ol className="mt-3 flex flex-col gap-2 text-sm">
+              {tocItems.map((item) => (
+                <li key={item.id}>
+                  <a href={`#${item.id}`} className="text-primary hover:underline">
+                    {item.text}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        ) : null}
 
         <div className="mt-8">
           {post.content.map((block, index) => (
@@ -224,24 +265,50 @@ export default async function BlogPostPage({
           ) : null}
         </div>
 
-        {relatedPosts.length > 0 ? (
+        {post.sources && post.sources.length > 0 ? (
           <div className="mt-10">
-            <h2 className="text-foreground text-lg font-semibold">Continue lendo</h2>
-            <ul className="mt-3 flex flex-col gap-2">
-              {relatedPosts.map((relatedPost) => (
-                <li key={relatedPost.slug}>
-                  <Link
-                    href={`/blog/${relatedPost.slug}`}
+            <h2 className="text-foreground text-lg font-semibold">Fontes consultadas</h2>
+            <ul className="mt-3 flex flex-col gap-1.5 text-sm">
+              {post.sources.map((source) => (
+                <li key={source.url}>
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    {relatedPost.title}
-                  </Link>
+                    {source.label}
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
         ) : null}
+
+        <div className="border-border mt-10 border-t pt-6">
+          <ShareButtons url={postUrl} title={post.title} />
+        </div>
       </article>
+
+      {relatedPosts.length > 0 ? (
+        <div className="mt-14">
+          <h2 className="text-foreground text-lg font-semibold">Continue lendo</h2>
+          <RevealStagger
+            className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            itemClassName="h-full"
+          >
+            {relatedPosts.map((relatedPost) => (
+              <PostCard key={relatedPost.slug} post={relatedPost} variant="minimal" />
+            ))}
+          </RevealStagger>
+        </div>
+      ) : null}
+
+      <div className="mt-10">
+        <Link href="/blog" className="text-muted-foreground hover:text-primary text-sm">
+          ← Voltar para o blog
+        </Link>
+      </div>
     </Container>
   );
 }

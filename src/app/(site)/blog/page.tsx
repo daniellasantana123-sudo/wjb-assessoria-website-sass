@@ -48,7 +48,7 @@ export default function BlogPage() {
               itemClassName="h-full"
             >
               {items.map((post) => (
-                <PostCard key={post.slug} post={post} />
+                <PostCard key={post.slug} post={post} variant="listing" />
               ))}
             </RevealStagger>
           </RevealOnScroll>

@@ -31,7 +31,7 @@ export default function ContentsPage() {
         itemClassName="h-full"
       >
         {blogPosts.map((post) => (
-          <PostCard key={post.slug} post={post} />
+          <PostCard key={post.slug} post={post} variant="listing" />
         ))}
       </RevealStagger>
 

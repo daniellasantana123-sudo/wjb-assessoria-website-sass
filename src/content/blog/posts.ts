@@ -17,6 +17,11 @@ export interface BlogCta {
   href: string;
 }
 
+export interface BlogSource {
+  label: string;
+  url: string;
+}
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -38,6 +43,16 @@ export interface BlogPost {
   content: BlogBlock[];
   faq: BlogFaqItem[];
   cta: BlogCta;
+  /**
+   * "Fontes consultadas" (conceito de blog adaptado em 2026-09-19,
+   * seção 9 — E-E-A-T de SEO). Opcional e vazio em todos os posts atuais
+   * de propósito: os artigos citam órgãos (Receita Federal, PGFN, etc.)
+   * em prosa, mas nenhuma URL específica foi fornecida na fonte de
+   * verdade do conteúdo — não inventar link de referência (seção 43 do
+   * `Wjb-Website.md`). Preencher aqui quando houver uma URL real
+   * confirmada por artigo.
+   */
+  sources?: BlogSource[];
 }
 
 const author = "WJB Assessoria Contábil";
@@ -1992,4 +2007,19 @@ export const blogPosts: BlogPost[] = [
 
 export function getBlogPost(slug: string) {
   return blogPosts.find((post) => post.slug === slug);
+}
+
+/**
+ * Slug de heading pra âncora do sumário (conceito de blog, 2026-09-19).
+ * Sem acento/espaço — mesmo texto usado no `id` do `<h2>` e no `href` do
+ * link do sumário, gerado a partir do mesmo `content[].text`, então nunca
+ * fica dessincronizado.
+ */
+export function slugifyHeading(text: string) {
+  return text
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
