@@ -154,15 +154,13 @@ export default async function BlogPostPage({
           <span aria-hidden="true">·</span>
           <span>{post.readingTime} de leitura</span>
         </div>
-        <p className="text-muted-foreground mt-4 text-lg">{post.excerpt}</p>
-
         {post.showLegalDisclaimer ? (
-          <div className="border-warning-text/30 bg-warning-bg text-warning-text mt-6 rounded-md border px-4 py-3 text-sm">
-            Conteúdo atualizado em {formatDate(post.updatedAt)}. Regras tributárias e
-            trabalhistas podem sofrer alterações. Consulte a legislação vigente e a
-            análise aplicável à sua empresa.
-          </div>
+          <p className="text-muted-foreground mt-1 text-xs">
+            Regras tributárias e trabalhistas podem sofrer alterações. Consulte a
+            legislação vigente e a análise aplicável à sua empresa.
+          </p>
         ) : null}
+        <p className="text-muted-foreground mt-4 text-lg">{post.excerpt}</p>
 
         <div className="mt-8">
           {post.content.map((block, index) => (
