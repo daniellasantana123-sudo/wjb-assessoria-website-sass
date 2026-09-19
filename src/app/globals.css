@@ -1,0 +1,348 @@
+@import "tailwindcss";
+
+/*
+ * Tokens da "Paleta Vívida" — ver docs/design/design-system.md.
+ * Tema padrão do site: light (confirmado pelo usuário; dark mode não é
+ * prioridade da V1, por isso não há bloco @media (prefers-color-scheme: dark)).
+ */
+:root {
+  /*
+   * Azul — primária e ÚNICA cor de destaque da interface (2026-09-14,
+   * terceira mudança de paleta no mesmo dia — usuário decidiu remover o
+   * laranja de vez e voltar a `#194382` como referência oficial única).
+   * `600` é `#194382` bit-a-bit. Os demais steps foram recalculados no
+   * mesmo matiz/saturação (~216°, ~68%) pra manter a progressão de claro
+   * a escuro coerente (nenhum outro componente referencia um step da
+   * rampa diretamente, exceto `hover:bg-brand-blue-700` em button.tsx).
+   */
+  --color-brand-blue-50: #ecf2fb;
+  --color-brand-blue-100: #d4e2f7;
+  --color-brand-blue-200: #a9c5ef;
+  --color-brand-blue-300: #76a2e5;
+  --color-brand-blue-400: #3e7dda;
+  --color-brand-blue-500: #225db4;
+  --color-brand-blue-600: #194382;
+  --color-brand-blue-700: #133362;
+  --color-brand-blue-800: #0e2447;
+  --color-brand-blue-900: #08162b;
+
+  /* Lilás — apoio */
+  --color-brand-lilac-50: #f4f1f9;
+  --color-brand-lilac-100: #e7dff1;
+  --color-brand-lilac-200: #cfbfe3;
+  --color-brand-lilac-300: #b197d3;
+  --color-brand-lilac-400: #9470c2;
+  --color-brand-lilac-500: #764baf;
+  --color-brand-lilac-600: #613d8f;
+  --color-brand-lilac-700: #4d3172;
+  --color-brand-lilac-800: #3a2556;
+  --color-brand-lilac-900: #241736;
+
+  /* Verde — apoio */
+  --color-brand-green-50: #f1f9f5;
+  --color-brand-green-100: #dff1e8;
+  --color-brand-green-200: #bfe3d1;
+  --color-brand-green-300: #97d3b5;
+  --color-brand-green-400: #70c299;
+  --color-brand-green-500: #4baf7d;
+  --color-brand-green-600: #3d8f66;
+  --color-brand-green-700: #317252;
+  --color-brand-green-800: #25563d;
+  --color-brand-green-900: #173626;
+
+  /* Neutros — papel e tinta */
+  --color-neutral-50: #f7f7f8;
+  --color-neutral-100: #ececef;
+  --color-neutral-200: #d8dbdf;
+  --color-neutral-300: #bcc1c7;
+  --color-neutral-400: #98a0a9;
+  --color-neutral-500: #747f8b;
+  --color-neutral-600: #5d656f;
+  --color-neutral-700: #464c53;
+  --color-neutral-800: #2e3338;
+  --color-neutral-900: #1a1c1f;
+
+  /* Semânticas — status */
+  --color-success: #43a36b;
+  --color-success-bg: #e6f5ec;
+  --color-success-text: #265e3e;
+
+  --color-warning: #c38822;
+  --color-warning-bg: #faf0e1;
+  --color-warning-text: #714f14;
+
+  --color-danger: #b53042;
+  --color-danger-bg: #f8e3e6;
+  --color-danger-text: #691c26;
+
+  --color-info: #348cb2;
+  --color-info-bg: #e3f1f7;
+  --color-info-text: #1e5167;
+
+  --background: var(--color-neutral-50);
+  --foreground: var(--color-neutral-900);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Ramps completas (bg-brand-blue-600, text-brand-lilac-300, etc.) */
+  --color-brand-blue-50: var(--color-brand-blue-50);
+  --color-brand-blue-100: var(--color-brand-blue-100);
+  --color-brand-blue-200: var(--color-brand-blue-200);
+  --color-brand-blue-300: var(--color-brand-blue-300);
+  --color-brand-blue-400: var(--color-brand-blue-400);
+  --color-brand-blue-500: var(--color-brand-blue-500);
+  --color-brand-blue-600: var(--color-brand-blue-600);
+  --color-brand-blue-700: var(--color-brand-blue-700);
+  --color-brand-blue-800: var(--color-brand-blue-800);
+  --color-brand-blue-900: var(--color-brand-blue-900);
+
+  --color-brand-lilac-50: var(--color-brand-lilac-50);
+  --color-brand-lilac-100: var(--color-brand-lilac-100);
+  --color-brand-lilac-200: var(--color-brand-lilac-200);
+  --color-brand-lilac-300: var(--color-brand-lilac-300);
+  --color-brand-lilac-400: var(--color-brand-lilac-400);
+  --color-brand-lilac-500: var(--color-brand-lilac-500);
+  --color-brand-lilac-600: var(--color-brand-lilac-600);
+  --color-brand-lilac-700: var(--color-brand-lilac-700);
+  --color-brand-lilac-800: var(--color-brand-lilac-800);
+  --color-brand-lilac-900: var(--color-brand-lilac-900);
+
+  --color-brand-green-50: var(--color-brand-green-50);
+  --color-brand-green-100: var(--color-brand-green-100);
+  --color-brand-green-200: var(--color-brand-green-200);
+  --color-brand-green-300: var(--color-brand-green-300);
+  --color-brand-green-400: var(--color-brand-green-400);
+  --color-brand-green-500: var(--color-brand-green-500);
+  --color-brand-green-600: var(--color-brand-green-600);
+  --color-brand-green-700: var(--color-brand-green-700);
+  --color-brand-green-800: var(--color-brand-green-800);
+  --color-brand-green-900: var(--color-brand-green-900);
+
+  --color-neutral-50: var(--color-neutral-50);
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-400: var(--color-neutral-400);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-600: var(--color-neutral-600);
+  --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-800: var(--color-neutral-800);
+  --color-neutral-900: var(--color-neutral-900);
+
+  /* Semântica de marca, para uso em componentes (bg-primary, text-primary, etc.) */
+  --color-primary: var(--color-brand-blue-600);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--color-brand-lilac-600);
+  --color-secondary-foreground: #ffffff;
+  /* green-700, não green-600 (2026-08-31) — accent-foreground (branco) sobre
+     green-600 só batia 3.95:1, abaixo do 4.5:1 exigido pra texto (WCAG AA).
+     green-700 garante 5.74:1, mesmo sem nenhum componente usar `accent`
+     hoje — corrigido preventivamente, já que é um token do Design System. */
+  --color-accent: var(--color-brand-green-700);
+  --color-accent-foreground: #ffffff;
+  /*
+   * CTA de conversão — 2026-09-14 (terceira mudança de paleta no mesmo
+   * dia): usuário removeu o laranja do site de vez ("use apenas o azul
+   * oficial... remova o uso da cor laranja") e pediu pra reutilizar o
+   * azul nos lugares onde o laranja estava. `--color-cta`/`-foreground`/
+   * `-text` continuam existindo como tokens (evita tocar nos ~16
+   * arquivos que já usam `variant="cta"`/`text-cta-text`), só que agora
+   * apontam pro azul em vez da (removida) rampa `brand-orange`. Na
+   * prática, `cta` fica visualmente idêntico a `primary` — mantido como
+   * variante separada só por semântica ("este botão é o CTA principal
+   * desta seção"), não por diferença visual.
+   */
+  --color-cta: var(--color-primary);
+  --color-cta-foreground: var(--color-primary-foreground);
+  --color-cta-text: var(--color-primary);
+
+  --color-success: var(--color-success);
+  --color-success-bg: var(--color-success-bg);
+  --color-success-text: var(--color-success-text);
+  --color-warning: var(--color-warning);
+  --color-warning-bg: var(--color-warning-bg);
+  --color-warning-text: var(--color-warning-text);
+  --color-danger: var(--color-danger);
+  --color-danger-bg: var(--color-danger-bg);
+  --color-danger-text: var(--color-danger-text);
+  --color-info: var(--color-info);
+  --color-info-bg: var(--color-info-bg);
+  --color-info-text: var(--color-info-text);
+
+  --color-border: var(--color-neutral-200);
+  --color-muted: var(--color-neutral-100);
+  --color-muted-foreground: var(--color-neutral-600);
+
+  --font-sans: var(--font-inter);
+  /* Noto Sans Thai (2026-09-17) — usada só no H1 do Hero (`font-noto-sans-thai`), ver layout.tsx. */
+  --font-noto-sans-thai: var(--font-noto-sans-thai);
+}
+
+/*
+ * Gradiente diagonal leve em todo o site (2026-09-14, a pedido do usuário,
+ * com print de referência) — substituiu o gradiente de 4 cantos (2026-08-30)
+ * por uma varredura diagonal única (canto superior esquerdo -> inferior
+ * direito), mais parecida com a referência. A referência usava lilás/roxo;
+ * como a marca da WJB usa azul único (decisão explícita de 2026-09-14 que
+ * removeu o laranja do sistema de cores), adaptei o mesmo conceito de
+ * "mesh gradient" suave para a própria rampa de azul da marca
+ * (`--color-brand-blue-300`/`-100`) em vez de introduzir uma cor nova.
+ * `background-attachment: fixed` ancora o gradiente à tela (não ao
+ * documento), então fica consistente em qualquer altura de scroll.
+ * Opacidade recuada pra 6-9% (2026-09-15, a pedido do usuário — "tá
+ * aparecendo muito azul, quero cara de cinza") — a versão anterior (9-22%,
+ * cobrindo o diagonal inteiro até 100%) fazia o azul virar o tom dominante
+ * da página em vez de um acento. Correção de UI: o fundo neutro
+ * (`--background`, cinza `#f7f7f8`) deve ser o que o olho lê primeiro; cor
+ * é só um toque discreto nos cantos, não uma lavagem cobrindo a tela
+ * inteira. Por isso a `linear-gradient` agora desaparece (`transparent`)
+ * já em 40% do caminho, em vez de continuar (mesmo que fraca) até 100% -
+ * a maior parte da página fica no cinza puro do token. `rgb(118, 162, 229)`
+ * = `--color-brand-blue-300`, hardcoded pelo mesmo motivo de sempre
+ * (`rgba()` com token CSS exigiria `color-mix()`).
+ *
+ * Brilho laranja (2026-09-15, mesmo ajuste) — reduzido de 14% pra 8% e
+ * raio menor, mesma lógica: um toque no canto oposto ao azul (evita
+ * misturar as duas cores, que resultaria num tom acastanhado), não uma
+ * segunda lavagem de cor. `rgb(255, 109, 0)` = `#FF6D00`, o laranja do
+ * logotipo (já usado no overlay do carrossel do Hero).
+ */
+body {
+  background: var(--background);
+  background-image:
+    linear-gradient(135deg, rgba(118, 162, 229, 0.09) 0%, transparent 40%),
+    radial-gradient(700px circle at 100% 100%, rgba(255, 109, 0, 0.08), transparent 55%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+}
+
+/*
+ * Entrada suave para elementos que montam/desmontam condicionalmente
+ * (menu mobile, banner de cookies) — @starting-style anima a partir do
+ * primeiro paint, sem precisar de estado extra em React. Degrada bem em
+ * navegadores sem suporte (o elemento só aparece direto, sem animação).
+ */
+.animate-enter {
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+}
+@starting-style {
+  .animate-enter {
+    opacity: 0;
+    transform: var(--animate-enter-from, translateY(0.5rem));
+  }
+}
+
+.animate-slide-up {
+  transition: transform 0.3s ease-out;
+}
+@starting-style {
+  .animate-slide-up {
+    transform: translateY(100%);
+  }
+}
+
+/* Trilho de carrossel com scroll nativo (depoimentos) — esconde a barra de
+   rolagem sem esconder o conteúdo nem impedir o scroll/swipe. */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Avatar do Assistente Virtual WJB — microanimação discreta de "respiração"
+   (prompt mestre do assistente, seção "ANIMAÇÃO DO AVATAR"). A regra global
+   de prefers-reduced-motion abaixo já zera a duração desta animação, sem
+   precisar de guarda própria. */
+@keyframes assistant-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+.assistant-avatar-breathe {
+  animation: assistant-breathe 3s ease-in-out infinite;
+}
+
+/*
+ * Entrada do H1 do Hero (2026-09-14) — fade-up: opacidade 0->1 +
+ * leve deslocamento vertical (16px->0), 0.6s ease-out, toca uma vez ao
+ * carregar. Substituiu um efeito de máquina de escrever (removido a
+ * pedido do usuário) por um padrão de entrada mais comum no mercado
+ * pra headlines de hero (Stripe, Linear, Vercel etc.) — sutil,
+ * profissional, sem repetição (sem questão de WCAG 2.2 SC 2.2.2) e sem
+ * depender de quantas linhas o texto ocupa em cada largura de tela.
+ */
+.anim-fade-up {
+  animation: hero-fade-up 0.6s ease-out both;
+}
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Formas geométricas flutuantes (2026-09-15, a pedido do usuário — Hero e
+ * CtaFinal, "pensar como um especialista UI/UX"). Movimento vertical muito
+ * sutil (±10-14px) e lento (7-9s), puramente decorativo — nunca chama mais
+ * atenção que o conteúdo real da seção. Duas variantes com timing/atraso
+ * diferentes pra não flutuarem em sincronia perfeita (ficaria artificial).
+ * `prefers-reduced-motion` abaixo já zera a duração de qualquer animação
+ * nomeada, sem precisar de guarda própria aqui.
+ */
+@keyframes shape-float-a {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+@keyframes shape-float-b {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(12px) rotate(-3deg);
+  }
+}
+.anim-float-a {
+  animation: shape-float-a 8s ease-in-out infinite;
+}
+.anim-float-b {
+  animation: shape-float-b 9s ease-in-out 0.5s infinite;
+}
+
+/* Seção 9 — respeitar preferência de menos animação. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    /* `RevealStagger` (2026-09-17) usa transition-delay pra cascata — sem
+       zerar aqui, os itens ainda apareceriam escalonados no tempo mesmo
+       com a transição em si instantânea. */
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

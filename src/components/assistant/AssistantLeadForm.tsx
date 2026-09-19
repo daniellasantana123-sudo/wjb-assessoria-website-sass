@@ -1,0 +1,47 @@
+"use client";
+
+import { LeadForm } from "@/components/forms/lead-form";
+import { trackAssistantEvent } from "@/lib/analytics/assistant-events";
+import { getAssistantWhatsAppLink } from "@/lib/assistant/whatsapp";
+
+export interface AssistantLeadFormProps {
+  serviceLabel: string | null;
+  onSuccess: () => void;
+}
+
+/**
+ * Formulário de qualificação do assistente - reaproveita o `LeadForm`
+ * (mesmo padrão de `PlanLeadForm.tsx`) em vez de criar uma estrutura de
+ * captura paralela (seção "FORMULÁRIOS"). Ao enviar com sucesso, abre o
+ * WhatsApp da WJB com o contexto já coletado, mesma lógica de
+ * `PlanLeadForm`.
+ */
+export function AssistantLeadForm({ serviceLabel, onSuccess }: AssistantLeadFormProps) {
+  const defaultMessage = serviceLabel
+    ? `Gostaria de falar sobre: ${serviceLabel}.`
+    : "";
+
+  function handleSuccess() {
+    trackAssistantEvent("assistant_form_completed", {
+      service: serviceLabel ?? "outros",
+    });
+    const whatsappLink = getAssistantWhatsAppLink({ service: serviceLabel ?? undefined });
+    if (whatsappLink) {
+      trackAssistantEvent("assistant_whatsapp_clicked", { source: "lead_form" });
+      window.open(whatsappLink, "_blank", "noopener,noreferrer");
+    }
+    onSuccess();
+  }
+
+  return (
+    <LeadForm
+      formContext="Assistente Virtual WJB"
+      defaultServiceInterest={serviceLabel ?? undefined}
+      defaultMessage={defaultMessage}
+      showServiceInterest={false}
+      showCompany={false}
+      submitLabel="Enviar e abrir WhatsApp"
+      onSuccess={handleSuccess}
+    />
+  );
+}
