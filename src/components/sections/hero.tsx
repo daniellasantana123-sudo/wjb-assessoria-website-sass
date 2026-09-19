@@ -54,7 +54,7 @@ export function Hero() {
       />
       <Container className="relative grid grid-cols-1 items-center gap-10 py-16 lg:grid-cols-2 lg:gap-12 lg:py-24">
         <div className="flex flex-col items-center gap-8 text-center lg:items-start lg:text-left">
-          <h1 className="anim-fade-up font-noto-sans-thai max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h1 className="anim-fade-up font-noto-sans-thai max-w-xl text-4xl font-bold tracking-tight sm:text-5xl">
             <span className="text-primary">Sua empresa cresce melhor</span>{" "}
             <span className="text-foreground">quando você entende os números.</span>
           </h1>
