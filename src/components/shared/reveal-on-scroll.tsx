@@ -28,7 +28,22 @@ function useRevealOnce() {
           observer.disconnect();
         }
       },
-      { threshold: 0.15 },
+      /**
+       * `threshold: 0` (2026-09-20, bug real reportado pelo usuário em
+       * `/conteudos` no mobile) — `RevealStagger` observa o CONTÊINER da
+       * grade inteira, não cada card individualmente. Um `threshold`
+       * fracionário (`0.15`) exige que aquela fração da ALTURA TOTAL do
+       * contêiner esteja visível — em `/conteudos` (15 posts, 1 coluna no
+       * mobile), o contêiner passa de 7000px de altura, e mesmo com a tela
+       * cheia dentro dele a razão nunca chega a 15%. Resultado: `visible`
+       * nunca vira `true` e a seção inteira fica com `opacity:0`
+       * permanentemente — reproduzido mesmo rolando a página inteira.
+       * `threshold: 0` dispara assim que 1px do contêiner entra na
+       * viewport, o que não depende da altura do alvo — corrige o caso de
+       * listas longas sem mudar o comportamento perceptível em seções
+       * curtas (onde 0 vs. 0.15 já disparava quase no mesmo instante).
+       */
+      { threshold: 0 },
     );
     observer.observe(node);
     return () => observer.disconnect();
