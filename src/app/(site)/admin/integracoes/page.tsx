@@ -10,8 +10,10 @@ import { FeatureFlagsPanel } from "@/components/admin/feature-flags-panel";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
 import { listOmieMappings } from "@/lib/omie-gclick";
-import { isOmieConfigured } from "@/integrations/omie-gclick";
+import { getGClickConfig } from "@/integrations/omie-gclick";
 import { listFeatureFlags } from "@/lib/feature-flags";
+
+const MODE_LABELS = { mock: "Mock", sandbox: "Sandbox", production: "Produção" } as const;
 
 export const metadata: Metadata = {
   title: "Integrações",
@@ -30,7 +32,7 @@ export default async function AdminIntegracoesPage() {
   const canManageFlags = hasPermission(session, "feature_flags.manage");
 
   const [mappings, flags] = await Promise.all([listOmieMappings(), listFeatureFlags()]);
-  const configured = isOmieConfigured();
+  const { mode, realIntegrationEnabled } = getGClickConfig();
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
@@ -46,14 +48,27 @@ export default async function AdminIntegracoesPage() {
       <div className="border-border rounded-md border p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-foreground text-sm font-semibold">Omie.G-Click</h2>
-          <Badge tone={configured ? "success" : "warning"}>
-            {configured ? "Credenciais configuradas" : "Bloqueado - ver auditoria técnica (Fase 6.5)"}
-          </Badge>
+          <Badge tone={mode === "mock" ? "warning" : "neutral"}>Modo: {MODE_LABELS[mode]}</Badge>
         </div>
-        <p className="text-muted-foreground mt-2 text-xs">
-          A sincronização real está bloqueada até a documentação técnica oficial da API do G-Click
-          ser confirmada - ver <code>artifacts/wjb-saas-mvp/fase-6-5/audit-report.md</code>.
-        </p>
+
+        {/* Seção 37 do prompt da Fase 6.5 - nunca apresentar como "Conectado" ao G-Click real. */}
+        <dl className="text-muted-foreground mt-3 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+          <div className="flex justify-between gap-2 sm:justify-start">
+            <dt className="font-medium">Status:</dt>
+            <dd>{mode === "mock" ? "Ambiente de desenvolvimento (simulado)" : "Bloqueado"}</dd>
+          </div>
+          <div className="flex justify-between gap-2 sm:justify-start">
+            <dt className="font-medium">Integração real:</dt>
+            <dd>{realIntegrationEnabled ? "Habilitada na config, mas sem implementação ainda" : "Não habilitada"}</dd>
+          </div>
+          <div className="flex justify-between gap-2 sm:justify-start sm:col-span-2">
+            <dt className="font-medium">Validação Omie/G-Click:</dt>
+            <dd>
+              Pendente - ver <code>artifacts/wjb-saas-mvp/fase-6-5/omie-contact-checklist.md</code>
+            </dd>
+          </div>
+        </dl>
+
         <div className="mt-4">
           <OmieConnectionTest />
         </div>
@@ -80,7 +95,7 @@ export default async function AdminIntegracoesPage() {
                       {new Date(mapping.lastSyncedAt).toLocaleString("pt-BR")}
                     </span>
                   )}
-                  <OmieStatusBadge status={mapping.status} />
+                  <OmieStatusBadge status={mapping.status} mode={mode} />
                 </div>
               </Link>
             ))

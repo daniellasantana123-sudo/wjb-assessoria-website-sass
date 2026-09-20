@@ -11,8 +11,15 @@ playwright-report
 coverage
 *.tsbuildinfo
 
-# env files
-.env*.local
+# env files - tudo com segredo real fica de fora; .env.example é o único
+# arquivo de env com intenção de ser versionado (auditoria Fase 6.5,
+# 2026-09-20 - `.env*.local` sozinho não cobria .env/.env.production puros)
+.env
+.env.local
+.env.production
+.env.production.local
+.env.development.local
+!.env.example
 
 # macOS
 .DS_Store

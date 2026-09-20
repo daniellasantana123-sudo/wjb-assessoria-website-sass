@@ -1,48 +1,101 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { getOmieGClickAdapter, isOmieConfigured } from "@/integrations/omie-gclick/provider";
+import {
+  getOmieGClickAdapter,
+  isOmieConfigured,
+  resetOmieGClickAdapterForTests,
+} from "@/integrations/omie-gclick/provider";
+import { getGClickConfig } from "@/integrations/omie-gclick/config";
 
-/**
- * Fase 6.5 - BLOCKED_BY_PROVIDER. A implementação real (Fase 4) chamava a
- * API do Omie ERP por engano (confirmado incorreto via documentação
- * oficial - ver `artifacts/wjb-saas-mvp/fase-6-5/audit-report.md`) e foi
- * removida. Estes testes garantem que o provider nunca volta a chamar
- * rede nenhuma silenciosamente - só o no-op, sempre.
- */
-describe("getOmieGClickAdapter - BLOCKED_BY_PROVIDER", () => {
-  it("isOmieConfigured() é sempre falso", () => {
+const ENV_KEYS = [
+  "GCLICK_MODE",
+  "GCLICK_REAL_INTEGRATION_ENABLED",
+  "GCLICK_BASE_URL",
+  "GCLICK_CLIENT_ID",
+  "GCLICK_CLIENT_SECRET",
+  "GCLICK_API_KEY",
+  "GCLICK_TOKEN",
+  "GCLICK_TIMEOUT_MS",
+] as const;
+
+const originalEnv: Record<string, string | undefined> = {};
+
+beforeEach(() => {
+  for (const key of ENV_KEYS) originalEnv[key] = process.env[key];
+  resetOmieGClickAdapterForTests();
+});
+
+afterEach(() => {
+  for (const key of ENV_KEYS) {
+    if (originalEnv[key] === undefined) delete process.env[key];
+    else process.env[key] = originalEnv[key];
+  }
+  resetOmieGClickAdapterForTests();
+});
+
+describe("getGClickConfig", () => {
+  it("sem nenhuma env var, cai em modo mock com timeout padrão", () => {
+    for (const key of ENV_KEYS) delete process.env[key];
+    const config = getGClickConfig();
+    expect(config.mode).toBe("mock");
+    expect(config.realIntegrationEnabled).toBe(false);
+    expect(config.timeoutMs).toBe(10_000);
+  });
+
+  it("GCLICK_MODE inválido cai em mock (nunca em modo real por omissão/erro)", () => {
+    process.env.GCLICK_MODE = "qualquer-coisa";
+    expect(getGClickConfig().mode).toBe("mock");
+  });
+
+  it("GCLICK_REAL_INTEGRATION_ENABLED só é true com a string exata 'true'", () => {
+    process.env.GCLICK_REAL_INTEGRATION_ENABLED = "1";
+    expect(getGClickConfig().realIntegrationEnabled).toBe(false);
+    process.env.GCLICK_REAL_INTEGRATION_ENABLED = "true";
+    expect(getGClickConfig().realIntegrationEnabled).toBe(true);
+  });
+
+  it("GCLICK_TIMEOUT_MS inválido cai no padrão de 10s", () => {
+    process.env.GCLICK_TIMEOUT_MS = "not-a-number";
+    expect(getGClickConfig().timeoutMs).toBe(10_000);
+  });
+});
+
+describe("getOmieGClickAdapter - seleção de provider", () => {
+  it("isOmieConfigured() é sempre falso (nenhuma implementação real existe ainda)", () => {
     expect(isOmieConfigured()).toBe(false);
   });
 
-  it("upsertClient nunca chama rede - resolve com erro sanitizado", async () => {
-    const originalFetch = global.fetch;
-    const fetchMock = () => {
-      throw new Error("upsertClient não deveria chamar fetch");
-    };
-    global.fetch = fetchMock as unknown as typeof fetch;
-
-    try {
-      const result = await getOmieGClickAdapter().upsertClient({
-        tenantId: "tenant-1",
-        name: "Empresa X",
-        cnpj: null,
-      });
-      expect(result).toEqual({ ok: false, error: "blocked-by-provider" });
-    } finally {
-      global.fetch = originalFetch;
-    }
+  it("modo mock (padrão) devolve um provider com healthCheck 'available'", async () => {
+    delete process.env.GCLICK_MODE;
+    const health = await getOmieGClickAdapter().healthCheck();
+    expect(health).toEqual({ provider: "gclick", mode: "mock", status: "available" });
   });
 
-  it("testConnection nunca chama rede - resolve com erro sanitizado", async () => {
+  it("modo sandbox devolve o provider sempre bloqueado ('not_configured')", async () => {
+    process.env.GCLICK_MODE = "sandbox";
+    const health = await getOmieGClickAdapter().healthCheck();
+    expect(health).toEqual({ provider: "gclick", mode: "sandbox", status: "not_configured" });
+  });
+
+  it("modo production, mesmo com GCLICK_REAL_INTEGRATION_ENABLED=true, continua bloqueado (nenhuma implementação real existe)", async () => {
+    process.env.GCLICK_MODE = "production";
+    process.env.GCLICK_REAL_INTEGRATION_ENABLED = "true";
+    const health = await getOmieGClickAdapter().healthCheck();
+    expect(health).toEqual({ provider: "gclick", mode: "production", status: "not_configured" });
+  });
+
+  it("nunca chama fetch em nenhum modo", async () => {
     const originalFetch = global.fetch;
-    const fetchMock = () => {
-      throw new Error("testConnection não deveria chamar fetch");
-    };
-    global.fetch = fetchMock as unknown as typeof fetch;
+    global.fetch = (() => {
+      throw new Error("getOmieGClickAdapter não deveria chamar fetch");
+    }) as unknown as typeof fetch;
 
     try {
-      const result = await getOmieGClickAdapter().testConnection();
-      expect(result).toEqual({ ok: false, error: "blocked-by-provider" });
+      for (const mode of ["mock", "sandbox", "production"]) {
+        resetOmieGClickAdapterForTests();
+        process.env.GCLICK_MODE = mode;
+        await getOmieGClickAdapter().healthCheck();
+      }
     } finally {
       global.fetch = originalFetch;
     }

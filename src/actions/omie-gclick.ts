@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
-import { getOmieGClickAdapter } from "@/integrations/omie-gclick";
+import { getGClickConfig, getOmieGClickAdapter } from "@/integrations/omie-gclick";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { notifyIntegrationStatus } from "@/lib/notifications";
@@ -73,11 +73,17 @@ export async function saveOmieMapping(
   return { success: "Mapeamento salvo." };
 }
 
+/** Referência externa determinística - mesmo tenant sempre gera a mesma, sem precisar consultar nada antes. */
+function externalReferenceFor(tenantId: string): string {
+  return `wjb-tenant-${tenantId}`;
+}
+
 /**
- * Sincroniza o cliente do tenant no Omie.G-Click via adapter. Sem
- * `OMIE_APP_KEY`/`OMIE_APP_SECRET` configuradas, o adapter no-op garante
- * que isso nunca lança — só retorna erro, tratado abaixo como qualquer
- * outra falha (resiliência exigida pela Fase 4).
+ * Sincroniza o cliente do tenant com o provider ativo (`getOmieGClickAdapter()`
+ * - Fase 6.5: mock funcional por padrão, real sempre bloqueado até a
+ * especificação técnica da G-Click ser confirmada). Idempotente: se já
+ * existe `external_client_id` salvo, atualiza; senão, cria - nunca duas
+ * criações pro mesmo tenant.
  */
 export async function syncOmieClient(tenantId: string): Promise<OmieActionState> {
   const session = await requireStaffSession();
@@ -119,33 +125,40 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
     { onConflict: "tenant_id" },
   );
 
-  const result = await getOmieGClickAdapter().upsertClient({
-    tenantId: tenant.id,
-    name: tenant.name,
-    cnpj: tenant.cnpj,
-    externalClientId: mapping?.external_client_id ?? null,
-  });
+  const adapter = getOmieGClickAdapter();
+  const result = mapping?.external_client_id
+    ? await adapter.clients.update({
+        externalId: mapping.external_client_id,
+        name: tenant.name,
+        document: tenant.cnpj,
+      })
+    : await adapter.clients.create({
+        internalId: tenant.id,
+        externalReference: externalReferenceFor(tenant.id),
+        name: tenant.name,
+        document: tenant.cnpj,
+      });
 
   await supabase.from("omie_client_mappings").upsert(
     {
       tenant_id: tenantId,
-      external_client_id: result.externalClientId ?? mapping?.external_client_id ?? null,
+      external_client_id: result.ok ? result.data.externalId : (mapping?.external_client_id ?? null),
       status: result.ok ? "synced" : "error",
       last_synced_at: result.ok ? new Date().toISOString() : undefined,
-      last_error: result.ok ? null : (result.error ?? "unknown-error"),
+      last_error: result.ok ? null : result.error.code,
       updated_by: session.userId,
     },
     { onConflict: "tenant_id" },
   );
 
-  // Log sanitizado: só o resultado (ok/erro), nunca as credenciais nem a resposta bruta da API.
+  // Log sanitizado: só o código do resultado, nunca credenciais nem a resposta bruta do provider.
   await supabase.from("audit_log").insert({
     actor_id: session.userId,
     tenant_id: tenantId,
     action: "integration.omie_sync_attempted",
     entity: "omie_client_mapping",
     entity_id: tenantId,
-    metadata: { ok: result.ok, error: result.error },
+    metadata: { ok: result.ok, error: result.ok ? undefined : result.error.code },
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);
@@ -153,13 +166,26 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
   if (!result.ok) {
     // Notificação de "status de integração" (Fase 6) - avisa o resto do time (quem clicou já viu o resultado inline).
     await notifyIntegrationStatus({
-      message: `Falha ao sincronizar ${tenant.name} com o Omie.G-Click (${result.error ?? "erro desconhecido"}).`,
+      message: `Falha ao sincronizar ${tenant.name} com o Omie.G-Click (${result.error.message}).`,
       link: `/admin/empresas/${tenantId}`,
       excludeActorId: session.userId,
     });
-    return { error: `Falha ao sincronizar com o Omie.G-Click (${result.error ?? "erro desconhecido"}).` };
+    return { error: `Falha ao sincronizar com o Omie.G-Click (${result.error.message}).` };
   }
-  return { success: "Sincronizado com o Omie.G-Click." };
+
+  /**
+   * Nunca dizer só "Sincronizado" sem qualificar o modo (seção 37 do
+   * prompt da Fase 6.5: "não apresentar como Conectado ao G-Click real")
+   * - em modo mock isto NUNCA tocou a API de verdade, é uma simulação em
+   * memória que nem sobrevive a um restart do servidor.
+   */
+  const { mode } = getGClickConfig();
+  return {
+    success:
+      mode === "mock"
+        ? "Simulado com sucesso (modo mock - nenhuma sincronização real foi feita)."
+        : `Sincronizado com o Omie.G-Click (modo ${mode}).`,
+  };
 }
 
 /** Desativa/reativa a integração para um tenant específico, sem apagar o mapeamento salvo. */
@@ -197,11 +223,11 @@ export async function setOmieMappingDisabled(tenantId: string, disabled: boolean
 }
 
 /**
- * "Testar conexão" do console admin (Fase 5) - verifica só se
- * `OMIE_APP_KEY`/`OMIE_APP_SECRET` autenticam, sem tocar em nenhum tenant
- * específico. Não staff-only demais: qualquer staff pode conferir (mesma
- * permissão de leitura de `integrations.read` seria suficiente, mas como é
- * uma chamada de rede de verdade contra o Omie, mantém em
+ * "Testar conexão" do console admin - `healthCheck()` do provider ativo
+ * (mock: sempre `available`; real: sempre `not_configured`, nunca chama
+ * rede - ver `src/integrations/omie-gclick/http.provider.ts`). Não
+ * staff-only demais: qualquer staff pode conferir (mesma permissão de
+ * leitura de `integrations.read` seria suficiente, mas mantém em
  * `integrations.manage` por consistência com as outras ações desta
  * integração).
  */
@@ -211,18 +237,24 @@ export async function testOmieConnection(): Promise<OmieActionState> {
     return { error: "Você não tem permissão para gerenciar integrações." };
   }
 
-  const result = await getOmieGClickAdapter().testConnection();
+  const health = await getOmieGClickAdapter().healthCheck();
+  const ok = health.status === "available";
 
   const supabase = await createClient();
   await supabase.from("audit_log").insert({
     actor_id: session.userId,
     action: "integration.omie_connection_tested",
     entity: "omie_client_mapping",
-    metadata: { ok: result.ok, error: result.error },
+    metadata: { ok, mode: health.mode, status: health.status },
   });
 
-  if (!result.ok) {
-    return { error: `Falha ao conectar com o Omie.G-Click (${result.error ?? "erro desconhecido"}).` };
+  if (!ok) {
+    return {
+      error:
+        health.status === "not_configured"
+          ? "A integração real com o Omie.G-Click ainda não está configurada - aguardando validação técnica oficial."
+          : `Falha ao conectar com o Omie.G-Click (${health.status}).`,
+    };
   }
-  return { success: "Conexão com o Omie.G-Click confirmada." };
+  return { success: `Conexão com o Omie.G-Click confirmada (modo ${health.mode}).` };
 }

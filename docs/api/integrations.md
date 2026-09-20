@@ -2,19 +2,23 @@
 
 > Status: **SAAS FASE 5 iniciada** (2026-09-17) — E-mail (Resend) e WhatsApp (Meta WhatsApp Business Platform) implementados. **CRM e Armazenamento cancelados pelo usuário em 2026-09-18** (fora do escopo da FASE 5 — Armazenamento já coberto pelo Supabase Storage das FASES 1/2). Automação e Assinatura seguem na FASE 0. **Cobrança** não é mais nesta lista de "nenhuma decisão" - ver Omie.G-Click abaixo, implementado na Fase 4 do wjb-saas-mvp (2026-09-20). Referência completa nas seções 35–37 de [`../../Wjb-Website.md`](../../Wjb-Website.md).
 
-## ERP/Fiscal - Omie.G-Click, BLOCKED_BY_PROVIDER desde 2026-09-20 (Fase 6.5)
+## ERP/Fiscal - Omie.G-Click, mock funcional + real BLOCKED_BY_PROVIDER (Fase 6.5 - "mocks e contratos internos", 2026-09-20)
 
 **Reverte a decisão de 2026-09-16** ("nenhuma integração de ERP/fiscal externo"), por instrução explícita do usuário na Fase 4 do wjb-saas-mvp - ver `artifacts/wjb-saas-mvp/fase-4/decisions.md` D1 para o histórico completo da contradição/reversão.
 
-**Correção crítica na Fase 6.5** (auditoria técnica, 2026-09-20): a implementação da Fase 4 chamava `https://app.omie.com.br/api/v1/geral/clientes/` com o envelope `call`/`app_key`/`app_secret`/`param` (`IncluirCliente`/`AlterarCliente`/`ListarClientes`) - **essa é a API do Omie ERP, não a da Omie.G-Click**. A documentação oficial (ajuda.omie.com.br, artigos "Omie.G-Click: API" e "Como funcionam as Integrações da G-Click", lidos nesta fase) confirma que a Omie.G-Click API é um produto separado, com autenticação própria via um endpoint de "Gerar credenciais" que devolve um Token exigido em todos os demais endpoints - não o par `app_key`/`app_secret` reenviado a cada requisição. A implementação incorreta foi **removida** (`src/integrations/omie-gclick/omie.adapter.ts` deletado) - `getOmieGClickAdapter()` agora sempre devolve o adapter no-op, resolvendo com `{ok:false, error:"blocked-by-provider"}`, nunca chamando rede nenhuma. Ver `artifacts/wjb-saas-mvp/fase-6-5/audit-report.md`/`api-validation.md` para o diagnóstico completo.
+**Correção crítica confirmada numa auditoria técnica anterior** (Fase 6.5, `artifacts/wjb-saas-mvp/fase-6-5/`): a implementação da Fase 4 chamava a API do Omie ERP, não a da Omie.G-Click (produto separado, confirmado via documentação oficial). A implementação incorreta foi removida.
 
-Estrutura: `src/integrations/omie-gclick/{types.ts,provider.ts,constants.ts,index.ts}` - mesmo Adapter Pattern de e-mail/WhatsApp (interface preservada; só a implementação de rede foi removida).
+**Nesta fase** (mocks e contratos internos), a integração ganhou uma arquitetura completa de Ports & Adapters, documentada em [`../integrations/gclick/`](../integrations/gclick/):
 
-Endpoints reais confirmados na documentação oficial (sem schema técnico completo - só o Postman oficial tem isso, e é renderizado via JavaScript, inacessível nesta sessão): clientes (criar/alterar/listar/buscar/buscar clienteId), tarefas (listar tarefas, criar pré-tarefa) - e 2 endpoints explicitamente `partner_only` ("Responder atividade", "Criar pré-tarefa com tag"). Nenhum desses foi implementado - reativar exige a especificação técnica completa (contato direto com a Omie, ver `omie-contact-checklist.md`) e credenciais reais pra validar.
+- Contrato rico (`OmieGClickAdapter`: `clients.*`, `tasks.*`, `healthCheck()`, `getCapabilities()`) em `src/integrations/omie-gclick/types.ts` - modelado pelas necessidades da WJB, não pelo schema externo (ainda não confirmado).
+- `MockGClickProvider` (`mock.provider.ts`) - **funcional, em memória, determinístico** - modo padrão (`GCLICK_MODE=mock` ou ausente). Nunca toca a rede, nunca persiste além do processo.
+- `GClickHttpProvider` (`http.provider.ts`) - esqueleto real, todo método resolve `PROVIDER_NOT_CONFIGURED`. Ativado por `GCLICK_MODE=sandbox`/`production`, mas continua sempre bloqueado - nenhuma implementação real existe até a especificação técnica oficial (Postman) ser confirmada.
+- `mappers/` (`client.mapper.ts`, `task.mapper.ts`, `error.mapper.ts`) - esqueletos, ponto único de tradução quando o schema real chegar.
+- UI (`/admin/empresas/[id]`, `/admin/integracoes`) sempre mostra o modo ativo e nunca apresenta um resultado simulado como "Conectado" de verdade.
 
-Mapeamento por organization (`omie_client_mappings`, `0017_omie_gclick_integration.sql`) - 1 linha por tenant, nunca direto a um usuário; validado como seguro na Fase 6.5 (RLS já herda a correção de `my_tenant_ids()` da Fase 5 - tenant/membership suspensos perdem acesso automaticamente). Staff configura manualmente (`external_client_id`, `external_portal_url` opcional) em `/admin/empresas/[id]`. Cliente vê um CTA "Ver no Portal Contábil" no Portal (`/portal`) quando o status é `connected`/`synced` - agora aponta pra URL real do login do Portal Visão do Cliente (`https://visao.gclick.com.br/login`, confirmada via documentação oficial na Fase 6.5) quando staff não configurou um link próprio - link externo em nova aba, nunca iframe, nunca SSO.
+Mapeamento por organization (`omie_client_mappings`, `0017_omie_gclick_integration.sql`) - 1 linha por tenant, nunca direto a um usuário; validado como seguro (RLS herda a correção de `my_tenant_ids()` da Fase 5 - tenant/membership suspensos perdem acesso automaticamente). Cliente vê um CTA "Ver no Portal Contábil" no Portal (`/portal`) quando o status é `connected`/`synced`, apontando pra URL real do login do Portal Visão do Cliente (`https://visao.gclick.com.br/login`) - link externo em nova aba, nunca iframe, nunca SSO.
 
-Resiliência: nenhum caminho crítico (login, documentos, Dashboard) chama o adapter Omie - só a ação explícita de staff, que agora sempre resolve com erro sanitizado sem nenhuma chamada de rede.
+Resiliência: nenhum caminho crítico (login, documentos, Dashboard) chama o adapter Omie - só a ação explícita de staff. Em qualquer modo, o adapter nunca lança exceção, sempre resolve um resultado tipado.
 
 Pendente do lado do usuário: contato direto com a Omie pra confirmar o modelo de credenciais/token da G-Click e acesso à documentação técnica completa (Postman) - ver `artifacts/wjb-saas-mvp/fase-6-5/omie-contact-checklist.md`.
 
@@ -80,5 +84,5 @@ Somente implementar uma integração após confirmar API oficial, plano, credenc
 - [x] WhatsApp — Meta WhatsApp Business Platform (Cloud API) escolhido e implementado (2026-09-18). Falta a conta/número/template real do usuário (ver acima).
 - [x] ~~CRM~~ — **cancelado pelo usuário em 2026-09-18**, fora do escopo da FASE 5.
 - [x] ~~Armazenamento~~ — **removido em 2026-09-18**, já coberto pelo Supabase Storage (FASES 1/2).
-- [~] ERP/Fiscal - Omie.G-Click escolhido (Fase 4); BLOCKED_BY_PROVIDER desde a auditoria técnica da Fase 6.5 (2026-09-20) - a implementação real usava a API errada (Omie ERP, não G-Click) e foi removida. Falta especificação técnica oficial (Postman) e credenciais reais.
+- [~] ERP/Fiscal - Omie.G-Click escolhido (Fase 4); mock funcional (`GCLICK_MODE=mock`) desde a Fase 6.5 de mocks/contratos internos (2026-09-20) - real segue `BLOCKED_BY_PROVIDER`, faltando especificação técnica oficial (Postman) e credenciais reais. Ver `docs/integrations/gclick/`.
 - [ ] Automação, Assinatura, Cobrança — nenhuma decisão de provider tomada ainda.

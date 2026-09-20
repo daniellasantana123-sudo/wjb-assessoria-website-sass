@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OmieStatusBadge } from "@/components/integrations/omie-status-badge";
 import type { OmieMapping } from "@/lib/omie-gclick";
+import type { ProviderMode } from "@/integrations/omie-gclick";
 
 /**
  * Painel de staff (Admin WJB > Empresas > [id]) pra configurar o
@@ -21,17 +22,23 @@ import type { OmieMapping } from "@/lib/omie-gclick";
  * pelas Server Actions; esta prop só evita renderizar controles pra quem
  * não pode usá-los, mesmo padrão de `canManage` em `MembersList`).
  *
- * "Sincronizar com o Omie.G-Click" hoje sempre falha (BLOCKED_BY_PROVIDER,
- * Fase 6.5 - ver `artifacts/wjb-saas-mvp/fase-6-5/audit-report.md`) - o
- * botão continua visível pra não esconder a funcionalidade, mas o
- * resultado é sempre um erro claro, nunca um sucesso simulado.
+ * "Sincronizar com o Omie.G-Click" (Fase 6.5 - "mocks e contratos
+ * internos"): em modo mock (padrão, `GCLICK_MODE` ausente), o botão
+ * simula uma sincronização em memória com sucesso - nunca uma
+ * sincronização real. Em modo sandbox/production, continua sempre
+ * bloqueado (nenhuma implementação real existe - ver
+ * `artifacts/wjb-saas-mvp/fase-6-5/audit-report.md`). `mode` vem do
+ * servidor (`getGClickConfig()`) pra nunca deixar a UI apresentar um
+ * resultado simulado como se fosse "Conectado" de verdade.
  */
 export function OmieMappingPanel({
   tenantId,
   mapping,
+  mode,
 }: {
   tenantId: string;
   mapping: OmieMapping | null;
+  mode: ProviderMode;
 }) {
   const saveMappingForTenant = saveOmieMapping.bind(null, tenantId);
   const [saveState, saveAction, savePending] = useActionState(saveMappingForTenant, undefined);
@@ -58,7 +65,7 @@ export function OmieMappingPanel({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <OmieStatusBadge status={status} />
+        <OmieStatusBadge status={status} mode={mode} />
         {mapping?.lastSyncedAt && (
           <span className="text-muted-foreground text-xs">
             Última sincronização: {new Date(mapping.lastSyncedAt).toLocaleString("pt-BR")}
@@ -127,9 +134,9 @@ export function OmieMappingPanel({
       )}
 
       <p className="text-muted-foreground text-xs">
-        A sincronização automática ainda está bloqueada - a documentação técnica oficial da API do
-        G-Click precisa ser confirmada antes de implementar a chamada real (ver auditoria técnica
-        da Fase 6.5). Até lá, fica registrado como erro (esperado, não é bug).
+        {mode === "mock"
+          ? "Modo mock (ambiente de desenvolvimento) - toda sincronização aqui é simulada em memória, nenhum dado real é enviado ao G-Click. Integração real: não habilitada."
+          : "A sincronização real está bloqueada - a documentação técnica oficial da API do G-Click precisa ser confirmada antes de implementar a chamada real (ver auditoria técnica da Fase 6.5)."}
       </p>
     </div>
   );

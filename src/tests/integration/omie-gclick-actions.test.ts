@@ -8,10 +8,15 @@ vi.mock("@/lib/auth/dal", () => ({
 const revalidatePathMock = vi.fn();
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 
-const upsertClientMock = vi.fn();
-const testConnectionMock = vi.fn();
+const createClientMock = vi.fn();
+const updateClientMock = vi.fn();
+const healthCheckMock = vi.fn();
 vi.mock("@/integrations/omie-gclick", () => ({
-  getOmieGClickAdapter: () => ({ upsertClient: upsertClientMock, testConnection: testConnectionMock }),
+  getOmieGClickAdapter: () => ({
+    clients: { create: createClientMock, update: updateClientMock },
+    healthCheck: healthCheckMock,
+  }),
+  getGClickConfig: () => ({ mode: "mock" }),
 }));
 
 const isFeatureEnabledMock = vi.fn().mockResolvedValue(true);
@@ -136,7 +141,7 @@ describe("syncOmieClient", () => {
     const result = await syncOmieClient("tenant-1");
 
     expect(result).toEqual({ error: expect.stringContaining("permissão") });
-    expect(upsertClientMock).not.toHaveBeenCalled();
+    expect(createClientMock).not.toHaveBeenCalled();
   });
 
   it("rejeita quando a feature flag 'omie_gclick' está desativada (Fase 5)", async () => {
@@ -145,7 +150,7 @@ describe("syncOmieClient", () => {
     const result = await syncOmieClient("tenant-1");
 
     expect(result).toEqual({ error: expect.stringContaining("desativada") });
-    expect(upsertClientMock).not.toHaveBeenCalled();
+    expect(createClientMock).not.toHaveBeenCalled();
   });
 
   it("404 quando a empresa não existe", async () => {
@@ -154,11 +159,36 @@ describe("syncOmieClient", () => {
     const result = await syncOmieClient("tenant-inexistente");
 
     expect(result).toEqual({ error: expect.stringContaining("não encontrada") });
-    expect(upsertClientMock).not.toHaveBeenCalled();
+    expect(createClientMock).not.toHaveBeenCalled();
+  });
+
+  it("sem external_client_id salvo, chama clients.create() (nunca update)", async () => {
+    createClientMock.mockResolvedValue({
+      ok: true,
+      data: { externalId: "999", externalReference: "wjb-tenant-tenant-1" },
+    });
+
+    const result = await syncOmieClient("tenant-1");
+
+    expect(result).toEqual({ success: expect.any(String) });
+    expect(createClientMock).toHaveBeenCalledWith(
+      expect.objectContaining({ internalId: "tenant-1", externalReference: "wjb-tenant-tenant-1" }),
+    );
+    expect(updateClientMock).not.toHaveBeenCalled();
+  });
+
+  it("com external_client_id já salvo, chama clients.update() (nunca create) - idempotência", async () => {
+    mappingMaybeSingleMock.mockResolvedValue({ data: { external_client_id: "999" } });
+    updateClientMock.mockResolvedValue({ ok: true, data: { externalId: "999" } });
+
+    await syncOmieClient("tenant-1");
+
+    expect(updateClientMock).toHaveBeenCalledWith(expect.objectContaining({ externalId: "999" }));
+    expect(createClientMock).not.toHaveBeenCalled();
   });
 
   it("sucesso: marca 'syncing' e depois 'synced', grava external_client_id e auditoria", async () => {
-    upsertClientMock.mockResolvedValue({ ok: true, externalClientId: "999" });
+    createClientMock.mockResolvedValue({ ok: true, data: { externalId: "999" } });
 
     const result = await syncOmieClient("tenant-1");
 
@@ -178,15 +208,18 @@ describe("syncOmieClient", () => {
     );
   });
 
-  it("falha do adapter: marca status 'error' com last_error, nunca lança", async () => {
-    upsertClientMock.mockResolvedValue({ ok: false, error: "no-provider" });
+  it("falha do provider: marca status 'error' com o código sanitizado, nunca lança", async () => {
+    createClientMock.mockResolvedValue({
+      ok: false,
+      error: { code: "PROVIDER_NOT_CONFIGURED", message: "Integração real bloqueada." },
+    });
 
     const result = await syncOmieClient("tenant-1");
 
-    expect(result).toEqual({ error: expect.stringContaining("no-provider") });
+    expect(result).toEqual({ error: expect.stringContaining("Integração real bloqueada") });
     expect(mappingUpsertMock).toHaveBeenNthCalledWith(
       2,
-      expect.objectContaining({ status: "error", last_error: "no-provider" }),
+      expect.objectContaining({ status: "error", last_error: "PROVIDER_NOT_CONFIGURED" }),
       { onConflict: "tenant_id" },
     );
     expect(notifyIntegrationStatusMock).toHaveBeenCalledWith(
@@ -235,28 +268,28 @@ describe("testOmieConnection", () => {
     const result = await testOmieConnection();
 
     expect(result).toEqual({ error: expect.stringContaining("permissão") });
-    expect(testConnectionMock).not.toHaveBeenCalled();
+    expect(healthCheckMock).not.toHaveBeenCalled();
   });
 
-  it("sucesso: grava auditoria e retorna confirmação", async () => {
-    testConnectionMock.mockResolvedValue({ ok: true });
+  it("sucesso (modo mock): grava auditoria e retorna confirmação", async () => {
+    healthCheckMock.mockResolvedValue({ provider: "gclick", mode: "mock", status: "available" });
 
     const result = await testOmieConnection();
 
-    expect(result).toEqual({ success: expect.any(String) });
+    expect(result).toEqual({ success: expect.stringContaining("mock") });
     expect(auditInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "integration.omie_connection_tested",
-        metadata: { ok: true, error: undefined },
+        metadata: { ok: true, mode: "mock", status: "available" },
       }),
     );
   });
 
-  it("falha: nunca lança, retorna erro sanitizado", async () => {
-    testConnectionMock.mockResolvedValue({ ok: false, error: "no-provider" });
+  it("not_configured (provider real bloqueado): erro claro, nunca lança", async () => {
+    healthCheckMock.mockResolvedValue({ provider: "gclick", mode: "production", status: "not_configured" });
 
     const result = await testOmieConnection();
 
-    expect(result).toEqual({ error: expect.stringContaining("no-provider") });
+    expect(result).toEqual({ error: expect.stringContaining("validação técnica oficial") });
   });
 });

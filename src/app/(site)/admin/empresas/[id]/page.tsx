@@ -17,6 +17,7 @@ import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
 import { getOmieMapping } from "@/lib/omie-gclick";
+import { getGClickConfig } from "@/integrations/omie-gclick";
 import { reactivateTenant, suspendTenant } from "@/actions/tenants";
 
 export const metadata: Metadata = {
@@ -54,6 +55,7 @@ export default async function EmpresaDetailPage({
   if (!tenant) notFound();
 
   const omieMapping = await getOmieMapping(tenant.id);
+  const { mode: omieMode } = getGClickConfig();
   const canSuspendTenant = hasPermission(session, "tenants.suspend");
   const isSuspended = tenant.status === "suspended";
 
@@ -147,7 +149,7 @@ export default async function EmpresaDetailPage({
 
       <div className="border-border rounded-md border p-6">
         <h2 className="text-foreground mb-4 text-sm font-semibold">Integração Omie.G-Click</h2>
-        <OmieMappingPanel tenantId={tenant.id} mapping={omieMapping} />
+        <OmieMappingPanel tenantId={tenant.id} mapping={omieMapping} mode={omieMode} />
       </div>
     </Container>
   );
