@@ -21,7 +21,7 @@
 
 - Credenciais do projeto Supabase real continuam ausentes - nada desta fase foi testado contra banco real, só via mocks.
 - `.env.example`/`.github/workflows/` continuam ausentes (Fase 0).
-- Credenciais Omie (`OMIE_APP_KEY`/`OMIE_APP_SECRET`) continuam ausentes - `testConnection` nunca foi chamado contra a API real.
+- Credenciais Omie (`OMIE_APP_KEY`/`OMIE_APP_SECRET`) continuam ausentes - `testConnection` nunca foi chamado contra a API real. **Atualização (Fase 6.5)**: a auditoria técnica descobriu que essas variáveis pertenciam ao modelo errado de autenticação (API do Omie ERP, não G-Click) - removidas. Ver `artifacts/wjb-saas-mvp/fase-6-5/audit-report.md`.
 
 ## Riscos
 

@@ -18,6 +18,8 @@
 
 **Como avançar**: quando a WJB fornecer a documentação oficial (ou credenciais de uma conta de teste) de "tarefas"/"pré-tarefas", adicionar um novo método à interface `OmieGClickAdapter` seguindo o mesmo padrão de `upsertClient`.
 
+**Atualização (2026-09-20, Fase 6.5)**: a auditoria técnica da Fase 6.5 confirmou que o envelope `call`/`app_key`/`app_secret`/`param` citado acima é da **API do Omie ERP**, um produto diferente da **Omie.G-Click API** (confirmado via documentação oficial, ajuda.omie.com.br) - a implementação de `upsertClient` estava correta para uma API, mas era a API errada para esta integração. Removida e substituída por um adapter sempre-bloqueado até a especificação técnica real da G-Click ser confirmada. Ver `artifacts/wjb-saas-mvp/fase-6-5/audit-report.md`. Este bloco (D2) não foi editado retroativamente - descreve com precisão o raciocínio (equivocado, mas de boa-fé) desta fase.
+
 ## D3 - Fluxo "BFF" é a própria Server Action, sem endpoint REST paralelo
 
 **Contexto**: o prompt desenha o fluxo como `Dashboard -> WJB BFF -> Authorization -> Integration Service -> OmieGClickAdapter -> Omie API`, com a regra "frontend nunca chama Omie diretamente".
@@ -36,8 +38,12 @@
 
 **Decisão**: implementar o adapter seguindo a convenção pública documentada do Omie ao melhor conhecimento desta sessão, deixando esse gap explícito em `docs/api/integrations.md` e no comentário do próprio `omie.adapter.ts`, em vez de apresentar como "testado e funcionando". Validar contra uma conta real antes de habilitar em produção.
 
+**Atualização (2026-09-20, Fase 6.5)**: a verificação contra uma conta real nunca chegou a ser necessária - a auditoria técnica encontrou primeiro que a convenção implementada era de outra API (Omie ERP, ver D2). `omie.adapter.ts` foi removido; `getOmieGClickAdapter()` agora sempre devolve um adapter que nunca chama rede.
+
 ## D6 - CTA do Portal Contábil: link manual, nunca automático
 
 **Contexto**: o prompt exige "CTA seguro para a Visão do Cliente", proibindo iframe por padrão e proibindo inventar SSO.
 
 **Decisão**: `external_portal_url` é um campo que staff preenche manualmente (não há API pública conhecida do G-Click para "descobrir" essa URL automaticamente por tenant). O CTA é um link simples (`<a target="_blank">`), sem iframe, sem tentativa de autenticar o cliente automaticamente no sistema externo. Cumpre a letra e o espírito da regra do prompt sem inventar um mecanismo de SSO que não existe.
+
+**Atualização (2026-09-20, Fase 6.5)**: a auditoria técnica confirmou (documentação oficial) que o Portal Visão do Cliente tem uma URL de login ÚNICA e fixa (`https://visao.gclick.com.br/login`) para todos os clientes de todas as contas G-Click - não uma URL exclusiva por empresa. `external_portal_url` continua existindo como override manual (a personalização visual do portal é documentada como possível), mas o CTA agora usa essa URL fixa como padrão quando staff não preenche o campo - nunca mais depende de staff configurar algo pra o CTA aparecer.

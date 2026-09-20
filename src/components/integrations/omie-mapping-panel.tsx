@@ -20,6 +20,11 @@ import type { OmieMapping } from "@/lib/omie-gclick";
  * tem `integrations.manage` chega aqui (verificado de novo no servidor
  * pelas Server Actions; esta prop só evita renderizar controles pra quem
  * não pode usá-los, mesmo padrão de `canManage` em `MembersList`).
+ *
+ * "Sincronizar com o Omie.G-Click" hoje sempre falha (BLOCKED_BY_PROVIDER,
+ * Fase 6.5 - ver `artifacts/wjb-saas-mvp/fase-6-5/audit-report.md`) - o
+ * botão continua visível pra não esconder a funcionalidade, mas o
+ * resultado é sempre um erro claro, nunca um sucesso simulado.
  */
 export function OmieMappingPanel({
   tenantId,
@@ -67,22 +72,22 @@ export function OmieMappingPanel({
 
       <form action={saveAction} className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="externalClientId">Código do cliente no Omie</Label>
+          <Label htmlFor="externalClientId">ID do cliente no G-Click</Label>
           <Input
             id="externalClientId"
             name="externalClientId"
             defaultValue={mapping?.externalClientId ?? ""}
-            placeholder="Ex.: 123456789"
+            placeholder="Preencher quando a empresa tiver conta no G-Click"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="externalPortalUrl">Link do Portal Contábil (Visão do Cliente)</Label>
+          <Label htmlFor="externalPortalUrl">Link do Portal Contábil (opcional)</Label>
           <Input
             id="externalPortalUrl"
             name="externalPortalUrl"
             type="url"
             defaultValue={mapping?.externalPortalUrl ?? ""}
-            placeholder="https://..."
+            placeholder="Deixe em branco para usar o login padrão do G-Click"
           />
         </div>
 
@@ -122,8 +127,9 @@ export function OmieMappingPanel({
       )}
 
       <p className="text-muted-foreground text-xs">
-        A sincronização automática depende de <code>OMIE_APP_KEY</code>/<code>OMIE_APP_SECRET</code>{" "}
-        configuradas no servidor — sem isso, fica registrado como erro (esperado, não é bug).
+        A sincronização automática ainda está bloqueada - a documentação técnica oficial da API do
+        G-Click precisa ser confirmada antes de implementar a chamada real (ver auditoria técnica
+        da Fase 6.5). Até lá, fica registrado como erro (esperado, não é bug).
       </p>
     </div>
   );

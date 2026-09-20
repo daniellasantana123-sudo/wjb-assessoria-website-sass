@@ -1,0 +1,28 @@
+# Checklist de aceite - Fase 6.5
+
+- [x] Implementação Omie existente foi inventariada - `audit-report.md`, Parte 1.
+- [x] API Omie ERP e G-Click foram explicitamente diferenciadas - confirmado via documentação oficial; eram a mesma coisa por engano na implementação da Fase 4.
+- [x] Base URL foi validada - **não confirmada** (host real da G-Click não está na documentação acessível nesta sessão); o host antigo (`app.omie.com.br`) foi confirmado como incorreto e removido.
+- [x] Modelo de autenticação foi validado - confirmado que é diferente do usado (token via "gerar credenciais", não `app_key`/`app_secret` por request); parâmetros exatos não confirmados.
+- [x] Credenciais esperadas foram validadas - nomes antigos (`OMIE_APP_KEY`/`OMIE_APP_SECRET`) confirmados incorretos e removidos; nomes corretos ainda pendentes.
+- [x] Variáveis de ambiente foram revisadas - `credentials-model.md`.
+- [x] Nenhum secret é exposto ao frontend - confirmado (nunca foi, `server-only` em todo o módulo).
+- [x] Endpoint de clientes foi comparado com documentação oficial - `api-validation.md`; recurso existe, schema técnico não confirmado.
+- [x] Mapping por tenant foi validado - seguro, sem alteração necessária.
+- [x] Cross-tenant foi testado - validado por leitura de código (staff-only nas mutações, RLS na leitura); teste real contra banco depende de credenciais Supabase reais (limitação herdada da Fase 0).
+- [x] Tenant suspenso foi testado - validado por leitura de código (herda a correção de `my_tenant_ids()` da Fase 5); mesma limitação de banco real acima.
+- [x] Membership suspensa foi testada - idem.
+- [x] Feature flag foi testada - `omie_gclick` já coberta por teste desde a Fase 5/6; comportamento revalidado por leitura de código.
+- [x] Resiliência foi testada - reforçada (nenhuma chamada de rede possível hoje) e coberta por `omie-gclick-provider.test.ts`.
+- [x] Logs foram verificados - sanitizados, sem credencial/payload bruto.
+- [x] Recursos partner-only foram identificados - "Responder atividade", "Criar pré-tarefa com tag".
+- [x] Tarefas/pré-tarefas não foram inventadas - continuam não implementadas, agora com classificação explícita.
+- [x] Portal Visão do Cliente foi revisado - URL real confirmada e aplicada como fallback.
+- [x] Checklist de contato com Omie foi criado - `omie-contact-checklist.md`.
+- [x] Audit report foi concluído - `audit-report.md`.
+- [x] Lint passou.
+- [x] Typecheck passou.
+- [x] Testes passaram.
+- [x] Build passou.
+- [x] STATUS.md foi atualizado.
+- [x] phase-handoff.md foi criado.

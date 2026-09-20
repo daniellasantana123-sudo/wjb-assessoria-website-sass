@@ -46,10 +46,14 @@ export default async function AdminIntegracoesPage() {
       <div className="border-border rounded-md border p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-foreground text-sm font-semibold">Omie.G-Click</h2>
-          <Badge tone={configured ? "success" : "neutral"}>
-            {configured ? "Credenciais configuradas" : "Sem credenciais (OMIE_APP_KEY/SECRET)"}
+          <Badge tone={configured ? "success" : "warning"}>
+            {configured ? "Credenciais configuradas" : "Bloqueado - ver auditoria técnica (Fase 6.5)"}
           </Badge>
         </div>
+        <p className="text-muted-foreground mt-2 text-xs">
+          A sincronização real está bloqueada até a documentação técnica oficial da API do G-Click
+          ser confirmada - ver <code>artifacts/wjb-saas-mvp/fase-6-5/audit-report.md</code>.
+        </p>
         <div className="mt-4">
           <OmieConnectionTest />
         </div>

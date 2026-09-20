@@ -2,7 +2,7 @@
 
 ## Fase atual
 
-**Fase 6 - Notificações e suporte**: concluída em 2026-09-20.
+**Fase 6.5 - Validação Técnica Omie.G-Click**: concluída em 2026-09-20.
 
 ## Progresso
 
@@ -15,43 +15,42 @@
 | Fase 4 - Omie.G-Click MVP | Concluída | 2026-09-20 |
 | Fase 5 - Console Admin WJB | Concluída | 2026-09-20 |
 | Fase 6 - Notificações e suporte | Concluída | 2026-09-20 |
+| Fase 6.5 - Validação Técnica Omie.G-Click | Concluída | 2026-09-20 |
 
 ## Arquivos alterados nesta fase
 
-- `supabase/migrations/0019_notification_enhancements.sql` - novo (`title`, `metadata_sanitized`).
-- `src/types/database.ts` - `notifications` atualizado.
-- `src/lib/notifications.ts` - reescrito (`dispatchNotification`, `resolveCounterpartRecipients`, `notifyInvitation`, `notifyDocumentAvailable`, `notifyIntegrationStatus`, `notifyAccountSecurity`, `markNotificationAsReadAndGetLink`).
-- `src/actions/notifications.ts` - novo (`markAllNotificationsRead`).
-- `src/app/api/notifications/[id]/read/route.ts` - novo.
-- `src/components/notifications/notifications-list.tsx` - reescrito (marcar lida/todas explícitos).
-- `src/components/portal/support-card.tsx` - novo ("Precisa de ajuda?").
-- `src/app/portal/page.tsx` - `SupportCard` no Dashboard.
-- `src/actions/tenants.ts`, `src/actions/staff.ts`, `src/actions/documents.ts`, `src/actions/omie-gclick.ts` - disparo de notificação wireado em convite/documento/integração/segurança.
-- `src/proxy.ts` - `/api/notifications` adicionado ao gate do SaaS.
-- 3 arquivos de teste novos (`notifications` unit, `notifications-read-api`, `invite-notifications`) + mocks/asserções atualizados em 3 arquivos existentes.
-- `artifacts/wjb-saas-mvp/fase-6/*` - criado.
+- `src/integrations/omie-gclick/omie.adapter.ts` - **removido** (chamava a API do Omie ERP, confirmado incorreto para a G-Click).
+- `src/integrations/omie-gclick/provider.ts` - reescrito: sempre devolve o adapter no-op, `isOmieConfigured()` sempre `false`.
+- `src/integrations/omie-gclick/constants.ts` - novo (`GCLICK_CLIENT_PORTAL_URL`, URL real do login do Portal Visão do Cliente).
+- `src/integrations/omie-gclick/types.ts`, `index.ts` - comentários/exports atualizados.
+- `src/components/portal/omie-portal-cta.tsx` - usa a URL real como fallback.
+- `src/components/integrations/omie-mapping-panel.tsx`, `src/app/(site)/admin/integracoes/page.tsx` - copy corrigida (sem afirmar nomes de campo/credencial do Omie ERP).
+- `docs/api/integrations.md` - seção ERP/Fiscal atualizada com o achado e a correção.
+- `artifacts/wjb-saas-mvp/fase-4/decisions.md`, `fase-5/phase-handoff.md` - adendos apontando pra esta fase (sem reescrever histórico).
+- `src/tests/unit/omie-gclick-adapter.test.ts` - removido (testava a implementação incorreta).
+- `src/tests/unit/omie-gclick-provider.test.ts` - novo (3 testes, confirma estado seguro).
+- `artifacts/wjb-saas-mvp/fase-6-5/*` - criado (11 arquivos, incluindo `audit-report.md`, `api-validation.md`, `credentials-model.md`, `omie-contact-checklist.md`).
 
-Nenhuma dependência npm nova.
+Nenhuma dependência npm nova. Nenhuma migration nova.
 
 ## Testes
 
-Lint, typecheck, 170 testes (147 anteriores + 23 novos) e build de produção - todos passando. Detalhe completo em `fase-6/test-report.md`.
+Lint, typecheck, 168 testes (170 anteriores - 5 removidos + 3 novos) e build de produção - todos passando. Detalhe completo em `fase-6-5/test-report.md`.
 
 ## Riscos
 
-- Herdado da Fase 0: credenciais do projeto Supabase real ausentes em todos os ambientes acessíveis - notificações só testadas via mock, não contra banco/e-mail reais.
-- Herdado da Fase 5 de integrações: `RESEND_API_KEY`/`EMAIL_FROM` ausentes em produção - todo e-mail desta fase cai no adapter no-op até isso ser configurado.
-- Mudança de comportamento perceptível: "marcar como lida" deixou de ser automático ao visitar a página - ver `fase-6/decisions.md` D1.
-- Mobile não verificado visualmente nesta sessão (sem ferramenta de navegador) - ver `fase-6/decisions.md` D7.
+- Herdado da Fase 0: credenciais do projeto Supabase real ausentes - validação de cross-tenant/tenant-suspenso desta fase foi só por leitura de código.
+- **Host real e schema técnico da API da G-Click continuam desconhecidos** - a documentação técnica completa (Postman) não pôde ser lida nesta sessão (conteúdo renderizado via JavaScript). Ver `fase-6-5/omie-contact-checklist.md`.
+- Nenhum nome de variável de ambiente foi definido para credenciais reais da G-Click ainda (deliberado - ver `fase-6-5/decisions.md` D2).
 
 ## Bloqueios
 
-Nenhum bloqueio impede a conclusão da Fase 6.
+**A sincronização real com o Omie.G-Click está `BLOCKED_BY_PROVIDER`** - falta a especificação técnica oficial (não só credenciais). Não é um bloqueio de código (a arquitetura está pronta para receber uma implementação real sem mudança estrutural), é um bloqueio de acesso à documentação/contato com a Omie. Ver `fase-6-5/audit-report.md` e `fase-6-5/phase-handoff.md` (seção "Leitura do gate da Parte 22") para a leitura explícita de como isso afeta a entrada na Fase 7.
 
 ## Próxima fase
 
-Não definida ainda - aguardando o próximo prompt numerado do usuário.
+Não definida ainda - aguardando o próximo prompt numerado do usuário. Se for a Fase 7 (Production Readiness), recomendo confirmar antes se ela deve prosseguir para o SaaS como um todo (com o Omie.G-Click documentado como pendência isolada e não-crítica) ou se deve esperar a integração real - ver `fase-6-5/phase-handoff.md`.
 
-## Decisão de escopo importante (revertida na Fase 4, mantida)
+## Decisão de escopo importante (revertida na Fase 4, corrigida na Fase 6.5)
 
-A integração Omie.G-Click faz parte do projeto desde 2026-09-20 (Fase 4), revertendo a decisão de 2026-09-16 de não integrar nenhum ERP/fiscal externo. Só o recurso "clientes" (+ "testar conexão", Fase 5) foi implementado - "tarefas"/"pré-tarefas" seguem fora do escopo por falta de documentação pública verificada.
+A integração Omie.G-Click faz parte do projeto desde 2026-09-20 (Fase 4), revertendo a decisão de 2026-09-16 de não integrar nenhum ERP/fiscal externo. A implementação da Fase 4, porém, usava a API errada (Omie ERP, não G-Click) - corrigido na Fase 6.5 removendo a implementação incorreta. A integração continua arquiteturalmente pronta (mapping, RLS, permissões, feature flag, UI), mas sem nenhuma sincronização real até a especificação técnica da G-Click ser confirmada.
