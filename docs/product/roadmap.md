@@ -75,10 +75,11 @@ V2 só inicia com todos os critérios da seção 33 aprovados (site, Design Syst
   colegas), **Documentos** (`/portal/documentos` — upload/download bidirecional, URL assinada,
   bucket privado), **Obrigações** (`/portal/obrigacoes` — só a WJB cria/gerencia, badge
   Pendente/Concluída/Atrasada calculado pela data), **Guias** (`/portal/guias` — categoria dentro
-  de Documentos, não uma tabela nova, `0009_document_category.sql`). **Decisão do cliente em
-  2026-09-16**: nenhuma integração de ERP/fiscal externo (ex.: G-Click) — o fluxo fica nativo
-  dentro do próprio Portal. SAAS FASE 5 (Integrações) perde o item "ERP" da seção 34/36 por esse
-  motivo.)*
+  de Documentos, não uma tabela nova, `0009_document_category.sql`). **Decisão de 2026-09-16
+  ("nenhuma integração de ERP/fiscal externo"), reconfirmada em 2026-09-20 na Fase 0 do
+  wjb-saas-mvp, foi revertida em 2026-09-20 na Fase 4 do wjb-saas-mvp**: por instrução explícita
+  do usuário, a integração Omie.G-Click passou a ser implementada - ver
+  `artifacts/wjb-saas-mvp/fase-4/decisions.md` e `docs/api/integrations.md`.)*
 - [x] SAAS FASE 3 — Comunicação *(**completa em 2026-09-16/17**: **Tickets** — ver detalhe na
   FASE 4 abaixo, mesma feature vista dos dois lados. **Mensagens completo**: canal separado de
   Tickets de propósito (esclarecido com o usuário antes de construir) — uma conversa contínua e

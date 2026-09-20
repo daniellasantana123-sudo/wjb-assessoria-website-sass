@@ -8,6 +8,8 @@
 
 **Ação tomada**: o Artifact "Rollout Omie.G-Click" (criado numa etapa anterior desta mesma sessão) foi marcado como descontinuado (banner visível na própria página, dado gravado em `meta/project_status` no banco do artifact). Esta Fase 0 foi conduzida como auditoria geral da plataforma, sem recorte Omie.
 
+**Atualização (2026-09-20, Fase 4)**: esta decisão foi **revertida** por instrução explícita do usuário ao receber o prompt da Fase 4 - a integração Omie.G-Click passou a ser implementada. Ver `artifacts/wjb-saas-mvp/fase-4/decisions.md` D1 para o registro completo da reversão. Este bloco (D1) fica como está, sem edição retroativa, porque documenta com precisão o que era verdade em 2026-09-20 antes da Fase 4 - é histórico, não o estado atual do produto.
+
 ## D2 - Projeto Supabase real existe, mas está desconectado em todos os ambientes acessíveis
 
 **Achado**: `docs/product/roadmap.md` confirma um projeto Supabase real (`wjb-website-app`, sa-east-1) validado de ponta a ponta em 2026-09-16. Porém, nem o checkout local usado nesta auditoria (`.env.local` ausente) nem a produção na Hostinger (`hbuilds/config/.env` só tem `NEXT_PUBLIC_SITE_URL`) têm as credenciais desse projeto configuradas hoje.

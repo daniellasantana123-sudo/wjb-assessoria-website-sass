@@ -10,8 +10,10 @@ import { DocumentsList } from "@/components/documents/documents-list";
 import { CreateObligationForm } from "@/components/obligations/create-obligation-form";
 import { ObligationsCalendar } from "@/components/obligations/obligations-calendar";
 import { ObligationsList } from "@/components/obligations/obligations-list";
+import { OmieMappingPanel } from "@/components/integrations/omie-mapping-panel";
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
+import { getOmieMapping } from "@/lib/omie-gclick";
 
 export const metadata: Metadata = {
   title: "Empresa",
@@ -46,6 +48,8 @@ export default async function EmpresaDetailPage({
     .single();
 
   if (!tenant) notFound();
+
+  const omieMapping = await getOmieMapping(tenant.id);
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
@@ -104,6 +108,11 @@ export default async function EmpresaDetailPage({
       <div>
         <h2 className="text-foreground mb-4 text-sm font-semibold">Calendário</h2>
         <ObligationsCalendar tenantId={tenant.id} year={calendarYear} month={calendarMonth} />
+      </div>
+
+      <div className="border-border rounded-md border p-6">
+        <h2 className="text-foreground mb-4 text-sm font-semibold">Integração Omie.G-Click</h2>
+        <OmieMappingPanel tenantId={tenant.id} mapping={omieMapping} />
       </div>
     </Container>
   );

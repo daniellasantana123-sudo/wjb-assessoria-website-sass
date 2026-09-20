@@ -69,6 +69,14 @@ describe("hasPermission - cliente (tenant)", () => {
     expect(hasPermission(session, "audit.read", "owner")).toBe(false);
   });
 
+  it("cliente pode ver a integração Omie.G-Click, mas nunca gerenciá-la (Fase 4)", () => {
+    const session = clientSession();
+    for (const role of ["owner", "member"] as const) {
+      expect(hasPermission(session, "integrations.read", role)).toBe(true);
+      expect(hasPermission(session, "integrations.manage", role)).toBe(false);
+    }
+  });
+
   it("sem tenantRole, cliente não tem nenhuma permissão", () => {
     const session = clientSession();
     expect(getPermissions(session)).toEqual([]);

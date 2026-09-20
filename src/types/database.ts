@@ -13,6 +13,15 @@ export type DocumentCategory = "documento" | "guia";
 export type LeadStatus = "new" | "contacted" | "won" | "lost";
 export type TicketStatus = "open" | "in_progress" | "closed";
 export type AccountStatus = "active" | "suspended";
+export type OmieIntegrationStatus =
+  | "not_connected"
+  | "pending"
+  | "connected"
+  | "syncing"
+  | "synced"
+  | "conflict"
+  | "error"
+  | "disabled";
 
 export interface Database {
   public: {
@@ -412,6 +421,49 @@ export interface Database {
           },
         ];
       };
+      omie_client_mappings: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          external_client_id: string | null;
+          external_portal_url: string | null;
+          status: OmieIntegrationStatus;
+          last_synced_at: string | null;
+          last_error: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          tenant_id: string;
+          external_client_id?: string | null;
+          external_portal_url?: string | null;
+          status?: OmieIntegrationStatus;
+          last_synced_at?: string | null;
+          last_error?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["omie_client_mappings"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "omie_client_mappings_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: true;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "omie_client_mappings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -422,6 +474,7 @@ export interface Database {
       lead_status: LeadStatus;
       ticket_status: TicketStatus;
       account_status: AccountStatus;
+      omie_integration_status: OmieIntegrationStatus;
     };
     CompositeTypes: Record<string, never>;
   };

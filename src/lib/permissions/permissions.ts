@@ -40,7 +40,9 @@ export type Permission =
   | "messages.send"
   | "notifications.read"
   | "staff.manage"
-  | "audit.read";
+  | "audit.read"
+  | "integrations.read"
+  | "integrations.manage";
 
 const BASE_STAFF_PERMISSIONS: Permission[] = [
   "organizations.read",
@@ -61,6 +63,8 @@ const BASE_STAFF_PERMISSIONS: Permission[] = [
   "messages.send",
   "notifications.read",
   "audit.read",
+  "integrations.read",
+  "integrations.manage",
 ];
 
 const STAFF_PERMISSIONS: Record<StaffRole, Permission[]> = {
@@ -82,6 +86,7 @@ const TENANT_PERMISSIONS: Record<TenantMemberRole, Permission[]> = {
     "messages.read",
     "messages.send",
     "notifications.read",
+    "integrations.read",
   ],
   member: [
     "organizations.read",
@@ -94,6 +99,7 @@ const TENANT_PERMISSIONS: Record<TenantMemberRole, Permission[]> = {
     "messages.read",
     "messages.send",
     "notifications.read",
+    "integrations.read",
   ],
 };
 

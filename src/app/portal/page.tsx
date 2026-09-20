@@ -6,6 +6,7 @@ import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import { ObligationsMonthlyChart } from "@/components/portal/obligations-monthly-chart";
 import { PortalStatCard } from "@/components/portal/portal-stat-card";
+import { OmiePortalCta } from "@/components/portal/omie-portal-cta";
 import { requireSession } from "@/lib/auth/dal";
 import {
   getActiveTenant,
@@ -14,6 +15,7 @@ import {
   getTenantDashboardStats,
   getUpcomingObligations,
 } from "@/lib/tenant";
+import { getOmieMapping } from "@/lib/omie-gclick";
 
 export const metadata: Metadata = {
   title: "Visão geral",
@@ -50,11 +52,12 @@ export default async function PortalPage() {
     );
   }
 
-  const [stats, months, upcoming, categories] = await Promise.all([
+  const [stats, months, upcoming, categories, omieMapping] = await Promise.all([
     getTenantDashboardStats(tenant.id),
     getObligationsMonthlyBreakdown(tenant.id),
     getUpcomingObligations(tenant.id, 5),
     getDocumentsCategorySummary(tenant.id),
+    getOmieMapping(tenant.id),
   ]);
 
   const now = new Date();
@@ -62,14 +65,17 @@ export default async function PortalPage() {
 
   return (
     <Container className="flex flex-1 flex-col gap-6 py-10">
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">{tenant.name}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Painel de {monthNames[now.getMonth()]} de {now.getFullYear()} · {stats.obligationsPending}{" "}
-          obrigação{stats.obligationsPending === 1 ? "" : "ões"} pendente
-          {stats.obligationsPending === 1 ? "" : "s"} · {stats.documentsCount + stats.guiasCount}{" "}
-          documento{stats.documentsCount + stats.guiasCount === 1 ? "" : "s"} no total
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-foreground text-2xl font-semibold">{tenant.name}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Painel de {monthNames[now.getMonth()]} de {now.getFullYear()} · {stats.obligationsPending}{" "}
+            obrigação{stats.obligationsPending === 1 ? "" : "ões"} pendente
+            {stats.obligationsPending === 1 ? "" : "s"} · {stats.documentsCount + stats.guiasCount}{" "}
+            documento{stats.documentsCount + stats.guiasCount === 1 ? "" : "s"} no total
+          </p>
+        </div>
+        <OmiePortalCta mapping={omieMapping} />
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
