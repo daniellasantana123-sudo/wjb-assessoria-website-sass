@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, Building2, Contact, LifeBuoy, MessageCircle, ScrollText, Users } from "lucide-react";
+import {
+  Bell,
+  Building2,
+  Contact,
+  LifeBuoy,
+  MessageCircle,
+  ScrollText,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -54,6 +63,12 @@ const navCards = [
     icon: ScrollText,
     label: "Logs",
     description: "Auditoria de ações sensíveis (empresas, documentos, obrigações, leads)",
+  },
+  {
+    href: "/admin/seguranca",
+    icon: ShieldCheck,
+    label: "Segurança",
+    description: "Verificação em duas etapas para a sua conta",
   },
 ];
 

@@ -8,8 +8,8 @@ import { ObligationsMonthlyChart } from "@/components/portal/obligations-monthly
 import { PortalStatCard } from "@/components/portal/portal-stat-card";
 import { requireSession } from "@/lib/auth/dal";
 import {
+  getActiveTenant,
   getDocumentsCategorySummary,
-  getMyPrimaryTenant,
   getObligationsMonthlyBreakdown,
   getTenantDashboardStats,
   getUpcomingObligations,
@@ -35,7 +35,7 @@ const monthNames = [
  */
 export default async function PortalPage() {
   const session = await requireSession();
-  const tenant = await getMyPrimaryTenant(session.userId);
+  const tenant = await getActiveTenant(session.userId);
 
   if (!tenant) {
     return (

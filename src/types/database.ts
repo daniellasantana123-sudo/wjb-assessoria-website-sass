@@ -12,6 +12,7 @@ export type ObligationStatus = "pending" | "done";
 export type DocumentCategory = "documento" | "guia";
 export type LeadStatus = "new" | "contacted" | "won" | "lost";
 export type TicketStatus = "open" | "in_progress" | "closed";
+export type AccountStatus = "active" | "suspended";
 
 export interface Database {
   public: {
@@ -23,6 +24,7 @@ export interface Database {
           email: string;
           is_wjb_staff: boolean;
           staff_role: StaffRole | null;
+          status: AccountStatus;
           created_at: string;
         };
         Insert: {
@@ -31,6 +33,7 @@ export interface Database {
           email: string;
           is_wjb_staff?: boolean;
           staff_role?: StaffRole | null;
+          status?: AccountStatus;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
@@ -68,6 +71,7 @@ export interface Database {
           tenant_id: string;
           profile_id: string;
           role: TenantMemberRole;
+          status: AccountStatus;
           created_at: string;
         };
         Insert: {
@@ -75,6 +79,7 @@ export interface Database {
           tenant_id: string;
           profile_id: string;
           role?: TenantMemberRole;
+          status?: AccountStatus;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["tenant_members"]["Insert"]>;
@@ -416,6 +421,7 @@ export interface Database {
       obligation_status: ObligationStatus;
       lead_status: LeadStatus;
       ticket_status: TicketStatus;
+      account_status: AccountStatus;
     };
     CompositeTypes: Record<string, never>;
   };

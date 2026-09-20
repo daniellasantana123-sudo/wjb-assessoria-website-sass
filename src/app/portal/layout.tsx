@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { Building2 } from "lucide-react";
 
 import { Logo } from "@/components/navigation/logo";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { OrganizationSwitcher } from "@/components/portal/organization-switcher";
 import { PortalMobileNav } from "@/components/portal/portal-mobile-nav";
 import { isPortalNavItemActive, portalNavItems } from "@/config/portal-nav";
 import { requireSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
-import { getMyPrimaryTenant } from "@/lib/tenant";
+import { getActiveTenant, getMyOrganizations } from "@/lib/tenant";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,7 +21,10 @@ import { cn } from "@/lib/utils";
  */
 export default async function PortalLayout({ children }: LayoutProps<"/portal">) {
   const session = await requireSession();
-  const tenant = await getMyPrimaryTenant(session.userId);
+  const [organizations, activeTenant] = await Promise.all([
+    getMyOrganizations(session.userId),
+    getActiveTenant(session.userId),
+  ]);
   const pathname = (await headers()).get("x-pathname") ?? "/portal";
   const unreadCount = await getUnreadNotificationCount();
 
@@ -58,20 +61,12 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
         </nav>
 
         <div className="border-border flex flex-col gap-3 border-t p-4">
-          {tenant && (
-            <div className="flex items-center gap-2.5 px-1">
-              <span className="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
-                <Building2 aria-hidden="true" className="h-4 w-4" />
-              </span>
-              <span className="min-w-0">
-                <span className="text-foreground block truncate text-sm font-medium">
-                  {tenant.name}
-                </span>
-                <span className="text-muted-foreground block truncate text-xs">
-                  {session.fullName ?? session.email}
-                </span>
-              </span>
-            </div>
+          {activeTenant && (
+            <OrganizationSwitcher
+              organizations={organizations}
+              activeId={activeTenant.id}
+              userLabel={session.fullName ?? session.email}
+            />
           )}
           <div className="flex items-center justify-between gap-2 px-1">
             <Link

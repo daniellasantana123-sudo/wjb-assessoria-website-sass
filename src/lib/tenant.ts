@@ -1,24 +1,63 @@
 import "server-only";
 
+import { cookies } from "next/headers";
+
 import { createClient } from "@/lib/db/supabase/server";
+import type { TenantMemberRole } from "@/types/database";
+
+export interface MyOrganization {
+  id: string;
+  name: string;
+  cnpj: string;
+  role: TenantMemberRole;
+}
 
 /**
- * Empresa do usuário logado, pro Portal do Cliente — assume uma única
- * empresa por usuário (o caso comum hoje; múltiplas empresas ainda não tem
- * seletor de contexto na UI). Se pertencer a mais de uma, retorna a
- * primeira; ajustar quando existir esse seletor.
+ * Todas as empresas vinculadas ao usuário com vínculo ativo (não só a
+ * primeira) — base do organization switcher (Fase 2 do wjb-saas-mvp,
+ * 2026-09-20). Um vínculo `suspended` (ver migration 0016) não aparece
+ * aqui — a pessoa não deveria nem ver essa empresa como opção pra trocar,
+ * já que `getTenantRole()` bloquearia o acesso mesmo se ela trocasse.
+ *
+ * Substituiu `getMyPrimaryTenant()` (removida — ficou sem nenhum uso depois
+ * que todas as páginas do Portal passaram a usar `getActiveTenant()`).
  */
-export async function getMyPrimaryTenant(userId: string) {
+export async function getMyOrganizations(userId: string): Promise<MyOrganization[]> {
   const supabase = await createClient();
-  const { data: membership } = await supabase
+  const { data } = await supabase
     .from("tenant_members")
-    .select("tenants(id, name, cnpj)")
+    .select("role, tenants(id, name, cnpj)")
     .eq("profile_id", userId)
-    .limit(1)
-    .maybeSingle();
+    .eq("status", "active");
 
-  if (!membership) return null;
-  return Array.isArray(membership.tenants) ? membership.tenants[0] : membership.tenants;
+  return (data ?? [])
+    .map((row) => {
+      const tenant = Array.isArray(row.tenants) ? row.tenants[0] : row.tenants;
+      if (!tenant) return null;
+      return { id: tenant.id, name: tenant.name, cnpj: tenant.cnpj, role: row.role };
+    })
+    .filter((org): org is MyOrganization => org !== null);
+}
+
+export const ACTIVE_TENANT_COOKIE = "active_tenant_id";
+
+/**
+ * Empresa ATIVA do usuário (Fase 2 do wjb-saas-mvp, 2026-09-20 — organization
+ * switcher). O cookie é só uma preferência — nunca é confiado sozinho: toda
+ * leitura revalida contra as empresas reais do usuário (`getMyOrganizations`),
+ * então trocar o valor do cookie manualmente no browser não dá acesso a
+ * nenhuma empresa que a pessoa não seja de fato membro. Sem cookie válido,
+ * cai na primeira empresa (mesmo comportamento de antes do switcher existir).
+ */
+export async function getActiveTenant(userId: string): Promise<MyOrganization | null> {
+  const organizations = await getMyOrganizations(userId);
+  if (organizations.length === 0) return null;
+
+  const cookieStore = await cookies();
+  const activeId = cookieStore.get(ACTIVE_TENANT_COOKIE)?.value;
+  const active = activeId ? organizations.find((org) => org.id === activeId) : undefined;
+
+  return active ?? organizations[0];
 }
 
 export interface TenantDashboardStats {

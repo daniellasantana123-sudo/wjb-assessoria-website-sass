@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
- * Mocka a DAL de sessão e `getMyPrimaryTenant` (não o Supabase client
+ * Mocka a DAL de sessão e `getActiveTenant` (não o Supabase client
  * diretamente) — mesmo racional de `leads-api.test.ts`: testar
  * roteamento/formato de resposta sem depender de um Supabase real. A
  * cobertura de RLS/sessão de verdade é o `portal-auth.spec.ts` (Playwright).
@@ -13,9 +13,9 @@ vi.mock("@/lib/auth/dal", () => ({
   getTenantRole: getTenantRoleMock,
 }));
 
-const getMyPrimaryTenantMock = vi.fn();
+const getActiveTenantMock = vi.fn();
 vi.mock("@/lib/tenant", () => ({
-  getMyPrimaryTenant: getMyPrimaryTenantMock,
+  getActiveTenant: getActiveTenantMock,
 }));
 
 const { GET: getMe } = await import("@/app/api/me/route");
@@ -23,7 +23,7 @@ const { GET: getMe } = await import("@/app/api/me/route");
 beforeEach(() => {
   getSessionMock.mockReset();
   getTenantRoleMock.mockReset();
-  getMyPrimaryTenantMock.mockReset();
+  getActiveTenantMock.mockReset();
 });
 
 describe("GET /api/me", () => {
@@ -49,7 +49,7 @@ describe("GET /api/me", () => {
     expect(json.organizationId).toBeNull();
     expect(json.role).toBeNull();
     expect(json.permissions).toContain("staff.manage");
-    expect(getMyPrimaryTenantMock).not.toHaveBeenCalled();
+    expect(getActiveTenantMock).not.toHaveBeenCalled();
   });
 
   it("cliente com empresa recebe organizationId, role e permissões de tenant", async () => {
@@ -60,7 +60,12 @@ describe("GET /api/me", () => {
       isWjbStaff: false,
       staffRole: null,
     });
-    getMyPrimaryTenantMock.mockResolvedValue({ id: "tenant-1", name: "Empresa X", cnpj: "123" });
+    getActiveTenantMock.mockResolvedValue({
+      id: "tenant-1",
+      name: "Empresa X",
+      cnpj: "123",
+      role: "owner",
+    });
     getTenantRoleMock.mockResolvedValue("owner");
 
     const response = await getMe();
@@ -80,7 +85,7 @@ describe("GET /api/me", () => {
       isWjbStaff: false,
       staffRole: null,
     });
-    getMyPrimaryTenantMock.mockResolvedValue(null);
+    getActiveTenantMock.mockResolvedValue(null);
 
     const response = await getMe();
     const json = await response.json();

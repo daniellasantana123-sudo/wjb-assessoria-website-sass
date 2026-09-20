@@ -37,9 +37,19 @@ export const getSession = cache(async (): Promise<Session | null> => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, is_wjb_staff, staff_role")
+    .select("full_name, is_wjb_staff, staff_role, status")
     .eq("id", user.id)
     .single();
+
+  /*
+   * Conta suspensa (Fase 2 do wjb-saas-mvp, 2026-09-20) — tratada como sem
+   * sessão. O JWT em si continua válido até expirar (é isso que
+   * `admin.updateUserById(..., { ban_duration })` também endereça, ao
+   * bloquear a renovação), mas a checagem aqui é imediata e independe
+   * disso: a PRÓXIMA página carregada já vê a conta como deslogada, porque
+   * `status` é lido fresco do banco a cada request, não fica no token.
+   */
+  if (profile?.status === "suspended") return null;
 
   return {
     userId: user.id,
@@ -50,10 +60,34 @@ export const getSession = cache(async (): Promise<Session | null> => {
   };
 });
 
+/**
+ * Nível de segurança da autenticação (AAL) da sessão atual (Fase 2 do
+ * wjb-saas-mvp, 2026-09-20 — preparação de MFA, sem exigir de ninguém
+ * ainda). Memoizado como `getSession()` — chamada sem JWT explícito, o
+ * próprio SDK documenta que isso é "fairly quick (microseconds) and
+ * rarely uses the network", então rodar em toda página protegida não pesa.
+ */
+const getAal = cache(async () => {
+  const supabase = await createClient();
+  return supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+});
+
 /** Exige sessão ativa; redireciona para /login quando não houver. */
 export async function requireSession(): Promise<Session> {
   const session = await getSession();
   if (!session) redirect("/login");
+
+  /*
+   * Quem tem um fator MFA verificado mas a sessão ainda está em aal1 (login
+   * recente só com senha) precisa completar o desafio antes de acessar
+   * qualquer página protegida — `/verificar-mfa` não passa por aqui (lê a
+   * sessão direto via `getSession()`), então não há loop de redirect.
+   */
+  const { data: aal } = await getAal();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== aal.nextLevel) {
+    redirect("/verificar-mfa");
+  }
+
   return session;
 }
 
@@ -74,12 +108,14 @@ export const getTenantRole = cache(
     const supabase = await createClient();
     const { data } = await supabase
       .from("tenant_members")
-      .select("role")
+      .select("role, status")
       .eq("tenant_id", tenantId)
       .eq("profile_id", session.userId)
       .single();
 
-    return data?.role ?? null;
+    // Vínculo suspenso (Fase 2) — trata como se não fosse membro só desta empresa.
+    if (!data || data.status === "suspended") return null;
+    return data.role;
   },
 );
 

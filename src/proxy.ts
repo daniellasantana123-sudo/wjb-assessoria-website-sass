@@ -36,6 +36,7 @@ const GATED_PREFIXES = [
   "/login",
   "/definir-senha",
   "/recuperar-senha",
+  "/verificar-mfa",
   "/portal",
   "/admin",
   "/auth",

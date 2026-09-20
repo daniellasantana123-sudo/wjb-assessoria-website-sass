@@ -132,3 +132,64 @@ export async function revokeStaffAccess(profileId: string) {
 
   revalidatePath("/admin/usuarios");
 }
+
+/**
+ * Suspensão de conta (Fase 2 do wjb-saas-mvp, 2026-09-20) — mais severa que
+ * `revokeStaffAccess`: bloqueia o LOGIN inteiro da pessoa (não só o papel de
+ * staff), via `profiles.status` (migration 0016), checado em `getSession()`.
+ * A checagem própria do projeto é o que garante o bloqueio de verdade e é
+ * imediata (próxima página carregada); a chamada a `updateUserById` com
+ * `ban_duration` é uma camada extra de defesa em profundidade usando o
+ * próprio mecanismo do Supabase Auth, best-effort — não é o mecanismo do
+ * qual este projeto depende pra bloquear o acesso.
+ */
+export async function suspendAccount(profileId: string) {
+  const session = await requireStaffSession();
+  if (!isSuperAdmin(session)) return;
+  if (profileId === session.userId) return; // não se auto-suspende por engano.
+
+  const supabase = await createClient();
+  await supabase.from("profiles").update({ status: "suspended" }).eq("id", profileId);
+
+  const admin = createAdminClient();
+  const { error: banError } = await admin.auth.admin.updateUserById(profileId, {
+    ban_duration: "876000h", // ~100 anos — efetivamente indefinido, até reativar.
+  });
+  if (banError) {
+    console.error("[staff] falha ao bloquear login no Supabase Auth (best-effort):", banError);
+  }
+
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    action: "account.suspended",
+    entity: "profile",
+    entity_id: profileId,
+  });
+
+  revalidatePath("/admin/usuarios");
+}
+
+export async function reactivateAccount(profileId: string) {
+  const session = await requireStaffSession();
+  if (!isSuperAdmin(session)) return;
+
+  const supabase = await createClient();
+  await supabase.from("profiles").update({ status: "active" }).eq("id", profileId);
+
+  const admin = createAdminClient();
+  const { error: banError } = await admin.auth.admin.updateUserById(profileId, {
+    ban_duration: "none",
+  });
+  if (banError) {
+    console.error("[staff] falha ao remover bloqueio no Supabase Auth (best-effort):", banError);
+  }
+
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    action: "account.reactivated",
+    entity: "profile",
+    entity_id: profileId,
+  });
+
+  revalidatePath("/admin/usuarios");
+}

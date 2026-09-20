@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getSession, getTenantRole } from "@/lib/auth/dal";
-import { getMyPrimaryTenant } from "@/lib/tenant";
+import { getActiveTenant } from "@/lib/tenant";
 import { getPermissions } from "@/lib/permissions/permissions";
 
 /**
@@ -10,9 +10,10 @@ import { getPermissions } from "@/lib/permissions/permissions";
  * `getSession()` (não `requireSession()`, que redireciona — inadequado
  * pra uma rota JSON) e responde 401 sem sessão, em vez de redirecionar.
  *
- * `organizationId`/`role` só existem pro cliente (não staff), porque staff
- * não é `tenant_member` de nenhuma empresa — acessa via RLS de `is_staff()`,
- * não via vínculo de tenant (ver `docs/product/roadmap.md`, SAAS FASE 1).
+ * `organizationId`/`role` refletem a empresa ATIVA (Fase 2 — organization
+ * switcher), não sempre a primeira. Só existem pro cliente (não staff),
+ * porque staff não é `tenant_member` de nenhuma empresa — acessa via RLS
+ * de `is_staff()`, não via vínculo de tenant.
  */
 export async function GET() {
   const session = await getSession();
@@ -24,7 +25,7 @@ export async function GET() {
   let role: "owner" | "member" | null = null;
 
   if (!session.isWjbStaff) {
-    const tenant = await getMyPrimaryTenant(session.userId);
+    const tenant = await getActiveTenant(session.userId);
     if (tenant) {
       organizationId = tenant.id;
       role = await getTenantRole(tenant.id);

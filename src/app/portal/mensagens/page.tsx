@@ -4,7 +4,7 @@ import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { MessageThread } from "@/components/messages/message-thread";
 import { requireSession } from "@/lib/auth/dal";
-import { getMyPrimaryTenant } from "@/lib/tenant";
+import { getActiveTenant } from "@/lib/tenant";
 
 export const metadata: Metadata = {
   title: "Mensagens",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
  */
 export default async function PortalMensagensPage() {
   const session = await requireSession();
-  const tenant = await getMyPrimaryTenant(session.userId);
+  const tenant = await getActiveTenant(session.userId);
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">

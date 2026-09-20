@@ -64,7 +64,7 @@ export default async function EmpresaDetailPage({
 
       <div>
         <h2 className="text-foreground mb-4 text-sm font-semibold">Membros</h2>
-        <MembersList tenantId={tenant.id} />
+        <MembersList tenantId={tenant.id} canManage />
       </div>
 
       <div className="border-border rounded-md border p-6">

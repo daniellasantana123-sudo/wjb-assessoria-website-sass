@@ -5,7 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { CreateTicketForm } from "@/components/tickets/create-ticket-form";
 import { TicketsList } from "@/components/tickets/tickets-list";
 import { requireSession } from "@/lib/auth/dal";
-import { getMyPrimaryTenant } from "@/lib/tenant";
+import { getActiveTenant } from "@/lib/tenant";
 
 export const metadata: Metadata = {
   title: "Suporte",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function PortalSuportePage() {
   const session = await requireSession();
-  const tenant = await getMyPrimaryTenant(session.userId);
+  const tenant = await getActiveTenant(session.userId);
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">

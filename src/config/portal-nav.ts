@@ -7,6 +7,7 @@ import {
   LifeBuoy,
   MessageCircle,
   Receipt,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -28,6 +29,7 @@ export const portalNavItems: PortalNavItem[] = [
   { href: "/portal/calendario", label: "Calendário", icon: CalendarDays },
   { href: "/portal/mensagens", label: "Mensagens", icon: MessageCircle },
   { href: "/portal/suporte", label: "Suporte", icon: LifeBuoy },
+  { href: "/portal/seguranca", label: "Segurança", icon: ShieldCheck },
 ];
 
 /**

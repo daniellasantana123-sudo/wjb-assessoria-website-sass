@@ -5,7 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { ObligationsCalendar } from "@/components/obligations/obligations-calendar";
 import { requireSession } from "@/lib/auth/dal";
-import { getMyPrimaryTenant } from "@/lib/tenant";
+import { getActiveTenant } from "@/lib/tenant";
 
 export const metadata: Metadata = {
   title: "Calendário",
@@ -24,7 +24,7 @@ export default async function PortalCalendarioPage({
   searchParams: Promise<{ year?: string | string[]; month?: string | string[] }>;
 }) {
   const session = await requireSession();
-  const tenant = await getMyPrimaryTenant(session.userId);
+  const tenant = await getActiveTenant(session.userId);
   const params = await searchParams;
 
   const now = new Date();

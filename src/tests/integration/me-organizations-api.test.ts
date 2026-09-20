@@ -5,18 +5,16 @@ vi.mock("@/lib/auth/dal", () => ({
   getSession: getSessionMock,
 }));
 
-const eqMock = vi.fn();
-const selectMock = vi.fn(() => ({ eq: eqMock }));
-const fromMock = vi.fn(() => ({ select: selectMock }));
-vi.mock("@/lib/db/supabase/server", () => ({
-  createClient: vi.fn().mockResolvedValue({ from: fromMock }),
+const getMyOrganizationsMock = vi.fn();
+vi.mock("@/lib/tenant", () => ({
+  getMyOrganizations: getMyOrganizationsMock,
 }));
 
 const { GET: getMyOrganizations } = await import("@/app/api/me/organizations/route");
 
 beforeEach(() => {
   getSessionMock.mockReset();
-  eqMock.mockReset();
+  getMyOrganizationsMock.mockReset();
 });
 
 describe("GET /api/me/organizations", () => {
@@ -32,14 +30,14 @@ describe("GET /api/me/organizations", () => {
     const json = await response.json();
 
     expect(json.organizations).toEqual([]);
-    expect(fromMock).not.toHaveBeenCalled();
+    expect(getMyOrganizationsMock).not.toHaveBeenCalled();
   });
 
   it("cliente recebe as empresas vinculadas com o papel de cada uma", async () => {
     getSessionMock.mockResolvedValue({ userId: "client-1", isWjbStaff: false });
-    eqMock.mockResolvedValue({
-      data: [{ role: "owner", tenants: { id: "tenant-1", name: "Empresa X", cnpj: "123" } }],
-    });
+    getMyOrganizationsMock.mockResolvedValue([
+      { id: "tenant-1", name: "Empresa X", cnpj: "123", role: "owner" },
+    ]);
 
     const response = await getMyOrganizations();
     const json = await response.json();

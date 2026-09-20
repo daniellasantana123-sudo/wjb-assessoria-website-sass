@@ -151,3 +151,54 @@ export async function inviteMember(
   revalidatePath(`/admin/empresas/${tenantId}`);
   return { success: "Convite enviado." };
 }
+
+/**
+ * Suspende o vínculo de uma pessoa com UMA empresa específica (Fase 2 do
+ * wjb-saas-mvp, 2026-09-20) — diferente de suspender a conta inteira
+ * (`src/actions/staff.ts::suspendAccount`): a pessoa continua podendo
+ * logar e acessar outras empresas de que seja membro, só perde acesso a
+ * esta. Exclusivo de staff, mesmo nível de `tenant_members_update_staff_only`
+ * (0006_tenant_owner_can_invite.sql) — mais sensível que convidar, por isso
+ * não é liberado pro `owner` da própria empresa.
+ */
+export async function suspendMember(tenantId: string, profileId: string) {
+  const session = await requireStaffSession();
+
+  const supabase = await createClient();
+  await supabase
+    .from("tenant_members")
+    .update({ status: "suspended" })
+    .eq("tenant_id", tenantId)
+    .eq("profile_id", profileId);
+
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    tenant_id: tenantId,
+    action: "tenant_member.suspended",
+    entity: "tenant_member",
+    entity_id: profileId,
+  });
+
+  revalidatePath(`/admin/empresas/${tenantId}`);
+}
+
+export async function reactivateMember(tenantId: string, profileId: string) {
+  const session = await requireStaffSession();
+
+  const supabase = await createClient();
+  await supabase
+    .from("tenant_members")
+    .update({ status: "active" })
+    .eq("tenant_id", tenantId)
+    .eq("profile_id", profileId);
+
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    tenant_id: tenantId,
+    action: "tenant_member.reactivated",
+    entity: "tenant_member",
+    entity_id: profileId,
+  });
+
+  revalidatePath(`/admin/empresas/${tenantId}`);
+}

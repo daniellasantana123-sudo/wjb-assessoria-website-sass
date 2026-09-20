@@ -5,7 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { MembersList } from "@/components/tenant/members-list";
 import { InviteMemberForm } from "@/components/tenant/invite-member-form";
 import { requireSession, getTenantRole } from "@/lib/auth/dal";
-import { getMyPrimaryTenant } from "@/lib/tenant";
+import { getActiveTenant } from "@/lib/tenant";
 
 export const metadata: Metadata = {
   title: "Usuários",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
  */
 export default async function PortalUsuariosPage() {
   const session = await requireSession();
-  const tenant = await getMyPrimaryTenant(session.userId);
+  const tenant = await getActiveTenant(session.userId);
   const role = tenant ? await getTenantRole(tenant.id) : null;
 
   return (

@@ -5,7 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { UploadDocumentForm } from "@/components/documents/upload-document-form";
 import { DocumentsList } from "@/components/documents/documents-list";
 import { requireSession } from "@/lib/auth/dal";
-import { getMyPrimaryTenant } from "@/lib/tenant";
+import { getActiveTenant } from "@/lib/tenant";
 
 export const metadata: Metadata = {
   title: "Guias",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
  */
 export default async function PortalGuiasPage() {
   const session = await requireSession();
-  const tenant = await getMyPrimaryTenant(session.userId);
+  const tenant = await getActiveTenant(session.userId);
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
