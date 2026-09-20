@@ -7,6 +7,7 @@ import { createClient } from "@/lib/db/supabase/server";
 import { createAdminClient } from "@/lib/db/supabase/admin";
 import { requireStaffSession, requireTenantAccess, getTenantRole } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
+import { notifyAccountSecurity, notifyInvitation } from "@/lib/notifications";
 import type { TenantMemberRole } from "@/types/database";
 import {
   createTenantSchema,
@@ -250,6 +251,14 @@ export async function inviteMember(
     metadata: { email: validated.data.email, role: validated.data.role },
   });
 
+  // Notificação de convite (Fase 6) - só no convite inicial, ver decisions.md D3.
+  await notifyInvitation({
+    recipientId: profileId,
+    recipientEmail: validated.data.email,
+    tenantId,
+    link: "/portal",
+  });
+
   revalidatePath(`/admin/empresas/${tenantId}`);
   return { success: "Convite enviado." };
 }
@@ -281,6 +290,8 @@ export async function suspendMember(tenantId: string, profileId: string) {
     entity_id: profileId,
   });
 
+  await notifyMemberSecurityChange(supabase, tenantId, profileId, "suspenso");
+
   revalidatePath(`/admin/empresas/${tenantId}`);
 }
 
@@ -302,7 +313,30 @@ export async function reactivateMember(tenantId: string, profileId: string) {
     entity_id: profileId,
   });
 
+  await notifyMemberSecurityChange(supabase, tenantId, profileId, "reativado");
+
   revalidatePath(`/admin/empresas/${tenantId}`);
+}
+
+/** Notificação de segurança (Fase 6) - avisa a pessoa afetada, não quem agiu. */
+async function notifyMemberSecurityChange(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tenantId: string,
+  profileId: string,
+  outcome: "suspenso" | "reativado",
+) {
+  const [{ data: tenant }, { data: profile }] = await Promise.all([
+    supabase.from("tenants").select("name").eq("id", tenantId).maybeSingle(),
+    supabase.from("profiles").select("email").eq("id", profileId).maybeSingle(),
+  ]);
+
+  await notifyAccountSecurity({
+    recipientId: profileId,
+    recipientEmail: profile?.email ?? null,
+    tenantId,
+    message: `Seu acesso à empresa ${tenant?.name ?? ""} foi ${outcome} pela WJB.`,
+    link: "/portal/seguranca",
+  });
 }
 
 /**

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ObligationsMonthlyChart } from "@/components/portal/obligations-monthly-chart";
 import { PortalStatCard } from "@/components/portal/portal-stat-card";
 import { OmiePortalCta } from "@/components/portal/omie-portal-cta";
+import { SupportCard } from "@/components/portal/support-card";
 import { requireSession } from "@/lib/auth/dal";
 import {
   getActiveTenant,
@@ -240,6 +241,8 @@ export default async function PortalPage() {
           )}
         </div>
       </div>
+
+      <SupportCard />
     </Container>
   );
 }

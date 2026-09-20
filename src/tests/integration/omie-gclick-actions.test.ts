@@ -19,6 +19,11 @@ vi.mock("@/lib/feature-flags", () => ({
   isFeatureEnabled: isFeatureEnabledMock,
 }));
 
+const notifyIntegrationStatusMock = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/lib/notifications", () => ({
+  notifyIntegrationStatus: notifyIntegrationStatusMock,
+}));
+
 const tenantsMaybeSingleMock = vi.fn();
 const mappingMaybeSingleMock = vi.fn();
 const mappingUpsertMock = vi.fn().mockResolvedValue({ error: null });
@@ -183,6 +188,9 @@ describe("syncOmieClient", () => {
       2,
       expect.objectContaining({ status: "error", last_error: "no-provider" }),
       { onConflict: "tenant_id" },
+    );
+    expect(notifyIntegrationStatusMock).toHaveBeenCalledWith(
+      expect.objectContaining({ excludeActorId: "staff-1" }),
     );
   });
 });

@@ -2,7 +2,7 @@
 
 ## Fase atual
 
-**Fase 5 - Console Admin WJB**: concluída em 2026-09-20.
+**Fase 6 - Notificações e suporte**: concluída em 2026-09-20.
 
 ## Progresso
 
@@ -14,44 +14,39 @@
 | Fase 3 - Documentos | Concluída | 2026-09-20 |
 | Fase 4 - Omie.G-Click MVP | Concluída | 2026-09-20 |
 | Fase 5 - Console Admin WJB | Concluída | 2026-09-20 |
+| Fase 6 - Notificações e suporte | Concluída | 2026-09-20 |
 
 ## Arquivos alterados nesta fase
 
-- `supabase/migrations/0018_admin_console.sql` - novo (`tenants.status`, fix de `my_tenant_ids()`/`is_tenant_owner()`, tabela `feature_flags`).
-- `src/types/database.ts` - `tenants.status`, `feature_flags`, `FeatureFlagKey`.
-- `src/lib/auth/dal.ts` - `getTenantRole` também checa `tenants.status`.
-- `src/lib/feature-flags.ts`, `src/actions/feature-flags.ts` - novos.
-- `src/actions/tenants.ts` - `updateTenant`, `suspendTenant`, `reactivateTenant`, `updateMemberRole`, `revokeMemberAccess`, `resendMemberInvite`.
-- `src/actions/staff.ts` - `resendStaffInvite`.
-- `src/actions/documents.ts`, `src/lib/notifications.ts`, `src/actions/omie-gclick.ts` - gate de feature flag.
-- `src/integrations/omie-gclick/{types,provider,omie.adapter,index}.ts` - `testConnection`/`isOmieConfigured` novos.
-- `src/lib/omie-gclick.ts` - `listOmieMappings`.
-- `src/lib/audit-log.ts` - `listAuditLog(filters)`, `listTenantOptions`.
-- `src/lib/permissions/permissions.ts` - `tenants.suspend`, `feature_flags.manage` novas.
-- `src/components/admin/{edit-tenant-form,feature-flags-panel}.tsx`, `src/components/integrations/omie-connection-test.tsx` - novos.
-- `src/components/tenant/members-list.tsx`, `src/components/staff/staff-list.tsx` - botões novos (trocar papel, revogar, reenviar convite).
-- `src/app/(site)/admin/{empresas/page.tsx,empresas/[id]/page.tsx,logs/page.tsx,page.tsx}` - busca, edição, suspensão, filtros, nav card.
-- `src/app/(site)/admin/integracoes/page.tsx` - novo.
-- `src/app/portal/page.tsx` - `OmiePortalCta` também lê a feature flag.
-- 3 arquivos de teste novos (`admin-console-actions`, `feature-flags`, `audit-log`) + testes adicionados em 3 arquivos existentes.
-- `artifacts/wjb-saas-mvp/fase-5/*` - criado.
+- `supabase/migrations/0019_notification_enhancements.sql` - novo (`title`, `metadata_sanitized`).
+- `src/types/database.ts` - `notifications` atualizado.
+- `src/lib/notifications.ts` - reescrito (`dispatchNotification`, `resolveCounterpartRecipients`, `notifyInvitation`, `notifyDocumentAvailable`, `notifyIntegrationStatus`, `notifyAccountSecurity`, `markNotificationAsReadAndGetLink`).
+- `src/actions/notifications.ts` - novo (`markAllNotificationsRead`).
+- `src/app/api/notifications/[id]/read/route.ts` - novo.
+- `src/components/notifications/notifications-list.tsx` - reescrito (marcar lida/todas explícitos).
+- `src/components/portal/support-card.tsx` - novo ("Precisa de ajuda?").
+- `src/app/portal/page.tsx` - `SupportCard` no Dashboard.
+- `src/actions/tenants.ts`, `src/actions/staff.ts`, `src/actions/documents.ts`, `src/actions/omie-gclick.ts` - disparo de notificação wireado em convite/documento/integração/segurança.
+- `src/proxy.ts` - `/api/notifications` adicionado ao gate do SaaS.
+- 3 arquivos de teste novos (`notifications` unit, `notifications-read-api`, `invite-notifications`) + mocks/asserções atualizados em 3 arquivos existentes.
+- `artifacts/wjb-saas-mvp/fase-6/*` - criado.
 
 Nenhuma dependência npm nova.
 
 ## Testes
 
-Lint, typecheck, 147 testes (116 anteriores + 31 novos) e build de produção - todos passando. Detalhe completo em `fase-5/test-report.md`.
+Lint, typecheck, 170 testes (147 anteriores + 23 novos) e build de produção - todos passando. Detalhe completo em `fase-6/test-report.md`.
 
 ## Riscos
 
-- Herdado da Fase 0: credenciais do projeto Supabase real ausentes em todos os ambientes acessíveis - console admin só testado via mock, não contra banco real.
-- Herdado da Fase 4: credenciais Omie (`OMIE_APP_KEY`/`OMIE_APP_SECRET`) ausentes - `testConnection` nunca chamado contra a API real.
-- `resendMemberInvite`/`resendStaffInvite` não testados contra o caso real "convite já aceito" - ver `fase-5/decisions.md` D7.
-- Suspender uma empresa é imediato e sem nenhum aviso automático ao cliente (e-mail/notificação) - ver `fase-5/phase-handoff.md`.
+- Herdado da Fase 0: credenciais do projeto Supabase real ausentes em todos os ambientes acessíveis - notificações só testadas via mock, não contra banco/e-mail reais.
+- Herdado da Fase 5 de integrações: `RESEND_API_KEY`/`EMAIL_FROM` ausentes em produção - todo e-mail desta fase cai no adapter no-op até isso ser configurado.
+- Mudança de comportamento perceptível: "marcar como lida" deixou de ser automático ao visitar a página - ver `fase-6/decisions.md` D1.
+- Mobile não verificado visualmente nesta sessão (sem ferramenta de navegador) - ver `fase-6/decisions.md` D7.
 
 ## Bloqueios
 
-Nenhum bloqueio impede a conclusão da Fase 5.
+Nenhum bloqueio impede a conclusão da Fase 6.
 
 ## Próxima fase
 

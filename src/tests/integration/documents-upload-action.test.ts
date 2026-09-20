@@ -18,6 +18,11 @@ vi.mock("@/lib/feature-flags", () => ({
   isFeatureEnabled: isFeatureEnabledMock,
 }));
 
+const notifyDocumentAvailableMock = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/lib/notifications", () => ({
+  notifyDocumentAvailable: notifyDocumentAvailableMock,
+}));
+
 const revalidatePathMock = vi.fn();
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 
@@ -134,6 +139,9 @@ describe("uploadDocument", () => {
       expect.objectContaining({ action: "document.uploaded", tenant_id: "tenant-1" }),
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/portal/documentos");
+    expect(notifyDocumentAvailableMock).toHaveBeenCalledWith(
+      expect.objectContaining({ tenantId: "tenant-1", fileName: "contrato.pdf" }),
+    );
   });
 
   it("remove o arquivo do Storage se o insert no banco falhar (não deixa órfão)", async () => {

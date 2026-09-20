@@ -42,6 +42,7 @@ const GATED_PREFIXES = [
   "/auth",
   "/api/me",
   "/api/documents",
+  "/api/notifications",
 ];
 
 function isSaasGated(pathname: string) {

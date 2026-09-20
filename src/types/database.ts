@@ -391,8 +391,10 @@ export interface Database {
           recipient_id: string;
           tenant_id: string | null;
           type: string;
+          title: string;
           body: string;
           link: string;
+          metadata_sanitized: Record<string, unknown> | null;
           read_at: string | null;
           created_at: string;
         };
@@ -401,8 +403,10 @@ export interface Database {
           recipient_id: string;
           tenant_id?: string | null;
           type: string;
+          title?: string;
           body: string;
           link: string;
+          metadata_sanitized?: Record<string, unknown> | null;
           read_at?: string | null;
           created_at?: string;
         };

@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/permissions/permissions";
 import { getOmieGClickAdapter } from "@/integrations/omie-gclick";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { notifyIntegrationStatus } from "@/lib/notifications";
 
 export type OmieActionState = { error: string } | { success: string } | undefined;
 
@@ -150,6 +151,12 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
   revalidatePath(`/admin/empresas/${tenantId}`);
 
   if (!result.ok) {
+    // Notificação de "status de integração" (Fase 6) - avisa o resto do time (quem clicou já viu o resultado inline).
+    await notifyIntegrationStatus({
+      message: `Falha ao sincronizar ${tenant.name} com o Omie.G-Click (${result.error ?? "erro desconhecido"}).`,
+      link: `/admin/empresas/${tenantId}`,
+      excludeActorId: session.userId,
+    });
     return { error: `Falha ao sincronizar com o Omie.G-Click (${result.error ?? "erro desconhecido"}).` };
   }
   return { success: "Sincronizado com o Omie.G-Click." };

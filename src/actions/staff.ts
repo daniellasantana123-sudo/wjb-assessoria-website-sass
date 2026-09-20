@@ -6,6 +6,7 @@ import { createClient } from "@/lib/db/supabase/server";
 import { createAdminClient } from "@/lib/db/supabase/admin";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { isSuperAdmin } from "@/lib/permissions/roles";
+import { notifyAccountSecurity, notifyInvitation } from "@/lib/notifications";
 import { inviteStaffSchema, type InviteStaffValues } from "@/lib/validation/staff";
 import type { StaffRole } from "@/types/database";
 
@@ -87,6 +88,13 @@ export async function inviteStaffMember(
     entity: "profile",
     entity_id: profileId,
     metadata: { email: validated.data.email, staff_role: validated.data.staffRole },
+  });
+
+  // Notificação de convite (Fase 6) - só no convite inicial, ver decisions.md D3.
+  await notifyInvitation({
+    recipientId: profileId,
+    recipientEmail: validated.data.email,
+    link: "/admin",
   });
 
   revalidatePath("/admin/usuarios");
@@ -210,6 +218,8 @@ export async function suspendAccount(profileId: string) {
     entity_id: profileId,
   });
 
+  await notifyAccountStatusChange(supabase, profileId, "suspensa");
+
   revalidatePath("/admin/usuarios");
 }
 
@@ -235,5 +245,27 @@ export async function reactivateAccount(profileId: string) {
     entity_id: profileId,
   });
 
+  await notifyAccountStatusChange(supabase, profileId, "reativada");
+
   revalidatePath("/admin/usuarios");
+}
+
+/** Notificação de segurança (Fase 6) - avisa a própria pessoa afetada, por e-mail (pode estar sem conseguir logar). */
+async function notifyAccountStatusChange(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  profileId: string,
+  outcome: "suspensa" | "reativada",
+) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  await notifyAccountSecurity({
+    recipientId: profileId,
+    recipientEmail: profile?.email ?? null,
+    message: `Sua conta foi ${outcome} pela WJB.`,
+    link: "/admin/seguranca",
+  });
 }

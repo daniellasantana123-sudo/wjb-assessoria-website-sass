@@ -13,15 +13,28 @@ vi.mock("@/lib/permissions/roles", () => ({
 const revalidatePathMock = vi.fn();
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 
+const notifyAccountSecurityMock = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/lib/notifications", () => ({
+  notifyAccountSecurity: notifyAccountSecurityMock,
+}));
+
 const profilesUpdateEqMock = vi.fn().mockResolvedValue({ error: null });
 const tenantMembersUpdateEqMock = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) });
 const auditInsertMock = vi.fn().mockResolvedValue({ error: null });
+const profilesMaybeSingleMock = vi.fn().mockResolvedValue({ data: { email: "pessoa@empresa.com.br" } });
+const tenantsMaybeSingleMock = vi.fn().mockResolvedValue({ data: { name: "Empresa X" } });
 const fromMock = vi.fn((table: string) => {
   if (table === "profiles") {
-    return { update: vi.fn(() => ({ eq: profilesUpdateEqMock })) };
+    return {
+      update: vi.fn(() => ({ eq: profilesUpdateEqMock })),
+      select: () => ({ eq: () => ({ maybeSingle: profilesMaybeSingleMock }) }),
+    };
   }
   if (table === "tenant_members") {
     return { update: vi.fn(() => ({ eq: tenantMembersUpdateEqMock })) };
+  }
+  if (table === "tenants") {
+    return { select: () => ({ eq: () => ({ maybeSingle: tenantsMaybeSingleMock }) }) };
   }
   if (table === "audit_log") {
     return { insert: auditInsertMock };
@@ -81,6 +94,9 @@ describe("suspendAccount / reactivateAccount", () => {
       expect.objectContaining({ action: "account.suspended", entity_id: "profile-2" }),
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin/usuarios");
+    expect(notifyAccountSecurityMock).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientId: "profile-2", recipientEmail: "pessoa@empresa.com.br" }),
+    );
   });
 
   it("reativa: atualiza profiles.status e remove o ban_duration", async () => {
@@ -111,6 +127,9 @@ describe("suspendMember / reactivateMember", () => {
       }),
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin/empresas/tenant-1");
+    expect(notifyAccountSecurityMock).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientId: "profile-2", tenantId: "tenant-1" }),
+    );
   });
 
   it("reativa o vínculo com a empresa", async () => {

@@ -8,6 +8,7 @@ import { getAntivirusAdapter } from "@/integrations/antivirus";
 import { isAllowedMimeType, sanitizeFileName } from "@/lib/documents";
 import { hasPermission } from "@/lib/permissions/permissions";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { notifyDocumentAvailable } from "@/lib/notifications";
 import type { DocumentCategory } from "@/types/database";
 
 export type DocumentActionState = { error: string } | undefined;
@@ -98,6 +99,15 @@ export async function uploadDocument(
     entity: "document",
     entity_id: storagePath,
     metadata: { file_name: safeName, size_bytes: file.size },
+  });
+
+  // Notificação de "documento disponível" (Fase 6) - avisa a contraparte, nunca o próprio autor.
+  await notifyDocumentAvailable({
+    tenantId,
+    actorId: session.userId,
+    actorIsStaff: session.isWjbStaff,
+    fileName: safeName,
+    category,
   });
 
   revalidatePath(`/portal/documentos`);
