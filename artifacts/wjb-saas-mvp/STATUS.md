@@ -2,7 +2,7 @@
 
 ## Fase atual
 
-**Fase 2 - Auth, onboarding e Dashboard**: concluída em 2026-09-20.
+**Fase 3 - Documentos**: concluída em 2026-09-20.
 
 ## Progresso
 
@@ -11,39 +11,38 @@
 | Fase 0 - Auditoria do estado atual | Concluída | 2026-09-20 |
 | Fase 1 - Fundação Backend SaaS | Concluída | 2026-09-20 |
 | Fase 2 - Auth, onboarding e Dashboard | Concluída | 2026-09-20 |
+| Fase 3 - Documentos | Concluída | 2026-09-20 |
 
 ## Arquivos alterados nesta fase
 
-- `supabase/migrations/0016_account_status.sql` - novo (`profiles.status`, `tenant_members.status`).
-- `src/types/database.ts` - `AccountStatus`, colunas novas nos tipos de `profiles`/`tenant_members`.
-- `src/lib/auth/dal.ts` - AAL check (MFA) em `requireSession()`; checagem de `status` suspenso em `getSession()`/`getTenantRole()`.
-- `src/lib/tenant.ts` - `getMyPrimaryTenant()` removida (ficou sem uso); `getMyOrganizations()`/`getActiveTenant()` novas.
-- `src/actions/mfa.ts` - novo (enroll/verify/unenroll/challenge de MFA).
-- `src/actions/tenant-context.ts` - novo (`switchActiveTenant`).
-- `src/actions/staff.ts` - `suspendAccount`/`reactivateAccount` novas.
-- `src/actions/tenants.ts` - `suspendMember`/`reactivateMember` novas.
-- `src/components/auth/mfa-challenge-form.tsx`, `src/components/security/mfa-settings.tsx`, `src/components/portal/organization-switcher.tsx` - novos.
-- `src/components/staff/staff-list.tsx`, `src/components/tenant/members-list.tsx` - editados (badge + botão de suspender/reativar).
-- `src/app/(site)/(auth)/verificar-mfa/page.tsx`, `src/app/portal/seguranca/page.tsx`, `src/app/(site)/admin/seguranca/page.tsx` - novos.
-- `src/app/portal/layout.tsx` + 7 páginas do Portal - migradas de `getMyPrimaryTenant` pra `getActiveTenant`.
-- `src/app/api/me/route.ts`, `src/app/api/me/organizations/route.ts` - atualizados pra usar `getActiveTenant`/`getMyOrganizations`.
-- `src/proxy.ts` - `/verificar-mfa` adicionado ao gate do SaaS.
-- 3 arquivos de teste novos (`mfa-actions`, `tenant-context`, `account-status-actions`), 2 atualizados (`me-api`, `me-organizations-api`).
-- `artifacts/wjb-saas-mvp/fase-2/*` - criado.
+- `src/lib/documents.ts` - reescrito: sem geração de URL em lote; `sanitizeFileName`, `ALLOWED_DOCUMENT_MIME_TYPES`/`isAllowedMimeType`, busca por `query` novos.
+- `src/actions/documents.ts` - `uploadDocument`/`deleteDocument` endurecidos (permissão, MIME, antimalware, nome sanitizado).
+- `src/app/api/documents/[id]/download/route.ts` - novo (download auditado, URL sob demanda).
+- `src/integrations/antivirus/{types,provider,noop.adapter,index}.ts` - novo (Adapter Pattern, ponto de extensão).
+- `src/lib/permissions/permissions.ts` - `documents.delete` adicionado.
+- `src/components/documents/documents-list.tsx` - link de download atualizado, campo de busca novo.
+- `src/app/portal/documentos/page.tsx`, `src/app/portal/guias/page.tsx` - leem `?q=`, passam `searchAction`.
+- `src/app/portal/documentos/{loading,error}.tsx`, `src/app/portal/guias/{loading,error}.tsx` - novos.
+- `src/components/shared/portal-error-state.tsx` - novo (compartilhado pelos `error.tsx` do Portal).
+- `src/proxy.ts` - `/api/documents` adicionado ao gate do SaaS.
+- 3 arquivos de teste novos (`documents` unit, `documents-download-api`, `documents-upload-action`).
+- `artifacts/wjb-saas-mvp/fase-3/*` - criado.
+
+Nenhuma migration nova, nenhuma dependência nova.
 
 ## Testes
 
-Lint, typecheck, 80 testes (56 anteriores + 24 novos) e build de produção - todos passando. Detalhe completo em `fase-2/test-report.md`. Uma limitação de teste conhecida (checagem de suspensão em `getSession()`, não coberta por teste automatizado por causa de `cache()` do React) - ver `fase-2/decisions.md` D6.
+Lint, typecheck, 99 testes (80 anteriores + 19 novos) e build de produção - todos passando. Detalhe completo em `fase-3/test-report.md`.
 
 ## Riscos
 
-- Herdado da Fase 0: credenciais do projeto Supabase real (`wjb-website-app`) ausentes em todos os ambientes acessíveis - MFA, switcher e suspensão só foram testados via mock, não contra banco real.
-- A migration `0016` precisa ser aplicada antes de qualquer deploy que use este código (`getSession()` agora seleciona a coluna `status`).
-- `ban_duration` (revogação de sessão) é best-effort - o mecanismo real de bloqueio é a checagem de `status`, não a chamada ao Supabase Auth Admin API.
+- Herdado da Fase 0: credenciais do projeto Supabase real ausentes em todos os ambientes acessíveis - módulo de documentos só testado via mock, não contra Storage/banco reais.
+- Allowlist de MIME confia no `file.type` do navegador, não inspeciona bytes do arquivo - ver `fase-3/phase-handoff.md`.
+- `sanitizeFileName` reduz acentos a underscore - trade-off de legibilidade vs. segurança de storage key.
 
 ## Bloqueios
 
-Nenhum bloqueio impede a conclusão da Fase 2.
+Nenhum bloqueio impede a conclusão da Fase 3.
 
 ## Próxima fase
 

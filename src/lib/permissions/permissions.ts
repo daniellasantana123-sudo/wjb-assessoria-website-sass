@@ -29,6 +29,7 @@ export type Permission =
   | "members.manage"
   | "documents.read"
   | "documents.upload"
+  | "documents.delete"
   | "documents.manage"
   | "obligations.read"
   | "obligations.manage"
@@ -49,6 +50,7 @@ const BASE_STAFF_PERMISSIONS: Permission[] = [
   "members.manage",
   "documents.read",
   "documents.upload",
+  "documents.delete",
   "documents.manage",
   "obligations.read",
   "obligations.manage",

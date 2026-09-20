@@ -12,9 +12,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PortalDocumentosPage() {
+export default async function PortalDocumentosPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const session = await requireSession();
   const tenant = await getActiveTenant(session.userId);
+  const { q } = await searchParams;
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
@@ -38,7 +43,12 @@ export default async function PortalDocumentosPage() {
           <div className="border-border rounded-md border p-6">
             <UploadDocumentForm tenantId={tenant.id} defaultCategory="documento" />
           </div>
-          <DocumentsList tenantId={tenant.id} category="documento" />
+          <DocumentsList
+            tenantId={tenant.id}
+            category="documento"
+            query={q}
+            searchAction="/portal/documentos"
+          />
         </>
       )}
     </Container>

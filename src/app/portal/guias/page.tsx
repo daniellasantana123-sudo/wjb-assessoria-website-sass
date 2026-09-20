@@ -17,9 +17,14 @@ export const metadata: Metadata = {
  * (Storage + tabela `documents`), só filtrada por `category = 'guia'` (ver
  * `0009_document_category.sql`). Sem tabela nova, sem UI nova de verdade.
  */
-export default async function PortalGuiasPage() {
+export default async function PortalGuiasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const session = await requireSession();
   const tenant = await getActiveTenant(session.userId);
+  const { q } = await searchParams;
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
@@ -47,6 +52,8 @@ export default async function PortalGuiasPage() {
             tenantId={tenant.id}
             category="guia"
             emptyMessage="Nenhuma guia enviada ainda."
+            query={q}
+            searchAction="/portal/guias"
           />
         </>
       )}
