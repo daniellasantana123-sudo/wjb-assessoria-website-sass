@@ -62,6 +62,7 @@ describe("MockGClickProvider", () => {
     ["TIMEOUT", "TIMEOUT"],
     ["UNAVAILABLE", "UNAVAILABLE"],
     ["VALIDATION_ERROR", "VALIDATION_ERROR"],
+    ["UNKNOWN_ERROR", "UNKNOWN_PROVIDER_ERROR"],
   ] as const;
 
   it.each(scenarios)("cenário %s faz clients.create() falhar com %s", async (scenario, code) => {

@@ -28,7 +28,8 @@ export type MockScenario =
   | "RATE_LIMIT"
   | "TIMEOUT"
   | "UNAVAILABLE"
-  | "VALIDATION_ERROR";
+  | "VALIDATION_ERROR"
+  | "UNKNOWN_ERROR";
 
 export interface MockGClickProvider extends OmieGClickAdapter {
   /** Muda o comportamento de TODA chamada seguinte, até ser trocado de novo. */
@@ -61,6 +62,8 @@ function scenarioToError(scenario: MockScenario): ProviderError | null {
       return { code: "UNAVAILABLE", message: "Mock: provider indisponível simulado." };
     case "VALIDATION_ERROR":
       return { code: "VALIDATION_ERROR", message: "Mock: dados inválidos simulados." };
+    case "UNKNOWN_ERROR":
+      return { code: "UNKNOWN_PROVIDER_ERROR", message: "Mock: erro não classificado simulado." };
     case "SUCCESS":
       return null;
   }

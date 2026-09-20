@@ -6,21 +6,23 @@ import { createMockGClickProvider } from "./mock.provider";
 import type { OmieGClickAdapter } from "./types";
 
 /**
- * Factory / seleção de provider (seção 10 do prompt da Fase 6.5).
- * `GCLICK_MODE` decide qual implementação `getOmieGClickAdapter()`
- * devolve:
+ * Factory / seleção de provider (seção 10 do prompt da Fase 6.5, endurecida
+ * no Checkpoint 6.5.1). `GCLICK_MODE` decide qual implementação
+ * `getOmieGClickAdapter()` devolve:
  *
- * - "mock" (padrão, sem nenhuma env var) -> `MockGClickProvider`,
- *   totalmente funcional, em memória, nunca chama rede.
+ * - "mock" (padrão, sem nenhuma env var, ou valor inválido - ver
+ *   `config.ts::parseMode`) -> `MockGClickProvider`, totalmente
+ *   funcional, em memória, nunca chama rede, NUNCA exige nenhuma
+ *   credencial `GCLICK_*`.
  * - "sandbox"/"production" -> `GClickHttpProvider`, que hoje SEMPRE
- *   bloqueia (nenhuma chamada de rede real existe ainda, ver
- *   `http.provider.ts`) - independente de `GCLICK_REAL_INTEGRATION_ENABLED`,
- *   porque não há implementação real a habilitar. A flag existe como
- *   proteção preparada para quando existir (se alguém marcar
- *   `GCLICK_MODE=production` sem também marcar a flag, o log abaixo
- *   deixa isso claro; com a flag marcada, o comportamento é o mesmo hoje
- *   - ainda bloqueado -, só muda quando uma implementação real for
- *   escrita em `http.provider.ts`).
+ *   bloqueia - duas proteções independentes (`http.provider.ts`):
+ *   1. `GCLICK_REAL_INTEGRATION_ENABLED` (decidida aqui, vira
+ *      `blockedByFeatureFlag`);
+ *   2. `REAL_PROVIDER_IMPLEMENTED` (hardcoded em `http.provider.ts`,
+ *      nunca lida de env var - só uma mudança de código a libera).
+ *   As duas precisam estar "abertas" pra uma chamada real algum dia
+ *   acontecer; hoje a Proteção 2 sozinha já garante que isso nunca
+ *   acontece, mesmo que alguém configure a Proteção 1.
  *
  * Memoizado por processo (mesmo padrão dos outros adapters do projeto) -
  * `resetOmieGClickAdapterForTests()` existe só pra testes trocarem de
@@ -33,18 +35,23 @@ export function getOmieGClickAdapter(): OmieGClickAdapter {
 
   const config = getGClickConfig();
 
+  if (config.modeConfigError) {
+    console.error(`[gclick] ${config.modeConfigError}`);
+  }
+
   if (config.mode === "mock") {
     cached = createMockGClickProvider();
     return cached;
   }
 
-  if (!config.realIntegrationEnabled) {
+  const blockedByFeatureFlag = !config.realIntegrationEnabled;
+  if (blockedByFeatureFlag) {
     console.warn(
-      `[gclick] GCLICK_MODE="${config.mode}" mas GCLICK_REAL_INTEGRATION_ENABLED != "true" - caindo no provider bloqueado.`,
+      `[gclick] GCLICK_MODE="${config.mode}" mas GCLICK_REAL_INTEGRATION_ENABLED != "true" - bloqueado (Proteção 1 de 2).`,
     );
   }
 
-  cached = createGClickHttpProvider(config);
+  cached = createGClickHttpProvider(config, { blockedByFeatureFlag });
   return cached;
 }
 

@@ -11,6 +11,7 @@ import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
 import { listOmieMappings } from "@/lib/omie-gclick";
 import { getGClickConfig } from "@/integrations/omie-gclick";
+import { isRealProviderImplemented } from "@/integrations/omie-gclick/http.provider";
 import { listFeatureFlags } from "@/lib/feature-flags";
 
 const MODE_LABELS = { mock: "Mock", sandbox: "Sandbox", production: "Produção" } as const;
@@ -33,6 +34,9 @@ export default async function AdminIntegracoesPage() {
 
   const [mappings, flags] = await Promise.all([listOmieMappings(), listFeatureFlags()]);
   const { mode, realIntegrationEnabled } = getGClickConfig();
+  // Duas proteções independentes (Checkpoint 6.5.1) - as duas precisam estar "abertas"
+  // pra integração real existir de verdade; hoje a segunda é hardcoded false.
+  const realIntegrationTrulyAvailable = realIntegrationEnabled && isRealProviderImplemented();
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
@@ -51,18 +55,24 @@ export default async function AdminIntegracoesPage() {
           <Badge tone={mode === "mock" ? "warning" : "neutral"}>Modo: {MODE_LABELS[mode]}</Badge>
         </div>
 
-        {/* Seção 37 do prompt da Fase 6.5 - nunca apresentar como "Conectado" ao G-Click real. */}
+        {/* Nunca apresentar como "Conectado" ao G-Click real (Checkpoint 6.5.1, seção 5). */}
         <dl className="text-muted-foreground mt-3 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
           <div className="flex justify-between gap-2 sm:justify-start">
             <dt className="font-medium">Status:</dt>
-            <dd>{mode === "mock" ? "Ambiente de desenvolvimento (simulado)" : "Bloqueado"}</dd>
+            <dd>{mode === "mock" ? "Ambiente simulado" : "Bloqueado"}</dd>
           </div>
           <div className="flex justify-between gap-2 sm:justify-start">
-            <dt className="font-medium">Integração real:</dt>
-            <dd>{realIntegrationEnabled ? "Habilitada na config, mas sem implementação ainda" : "Não habilitada"}</dd>
+            <dt className="font-medium">Integração real G-Click:</dt>
+            <dd>
+              {realIntegrationTrulyAvailable
+                ? "Habilitada"
+                : realIntegrationEnabled
+                  ? "Não habilitada (flag ligada, mas sem implementação real ainda)"
+                  : "Não habilitada"}
+            </dd>
           </div>
           <div className="flex justify-between gap-2 sm:justify-start sm:col-span-2">
-            <dt className="font-medium">Validação Omie/G-Click:</dt>
+            <dt className="font-medium">Validação técnica Omie/G-Click:</dt>
             <dd>
               Pendente - ver <code>artifacts/wjb-saas-mvp/fase-6-5/omie-contact-checklist.md</code>
             </dd>

@@ -27,16 +27,40 @@ import type {
  * G-Click vai entrar - hoje só existem como esqueleto, nunca chamados
  * daqui, porque não há nenhuma chamada de rede que produza algo pra
  * mapear ainda.
+ *
+ * **Checkpoint 6.5.1 - duas proteções independentes** (seções 1/2):
+ * 1. Feature flag (`GCLICK_REAL_INTEGRATION_ENABLED`) - decidida no
+ *    factory (`provider.ts`), chega aqui como `options.blockedByFeatureFlag`.
+ * 2. `REAL_PROVIDER_IMPLEMENTED` (abaixo) - hardcoded em código, não uma
+ *    env var. Ninguém consegue "ligar" a integração real só mexendo em
+ *    configuração; só uma mudança de código (depois que a especificação
+ *    técnica da G-Click for confirmada) vira isto `true`.
+ *
+ * As duas são checadas de forma independente em `isRealIntegrationAvailable()`
+ * - mesmo que a Proteção 1 esteja "aberta" (flag = true), a Proteção 2
+ * continua bloqueando sozinha, e vice-versa.
  */
-function blocked<T>(): ProviderResult<T> {
-  return {
-    ok: false,
-    error: {
-      code: "PROVIDER_NOT_CONFIGURED",
-      message:
-        "Integração real G-Click desabilitada até validação técnica oficial (TODO_GCLICK_VALIDATION).",
-    },
-  };
+const REAL_PROVIDER_IMPLEMENTED = false as const;
+
+/** Exportado só pra o Checkpoint 6.5.1 confirmar via teste que continua `false`. */
+export function isRealProviderImplemented(): boolean {
+  return REAL_PROVIDER_IMPLEMENTED;
+}
+
+export interface GClickHttpProviderOptions {
+  /** Proteção 1 - `true` quando `GCLICK_REAL_INTEGRATION_ENABLED` != "true". Decidida no factory, nunca aqui. */
+  blockedByFeatureFlag: boolean;
+}
+
+function isRealIntegrationAvailable(options: GClickHttpProviderOptions): boolean {
+  return !options.blockedByFeatureFlag && REAL_PROVIDER_IMPLEMENTED;
+}
+
+function blockedMessage(options: GClickHttpProviderOptions): string {
+  if (options.blockedByFeatureFlag) {
+    return 'Integração real G-Click desabilitada (GCLICK_REAL_INTEGRATION_ENABLED != "true").';
+  }
+  return "G-Click real integration is disabled. Official API configuration has not yet been validated (TODO_GCLICK_VALIDATION).";
 }
 
 const REAL_CAPABILITIES: ProviderCapabilities = {
@@ -51,10 +75,32 @@ const REAL_CAPABILITIES: ProviderCapabilities = {
   canCreatePreTaskWithTag: false,
 };
 
-export function createGClickHttpProvider(config: GClickConfig): OmieGClickAdapter {
+/**
+ * `config.timeoutMs` (`GCLICK_TIMEOUT_MS`) já existe como configuração
+ * interna (Checkpoint 6.5.1, seção 19), mas só será efetivamente usado
+ * quando uma chamada de rede real existir aqui dentro (via
+ * `AbortController`, mesmo padrão já usado no adapter Meta WhatsApp) -
+ * hoje nenhum método chega a fazer uma requisição, então não há o que
+ * limitar por tempo ainda.
+ */
+export function createGClickHttpProvider(
+  config: GClickConfig,
+  options: GClickHttpProviderOptions,
+): OmieGClickAdapter {
+  function blocked<T>(): ProviderResult<T> {
+    return {
+      ok: false,
+      error: { code: "PROVIDER_NOT_CONFIGURED", message: blockedMessage(options) },
+    };
+  }
+
   return {
     async healthCheck(): Promise<ProviderHealth> {
-      return { provider: "gclick", mode: config.mode, status: "not_configured" };
+      return {
+        provider: "gclick",
+        mode: config.mode,
+        status: isRealIntegrationAvailable(options) ? "available" : "not_configured",
+      };
     },
 
     getCapabilities(): ProviderCapabilities {

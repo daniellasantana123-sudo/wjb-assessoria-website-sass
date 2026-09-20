@@ -42,9 +42,25 @@ describe("getGClickConfig", () => {
     expect(config.timeoutMs).toBe(10_000);
   });
 
-  it("GCLICK_MODE inválido cai em mock (nunca em modo real por omissão/erro)", () => {
+  it("GCLICK_MODE inválido cai em mock (nunca em modo real por omissão/erro) e sinaliza o erro de config", () => {
     process.env.GCLICK_MODE = "qualquer-coisa";
-    expect(getGClickConfig().mode).toBe("mock");
+    const config = getGClickConfig();
+    expect(config.mode).toBe("mock");
+    expect(config.modeConfigError).toContain("qualquer-coisa");
+  });
+
+  it("GCLICK_MODE ausente ou 'mock' não geram erro de config", () => {
+    delete process.env.GCLICK_MODE;
+    expect(getGClickConfig().modeConfigError).toBeNull();
+    process.env.GCLICK_MODE = "mock";
+    expect(getGClickConfig().modeConfigError).toBeNull();
+  });
+
+  it("GCLICK_MODE 'sandbox'/'production' válidos não geram erro de config", () => {
+    process.env.GCLICK_MODE = "sandbox";
+    expect(getGClickConfig().modeConfigError).toBeNull();
+    process.env.GCLICK_MODE = "production";
+    expect(getGClickConfig().modeConfigError).toBeNull();
   });
 
   it("GCLICK_REAL_INTEGRATION_ENABLED só é true com a string exata 'true'", () => {
@@ -82,6 +98,43 @@ describe("getOmieGClickAdapter - seleção de provider", () => {
     process.env.GCLICK_REAL_INTEGRATION_ENABLED = "true";
     const health = await getOmieGClickAdapter().healthCheck();
     expect(health).toEqual({ provider: "gclick", mode: "production", status: "not_configured" });
+  });
+
+  describe("Checkpoint 6.5.1 - as 2 proteções, exercitadas via factory completa", () => {
+    it("sandbox sem a flag: erro cita GCLICK_REAL_INTEGRATION_ENABLED (Proteção 1)", async () => {
+      process.env.GCLICK_MODE = "sandbox";
+      delete process.env.GCLICK_REAL_INTEGRATION_ENABLED;
+
+      const result = await getOmieGClickAdapter().clients.create({
+        internalId: "t",
+        externalReference: "r",
+        name: "n",
+        document: null,
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        error: expect.objectContaining({ message: expect.stringContaining("GCLICK_REAL_INTEGRATION_ENABLED") }),
+      });
+    });
+
+    it("production COM a flag=true: ainda bloqueado, mas por outro motivo (Proteção 2, TODO_GCLICK_VALIDATION)", async () => {
+      process.env.GCLICK_MODE = "production";
+      process.env.GCLICK_REAL_INTEGRATION_ENABLED = "true";
+
+      const result = await getOmieGClickAdapter().clients.create({
+        internalId: "t",
+        externalReference: "r",
+        name: "n",
+        document: null,
+      });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.message).not.toContain("GCLICK_REAL_INTEGRATION_ENABLED");
+        expect(result.error.message).toContain("TODO_GCLICK_VALIDATION");
+      }
+    });
   });
 
   it("nunca chama fetch em nenhum modo", async () => {

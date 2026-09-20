@@ -256,5 +256,12 @@ export async function testOmieConnection(): Promise<OmieActionState> {
           : `Falha ao conectar com o Omie.G-Click (${health.status}).`,
     };
   }
-  return { success: `Conexão com o Omie.G-Click confirmada (modo ${health.mode}).` };
+
+  // Nunca dizer "Conectado"/"confirmada" sem qualificar - modo mock nunca testou nada real (Checkpoint 6.5.1, seção 5).
+  return {
+    success:
+      health.mode === "mock"
+        ? "Verificação simulada com sucesso (modo mock - nenhuma conexão real foi testada)."
+        : `Conexão com o Omie.G-Click confirmada (modo ${health.mode}).`,
+  };
 }

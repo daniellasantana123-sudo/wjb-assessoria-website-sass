@@ -12,13 +12,11 @@ coverage
 *.tsbuildinfo
 
 # env files - tudo com segredo real fica de fora; .env.example é o único
-# arquivo de env com intenção de ser versionado (auditoria Fase 6.5,
-# 2026-09-20 - `.env*.local` sozinho não cobria .env/.env.production puros)
-.env
-.env.local
-.env.production
-.env.production.local
-.env.development.local
+# arquivo de env com intenção de ser versionado. Padrão amplo (`.env*`)
+# em vez de listar variante por variante (Checkpoint 6.5.1, 2026-09-20 -
+# a lista anterior, herdada da Fase 6.5, não cobria .env.test/.env.test.local
+# e exigiria lembrar de atualizar a cada variante nova).
+.env*
 !.env.example
 
 # macOS
