@@ -15,6 +15,11 @@ export interface OmieClientResult {
   error?: string;
 }
 
+export interface OmieConnectionResult {
+  ok: boolean;
+  error?: string;
+}
+
 /**
  * Contrato que qualquer provider de ERP/fiscal (Omie.G-Click ou outro)
  * precisa cumprir — Adapter Pattern (mesmo padrão de `docs/api/integrations.md`).
@@ -29,4 +34,10 @@ export interface OmieClientResult {
  */
 export interface OmieGClickAdapter {
   upsertClient(input: OmieClientInput): Promise<OmieClientResult>;
+  /**
+   * Verifica só se as credenciais autenticam contra a API do Omie (Fase 5
+   * do wjb-saas-mvp - "testar conexão" do console admin), sem criar nem
+   * alterar nenhum cliente. Nunca lança, mesmo contrato de `upsertClient`.
+   */
+  testConnection(): Promise<OmieConnectionResult>;
 }

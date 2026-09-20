@@ -13,6 +13,11 @@ vi.mock("@/integrations/antivirus", () => ({
   getAntivirusAdapter: () => ({ scan: scanMock }),
 }));
 
+const isFeatureEnabledMock = vi.fn().mockResolvedValue(true);
+vi.mock("@/lib/feature-flags", () => ({
+  isFeatureEnabled: isFeatureEnabledMock,
+}));
+
 const revalidatePathMock = vi.fn();
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 
@@ -47,6 +52,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   requireTenantAccessMock.mockResolvedValue({ userId: "user-1", isWjbStaff: false });
   getTenantRoleMock.mockResolvedValue("member");
+  isFeatureEnabledMock.mockResolvedValue(true);
   scanMock.mockResolvedValue({ clean: true });
   storageUploadMock.mockResolvedValue({ error: null });
   documentsInsertMock.mockResolvedValue({ error: null });
@@ -60,6 +66,16 @@ describe("uploadDocument", () => {
     const result = await uploadDocument("tenant-1", undefined, makeFormData(file));
 
     expect(result).toEqual({ error: expect.stringContaining("permissão") });
+    expect(storageUploadMock).not.toHaveBeenCalled();
+  });
+
+  it("rejeita quando a feature flag 'documents' está desativada (Fase 5)", async () => {
+    isFeatureEnabledMock.mockResolvedValue(false);
+    const file = new File(["conteudo"], "arquivo.pdf", { type: "application/pdf" });
+
+    const result = await uploadDocument("tenant-1", undefined, makeFormData(file));
+
+    expect(result).toEqual({ error: expect.stringContaining("desativado") });
     expect(storageUploadMock).not.toHaveBeenCalled();
   });
 

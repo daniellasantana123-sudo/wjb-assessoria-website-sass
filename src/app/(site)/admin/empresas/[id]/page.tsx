@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Container } from "@/components/layout/container";
+import { Badge } from "@/components/ui/badge";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { InviteMemberForm } from "@/components/tenant/invite-member-form";
 import { MembersList } from "@/components/tenant/members-list";
+import { EditTenantForm } from "@/components/admin/edit-tenant-form";
 import { UploadDocumentForm } from "@/components/documents/upload-document-form";
 import { DocumentsList } from "@/components/documents/documents-list";
 import { CreateObligationForm } from "@/components/obligations/create-obligation-form";
@@ -13,7 +15,9 @@ import { ObligationsList } from "@/components/obligations/obligations-list";
 import { OmieMappingPanel } from "@/components/integrations/omie-mapping-panel";
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
+import { hasPermission } from "@/lib/permissions/permissions";
 import { getOmieMapping } from "@/lib/omie-gclick";
+import { reactivateTenant, suspendTenant } from "@/actions/tenants";
 
 export const metadata: Metadata = {
   title: "Empresa",
@@ -33,7 +37,7 @@ export default async function EmpresaDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ year?: string | string[]; month?: string | string[] }>;
 }) {
-  await requireStaffSession();
+  const session = await requireStaffSession();
   const { id } = await params;
   const query = await searchParams;
   const now = new Date();
@@ -43,13 +47,15 @@ export default async function EmpresaDetailPage({
   const supabase = await createClient();
   const { data: tenant } = await supabase
     .from("tenants")
-    .select("id, name, cnpj, created_at")
+    .select("id, name, cnpj, status, created_at")
     .eq("id", id)
     .single();
 
   if (!tenant) notFound();
 
   const omieMapping = await getOmieMapping(tenant.id);
+  const canSuspendTenant = hasPermission(session, "tenants.suspend");
+  const isSuspended = tenant.status === "suspended";
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
@@ -61,9 +67,38 @@ export default async function EmpresaDetailPage({
         ]}
       />
 
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">{tenant.name}</h1>
-        {tenant.cnpj && <p className="text-muted-foreground mt-1 text-sm">{tenant.cnpj}</p>}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-foreground text-2xl font-semibold">{tenant.name}</h1>
+            {isSuspended && <Badge tone="danger">Suspensa</Badge>}
+          </div>
+          {tenant.cnpj && <p className="text-muted-foreground mt-1 text-sm">{tenant.cnpj}</p>}
+        </div>
+        {canSuspendTenant && (
+          <form
+            action={async () => {
+              "use server";
+              if (isSuspended) {
+                await reactivateTenant(tenant.id);
+              } else {
+                await suspendTenant(tenant.id);
+              }
+            }}
+          >
+            <button
+              type="submit"
+              className="text-muted-foreground hover:text-foreground focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              {isSuspended ? "Reativar empresa" : "Suspender empresa"}
+            </button>
+          </form>
+        )}
+      </div>
+
+      <div className="border-border rounded-md border p-6">
+        <h2 className="text-foreground mb-4 text-sm font-semibold">Editar empresa</h2>
+        <EditTenantForm tenantId={tenant.id} name={tenant.name} cnpj={tenant.cnpj} />
       </div>
 
       <div>

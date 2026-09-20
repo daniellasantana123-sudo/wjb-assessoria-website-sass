@@ -45,6 +45,15 @@ describe("hasPermission - staff", () => {
     const session = staffSession(null);
     expect(getPermissions(session)).toEqual([]);
   });
+
+  it("só super_admin tem feature_flags.manage e tenants.suspend (Fase 5)", () => {
+    expect(hasPermission(staffSession("super_admin"), "feature_flags.manage")).toBe(true);
+    expect(hasPermission(staffSession("super_admin"), "tenants.suspend")).toBe(true);
+    for (const role of ["contador", "atendimento"] as const) {
+      expect(hasPermission(staffSession(role), "feature_flags.manage")).toBe(false);
+      expect(hasPermission(staffSession(role), "tenants.suspend")).toBe(false);
+    }
+  });
 });
 
 describe("hasPermission - cliente (tenant)", () => {

@@ -1,4 +1,4 @@
-import { reactivateAccount, revokeStaffAccess, suspendAccount } from "@/actions/staff";
+import { reactivateAccount, resendStaffInvite, revokeStaffAccess, suspendAccount } from "@/actions/staff";
 import { Badge } from "@/components/ui/badge";
 import { StaffRoleSelect } from "@/components/staff/staff-role-select";
 import { createClient } from "@/lib/db/supabase/server";
@@ -53,6 +53,19 @@ export async function StaffList({
                       className="text-muted-foreground hover:text-foreground focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                       {person.status === "suspended" ? "Reativar" : "Suspender"}
+                    </button>
+                  </form>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await resendStaffInvite(person.id);
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="text-muted-foreground hover:text-foreground focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    >
+                      Reenviar convite
                     </button>
                   </form>
                   <form

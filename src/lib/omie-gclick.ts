@@ -37,3 +37,36 @@ export async function getOmieMapping(tenantId: string): Promise<OmieMapping | nu
     lastError: data.last_error,
   };
 }
+
+export interface OmieMappingOverviewItem extends OmieMapping {
+  tenantName: string;
+}
+
+/**
+ * Visão geral de todos os mapeamentos (Fase 5 do wjb-saas-mvp - console
+ * admin, "Omie: status, mapping"). Staff-only por natureza (RLS já só
+ * devolve todas as linhas pra quem `is_staff()`) - um cliente que chamasse
+ * isto só veria a própria empresa, nunca as outras.
+ */
+export async function listOmieMappings(): Promise<OmieMappingOverviewItem[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("omie_client_mappings")
+    .select(
+      "tenant_id, external_client_id, external_portal_url, status, last_synced_at, last_error, tenants(name)",
+    )
+    .order("last_synced_at", { ascending: false, nullsFirst: false });
+
+  return (data ?? []).map((row) => {
+    const tenant = Array.isArray(row.tenants) ? row.tenants[0] : row.tenants;
+    return {
+      tenantId: row.tenant_id,
+      tenantName: tenant?.name ?? "-",
+      externalClientId: row.external_client_id,
+      externalPortalUrl: row.external_portal_url,
+      status: row.status,
+      lastSyncedAt: row.last_synced_at,
+      lastError: row.last_error,
+    };
+  });
+}

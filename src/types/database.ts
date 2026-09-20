@@ -13,6 +13,7 @@ export type DocumentCategory = "documento" | "guia";
 export type LeadStatus = "new" | "contacted" | "won" | "lost";
 export type TicketStatus = "open" | "in_progress" | "closed";
 export type AccountStatus = "active" | "suspended";
+export type FeatureFlagKey = "omie_gclick" | "documents" | "notifications";
 export type OmieIntegrationStatus =
   | "not_connected"
   | "pending"
@@ -53,6 +54,7 @@ export interface Database {
           id: string;
           name: string;
           cnpj: string | null;
+          status: AccountStatus;
           created_by: string | null;
           created_at: string;
         };
@@ -60,6 +62,7 @@ export interface Database {
           id?: string;
           name: string;
           cnpj?: string | null;
+          status?: AccountStatus;
           created_by?: string | null;
           created_at?: string;
         };
@@ -457,6 +460,30 @@ export interface Database {
           },
           {
             foreignKeyName: "omie_client_mappings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      feature_flags: {
+        Row: {
+          key: string;
+          enabled: boolean;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          enabled?: boolean;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["feature_flags"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "feature_flags_updated_by_fkey";
             columns: ["updated_by"];
             isOneToOne: false;
             referencedRelation: "profiles";

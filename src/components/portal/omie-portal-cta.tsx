@@ -11,9 +11,17 @@ import type { OmieMapping } from "@/lib/omie-gclick";
  *
  * Só aparece quando staff já configurou o link (`external_portal_url`) E
  * o mapeamento está ativo — nunca some um CTA quebrado nem aponta pra uma
- * integração desativada/com erro.
+ * integração desativada/com erro. `featureEnabled` (Fase 5) é o kill
+ * switch global - some mesmo que o mapeamento individual esteja ok.
  */
-export function OmiePortalCta({ mapping }: { mapping: OmieMapping | null }) {
+export function OmiePortalCta({
+  mapping,
+  featureEnabled,
+}: {
+  mapping: OmieMapping | null;
+  featureEnabled: boolean;
+}) {
+  if (!featureEnabled) return null;
   if (!mapping?.externalPortalUrl) return null;
   if (mapping.status !== "connected" && mapping.status !== "synced") return null;
 

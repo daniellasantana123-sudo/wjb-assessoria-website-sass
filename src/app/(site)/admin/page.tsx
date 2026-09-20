@@ -6,6 +6,7 @@ import {
   Contact,
   LifeBuoy,
   MessageCircle,
+  Plug,
   ScrollText,
   ShieldCheck,
   Users,
@@ -57,6 +58,12 @@ const navCards = [
     icon: Bell,
     label: "Notificações",
     description: "Avisos de tickets e mensagens de todas as empresas",
+  },
+  {
+    href: "/admin/integracoes",
+    icon: Plug,
+    label: "Integrações",
+    description: "Omie.G-Click entre empresas e feature flags operacionais",
   },
   {
     href: "/admin/logs",

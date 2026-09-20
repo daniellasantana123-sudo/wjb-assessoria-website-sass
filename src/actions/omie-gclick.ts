@@ -7,6 +7,7 @@ import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
 import { getOmieGClickAdapter } from "@/integrations/omie-gclick";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export type OmieActionState = { error: string } | { success: string } | undefined;
 
@@ -81,6 +82,17 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
   const session = await requireStaffSession();
   if (!hasPermission(session, "integrations.manage")) {
     return { error: "Você não tem permissão para gerenciar integrações." };
+  }
+
+  /**
+   * Kill switch global (Fase 5) - desligar a flag bloqueia toda
+   * sincronização nova, independente do status por tenant. Checado aqui
+   * (não em `getOmieGClickAdapter()`) porque a leitura de mapeamento no
+   * Dashboard do cliente (`getOmieMapping`) nunca chama o adapter mesmo -
+   * a flag só precisa cortar o caminho de escrita.
+   */
+  if (!(await isFeatureEnabled("omie_gclick"))) {
+    return { error: "A integração Omie.G-Click está desativada pela WJB no momento." };
   }
 
   const supabase = await createClient();
@@ -175,4 +187,35 @@ export async function setOmieMappingDisabled(tenantId: string, disabled: boolean
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);
+}
+
+/**
+ * "Testar conexão" do console admin (Fase 5) - verifica só se
+ * `OMIE_APP_KEY`/`OMIE_APP_SECRET` autenticam, sem tocar em nenhum tenant
+ * específico. Não staff-only demais: qualquer staff pode conferir (mesma
+ * permissão de leitura de `integrations.read` seria suficiente, mas como é
+ * uma chamada de rede de verdade contra o Omie, mantém em
+ * `integrations.manage` por consistência com as outras ações desta
+ * integração).
+ */
+export async function testOmieConnection(): Promise<OmieActionState> {
+  const session = await requireStaffSession();
+  if (!hasPermission(session, "integrations.manage")) {
+    return { error: "Você não tem permissão para gerenciar integrações." };
+  }
+
+  const result = await getOmieGClickAdapter().testConnection();
+
+  const supabase = await createClient();
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    action: "integration.omie_connection_tested",
+    entity: "omie_client_mapping",
+    metadata: { ok: result.ok, error: result.error },
+  });
+
+  if (!result.ok) {
+    return { error: `Falha ao conectar com o Omie.G-Click (${result.error ?? "erro desconhecido"}).` };
+  }
+  return { success: "Conexão com o Omie.G-Click confirmada." };
 }

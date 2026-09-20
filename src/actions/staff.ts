@@ -93,6 +93,50 @@ export async function inviteStaffMember(
   return { success: "Acesso concedido." };
 }
 
+/**
+ * Reenvia convite de acesso interno (Fase 5) - mesmo racional de
+ * `resendMemberInvite` (`src/actions/tenants.ts`): reaproveita
+ * `inviteUserByEmail`, não testado nesta sessão contra o caso "já aceito"
+ * (sem projeto Supabase real conectado).
+ */
+export async function resendStaffInvite(profileId: string): Promise<StaffActionState> {
+  const session = await requireStaffSession();
+  if (!isSuperAdmin(session)) {
+    return { error: "Só super_admin pode reenviar convites de acesso interno." };
+  }
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email, full_name")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  if (!profile) {
+    return { error: "Pessoa não encontrada." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.inviteUserByEmail(profile.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    data: { full_name: profile.full_name },
+  });
+
+  if (error) {
+    console.error("[staff] falha ao reenviar convite:", error);
+    return { error: "Não foi possível reenviar o convite - a pessoa pode já ter aceitado." };
+  }
+
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    action: "staff.invite_resent",
+    entity: "profile",
+    entity_id: profileId,
+  });
+
+  return { success: "Convite reenviado." };
+}
+
 export async function updateStaffRole(profileId: string, staffRole: StaffRole) {
   const session = await requireStaffSession();
   if (!isSuperAdmin(session)) return;

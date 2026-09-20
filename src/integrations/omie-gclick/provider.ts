@@ -1,7 +1,12 @@
 import "server-only";
 
 import { createOmieAdapter } from "./omie.adapter";
-import type { OmieClientInput, OmieClientResult, OmieGClickAdapter } from "./types";
+import type {
+  OmieClientInput,
+  OmieClientResult,
+  OmieConnectionResult,
+  OmieGClickAdapter,
+} from "./types";
 
 /**
  * Sem `OMIE_APP_KEY`/`OMIE_APP_SECRET` configuradas, cai num adapter no-op
@@ -20,9 +25,17 @@ const noopAdapter: OmieGClickAdapter = {
     );
     return { ok: false, error: "no-provider" };
   },
+  async testConnection(): Promise<OmieConnectionResult> {
+    return { ok: false, error: "no-provider" };
+  },
 };
 
 let cached: OmieGClickAdapter | null = null;
+
+/** Pra UI (console admin) mostrar se há credenciais configuradas, sem expor os valores. */
+export function isOmieConfigured(): boolean {
+  return Boolean(process.env.OMIE_APP_KEY && process.env.OMIE_APP_SECRET);
+}
 
 export function getOmieGClickAdapter(): OmieGClickAdapter {
   if (cached) return cached;

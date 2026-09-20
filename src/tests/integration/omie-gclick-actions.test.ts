@@ -9,8 +9,14 @@ const revalidatePathMock = vi.fn();
 vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 
 const upsertClientMock = vi.fn();
+const testConnectionMock = vi.fn();
 vi.mock("@/integrations/omie-gclick", () => ({
-  getOmieGClickAdapter: () => ({ upsertClient: upsertClientMock }),
+  getOmieGClickAdapter: () => ({ upsertClient: upsertClientMock, testConnection: testConnectionMock }),
+}));
+
+const isFeatureEnabledMock = vi.fn().mockResolvedValue(true);
+vi.mock("@/lib/feature-flags", () => ({
+  isFeatureEnabled: isFeatureEnabledMock,
 }));
 
 const tenantsMaybeSingleMock = vi.fn();
@@ -38,7 +44,7 @@ vi.mock("@/lib/db/supabase/server", () => ({
   createClient: vi.fn().mockResolvedValue({ from: fromMock }),
 }));
 
-const { saveOmieMapping, syncOmieClient, setOmieMappingDisabled } = await import(
+const { saveOmieMapping, syncOmieClient, setOmieMappingDisabled, testOmieConnection } = await import(
   "@/actions/omie-gclick"
 );
 
@@ -55,6 +61,7 @@ function formData(fields: Record<string, string>) {
 beforeEach(() => {
   vi.clearAllMocks();
   requireStaffSessionMock.mockResolvedValue(staffSession());
+  isFeatureEnabledMock.mockResolvedValue(true);
   mappingUpsertMock.mockResolvedValue({ error: null });
   auditInsertMock.mockResolvedValue({ error: null });
   tenantsMaybeSingleMock.mockResolvedValue({ data: { id: "tenant-1", name: "Empresa X", cnpj: "0" } });
@@ -124,6 +131,15 @@ describe("syncOmieClient", () => {
     const result = await syncOmieClient("tenant-1");
 
     expect(result).toEqual({ error: expect.stringContaining("permissão") });
+    expect(upsertClientMock).not.toHaveBeenCalled();
+  });
+
+  it("rejeita quando a feature flag 'omie_gclick' está desativada (Fase 5)", async () => {
+    isFeatureEnabledMock.mockResolvedValue(false);
+
+    const result = await syncOmieClient("tenant-1");
+
+    expect(result).toEqual({ error: expect.stringContaining("desativada") });
     expect(upsertClientMock).not.toHaveBeenCalled();
   });
 
@@ -201,5 +217,38 @@ describe("setOmieMappingDisabled", () => {
       expect.objectContaining({ status: "connected" }),
       { onConflict: "tenant_id" },
     );
+  });
+});
+
+describe("testOmieConnection", () => {
+  it("rejeita staff sem permissão", async () => {
+    requireStaffSessionMock.mockResolvedValue(staffSession(null));
+
+    const result = await testOmieConnection();
+
+    expect(result).toEqual({ error: expect.stringContaining("permissão") });
+    expect(testConnectionMock).not.toHaveBeenCalled();
+  });
+
+  it("sucesso: grava auditoria e retorna confirmação", async () => {
+    testConnectionMock.mockResolvedValue({ ok: true });
+
+    const result = await testOmieConnection();
+
+    expect(result).toEqual({ success: expect.any(String) });
+    expect(auditInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "integration.omie_connection_tested",
+        metadata: { ok: true, error: undefined },
+      }),
+    );
+  });
+
+  it("falha: nunca lança, retorna erro sanitizado", async () => {
+    testConnectionMock.mockResolvedValue({ ok: false, error: "no-provider" });
+
+    const result = await testOmieConnection();
+
+    expect(result).toEqual({ error: expect.stringContaining("no-provider") });
   });
 });

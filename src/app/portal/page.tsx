@@ -16,6 +16,7 @@ import {
   getUpcomingObligations,
 } from "@/lib/tenant";
 import { getOmieMapping } from "@/lib/omie-gclick";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export const metadata: Metadata = {
   title: "Visão geral",
@@ -52,12 +53,13 @@ export default async function PortalPage() {
     );
   }
 
-  const [stats, months, upcoming, categories, omieMapping] = await Promise.all([
+  const [stats, months, upcoming, categories, omieMapping, omieEnabled] = await Promise.all([
     getTenantDashboardStats(tenant.id),
     getObligationsMonthlyBreakdown(tenant.id),
     getUpcomingObligations(tenant.id, 5),
     getDocumentsCategorySummary(tenant.id),
     getOmieMapping(tenant.id),
+    isFeatureEnabled("omie_gclick"),
   ]);
 
   const now = new Date();
@@ -75,7 +77,7 @@ export default async function PortalPage() {
             documento{stats.documentsCount + stats.guiasCount === 1 ? "" : "s"} no total
           </p>
         </div>
-        <OmiePortalCta mapping={omieMapping} />
+        <OmiePortalCta mapping={omieMapping} featureEnabled={omieEnabled} />
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

@@ -42,7 +42,9 @@ export type Permission =
   | "staff.manage"
   | "audit.read"
   | "integrations.read"
-  | "integrations.manage";
+  | "integrations.manage"
+  | "feature_flags.manage"
+  | "tenants.suspend";
 
 const BASE_STAFF_PERMISSIONS: Permission[] = [
   "organizations.read",
@@ -68,7 +70,7 @@ const BASE_STAFF_PERMISSIONS: Permission[] = [
 ];
 
 const STAFF_PERMISSIONS: Record<StaffRole, Permission[]> = {
-  super_admin: [...BASE_STAFF_PERMISSIONS, "staff.manage"],
+  super_admin: [...BASE_STAFF_PERMISSIONS, "staff.manage", "feature_flags.manage", "tenants.suspend"],
   contador: BASE_STAFF_PERMISSIONS,
   atendimento: BASE_STAFF_PERMISSIONS,
 };

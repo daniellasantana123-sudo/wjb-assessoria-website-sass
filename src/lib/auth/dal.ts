@@ -108,13 +108,15 @@ export const getTenantRole = cache(
     const supabase = await createClient();
     const { data } = await supabase
       .from("tenant_members")
-      .select("role, status")
+      .select("role, status, tenants(status)")
       .eq("tenant_id", tenantId)
       .eq("profile_id", session.userId)
       .single();
 
-    // Vínculo suspenso (Fase 2) — trata como se não fosse membro só desta empresa.
-    if (!data || data.status === "suspended") return null;
+    if (!data) return null;
+    const tenant = Array.isArray(data.tenants) ? data.tenants[0] : data.tenants;
+    // Vínculo suspenso (Fase 2) OU empresa inteira suspensa (Fase 5) - trata como sem acesso.
+    if (data.status === "suspended" || tenant?.status === "suspended") return null;
     return data.role;
   },
 );

@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { OmieClientInput, OmieClientResult, OmieGClickAdapter } from "./types";
+import type { OmieClientInput, OmieClientResult, OmieConnectionResult, OmieGClickAdapter } from "./types";
 
 const CLIENTES_ENDPOINT = "https://app.omie.com.br/api/v1/geral/clientes/";
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -74,6 +74,26 @@ export function createOmieAdapter(appKey: string, appSecret: string): OmieGClick
           : input.externalClientId ?? undefined;
 
       return { ok: true, externalClientId };
+    },
+
+    /**
+     * "ListarClientes" com 1 registro por página - chamada de baixo custo
+     * só pra confirmar que `app_key`/`app_secret` autenticam, sem criar
+     * nem alterar nada. Mesma ressalva de "não testado ao vivo" do resto
+     * deste adapter.
+     */
+    async testConnection(): Promise<OmieConnectionResult> {
+      const result = await callOmie(appKey, appSecret, "ListarClientes", {
+        pagina: 1,
+        registros_por_pagina: 1,
+        apenas_importado_api: "N",
+      });
+
+      if (!result.ok) {
+        console.error("[omie-gclick] teste de conexão falhou:", result.faultCode);
+        return { ok: false, error: `omie-${result.faultCode}` };
+      }
+      return { ok: true };
     },
   };
 }

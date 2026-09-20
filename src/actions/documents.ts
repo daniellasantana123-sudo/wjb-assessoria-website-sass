@@ -7,6 +7,7 @@ import { getTenantRole, requireStaffSession, requireTenantAccess } from "@/lib/a
 import { getAntivirusAdapter } from "@/integrations/antivirus";
 import { isAllowedMimeType, sanitizeFileName } from "@/lib/documents";
 import { hasPermission } from "@/lib/permissions/permissions";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import type { DocumentCategory } from "@/types/database";
 
 export type DocumentActionState = { error: string } | undefined;
@@ -34,6 +35,11 @@ export async function uploadDocument(
   const tenantRole = await getTenantRole(tenantId);
   if (!hasPermission(session, "documents.upload", tenantRole)) {
     return { error: "Você não tem permissão para enviar documentos." };
+  }
+
+  // Kill switch global (Fase 5 do wjb-saas-mvp) - leitura/download continuam ativos, só o envio é bloqueado.
+  if (!(await isFeatureEnabled("documents"))) {
+    return { error: "O envio de documentos está temporariamente desativado pela WJB." };
   }
 
   const file = formData.get("file");

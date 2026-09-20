@@ -5,6 +5,7 @@ import { createClient } from "@/lib/db/supabase/server";
 import { getEmailAdapter } from "@/integrations/email";
 import { renderNotificationEmail } from "@/integrations/email/templates";
 import { getSiteUrl } from "@/lib/seo/site-url";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export type NotificationType =
   | "ticket.created"
@@ -48,6 +49,9 @@ export async function notifyTicketOrMessageEvent({
   portalLink: string;
   adminLink: string;
 }) {
+  // Kill switch global (Fase 5) - nem notificação in-app nem e-mail saem daqui, de propósito, se desligada.
+  if (!(await isFeatureEnabled("notifications"))) return;
+
   const admin = createAdminClient();
 
   let recipients: { id: string; email: string | null }[];
