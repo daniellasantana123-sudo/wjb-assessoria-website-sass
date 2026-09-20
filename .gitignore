@@ -19,3 +19,7 @@ coverage
 
 # misc
 *.log
+LOG_imapsync/
+
+# config local do Claude Code (skills, locks) - específico da máquina
+.claude/
