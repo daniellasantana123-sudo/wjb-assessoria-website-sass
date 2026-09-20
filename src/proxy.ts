@@ -32,7 +32,15 @@ import { createServerClient } from "@supabase/ssr";
  * rota bloqueada. Alternar essa env var pra "true" no deploy religa as
  * três coisas de uma vez, sem tocar em nenhum componente.
  */
-const GATED_PREFIXES = ["/login", "/definir-senha", "/recuperar-senha", "/portal", "/admin", "/auth"];
+const GATED_PREFIXES = [
+  "/login",
+  "/definir-senha",
+  "/recuperar-senha",
+  "/portal",
+  "/admin",
+  "/auth",
+  "/api/me",
+];
 
 function isSaasGated(pathname: string) {
   if (process.env.NEXT_PUBLIC_SAAS_PUBLIC_ENABLED === "true") return false;

@@ -2,39 +2,46 @@
 
 ## Fase atual
 
-**Fase 0 - Auditoria do estado atual**: concluída em 2026-09-20.
+**Fase 1 - Fundação Backend SaaS**: concluída em 2026-09-20.
 
 ## Progresso
 
 | Fase | Status | Data |
 |---|---|---|
 | Fase 0 - Auditoria do estado atual | Concluída | 2026-09-20 |
+| Fase 1 - Fundação Backend SaaS | Concluída | 2026-09-20 |
 
 ## Arquivos alterados nesta fase
 
-- `.gitignore` - adicionadas 2 entradas (`LOG_imapsync/`, `.claude/`).
-- `artifacts/wjb-saas-mvp/fase-0/*` - criado (README, workflow, architecture, implementation-plan, decisions, checklist, test-report, phase-handoff).
-- `artifacts/wjb-saas-mvp/STATUS.md` - criado (este arquivo).
+- `src/lib/permissions/permissions.ts` - novo (permissões finas, aditivo a `roles.ts`).
+- `src/app/api/me/route.ts` - novo (`GET /api/me`).
+- `src/app/api/me/organizations/route.ts` - novo (`GET /api/me/organizations`).
+- `src/proxy.ts` - `/api/me` adicionado ao gate do SaaS.
+- `src/tests/unit/permissions.test.ts` - novo, 7 testes.
+- `src/tests/integration/me-api.test.ts` - novo, 4 testes.
+- `src/tests/integration/me-organizations-api.test.ts` - novo, 3 testes.
+- `artifacts/wjb-saas-mvp/fase-1/*` - criado.
+- `artifacts/wjb-saas-mvp/STATUS.md` - atualizado (este arquivo).
 
-Nenhum arquivo de código de produto (`src/`, `supabase/`) foi alterado.
+Nenhuma tabela, migration, dependência nova ou renomeação de código existente.
 
 ## Testes
 
-Lint, typecheck, 42 testes unitários e build de produção - todos passando. Detalhe completo em `fase-0/test-report.md`.
+Lint, typecheck, 56 testes (42 anteriores + 14 novos) e build de produção (78 rotas) - todos passando. Detalhe completo em `fase-1/test-report.md`.
 
 ## Riscos
 
-- Credenciais do projeto Supabase real (`wjb-website-app`) ausentes em todos os ambientes acessíveis hoje - ver `fase-0/decisions.md` D2.
-- `src/types/database.ts` mantido manualmente, sem garantia de sincronia com o schema real.
+- Herdado da Fase 0: credenciais do projeto Supabase real (`wjb-website-app`) ausentes em todos os ambientes acessíveis - `/api/me`/`/api/me/organizations` só foram testados via mock, não contra banco real.
+- `getPermissions`/`hasPermission` ainda não são usados por nenhuma Server Action existente - scaffolding pronto pra uso futuro, não enforcement real ainda.
 
 ## Bloqueios
 
-Nenhum bloqueio impede a conclusão da Fase 0. Para uma próxima fase que precise de banco real, a reconexão das credenciais do Supabase (item acima) é pré-requisito.
+Nenhum bloqueio impede a conclusão da Fase 1. Endpoints REST adicionais (organizações/membros/convites) ficaram fora de escopo por decisão do usuário - não são um bloqueio, são um "não fazer" deliberado (ver `fase-1/decisions.md` D3).
 
 ## Próxima fase
 
-Não definida ainda - aguardando o próximo prompt numerado do usuário. Candidatos levantados em `fase-0/implementation-plan.md`.
+Não definida ainda - aguardando o próximo prompt numerado do usuário.
 
-## Decisão de escopo importante
+## Decisão de escopo importante (mantida desde a Fase 0)
 
-A integração Omie.G-Click **não faz parte** deste projeto - decisão de produto de 2026-09-16, reconfirmada em 2026-09-20. Ver `fase-0/decisions.md` D1.
+A integração Omie.G-Click **não faz parte** deste projeto - decisão de produto de 2026-09-16, reconfirmada em 2026-09-20.
