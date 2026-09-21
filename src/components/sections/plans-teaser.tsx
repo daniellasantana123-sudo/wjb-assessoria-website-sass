@@ -5,7 +5,6 @@ import { Container } from "@/components/layout/container";
 import { RevealStagger } from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
 import { headerCtas } from "@/config/navigation";
-import { formatBRL } from "@/config/pricing";
 import { plans } from "@/config/plans";
 import { cn, navigableCardClass } from "@/lib/utils";
 
@@ -13,9 +12,10 @@ import { SectionHeading } from "./section-heading";
 
 /**
  * Seção "Encontre o plano ideal" (WJB_Planos_Simulador_Implementacao_
- * Claude.md, seção 38) — cards compactos com os preços de entrada reais dos
- * 3 planos, substituindo a versão anterior sem valores (que existia
- * enquanto os planos eram "Sob consulta").
+ * Claude.md, seção 38) — cards compactos com resumo e destaques dos 3
+ * planos. Preço removido da exibição em 2026-09-21 a pedido do usuário
+ * (mesma leva da remoção do simulador) — a mensalidade é comunicada só no
+ * contato direto com a equipe.
  */
 export function PlansTeaser() {
   return (
@@ -33,6 +33,9 @@ export function PlansTeaser() {
          * páginas de detalhe), só não eram reaproveitados aqui. Nenhum
          * rótulo tipo "mais popular" — seria uma afirmação de fato sem
          * dado real (seção 43), diferente de mostrar conteúdo que já existe.
+         * Valores removidos da exibição em 2026-09-21, a pedido do usuário
+         * (mesma leva da remoção do simulador) — `startingPrice` continua
+         * em `src/config/plans.ts`/JSON-LD, só não aparece mais na UI.
          */}
         <RevealStagger className="grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
           {plans.map((plan) => (
@@ -41,12 +44,7 @@ export function PlansTeaser() {
               href={plan.detailsPath}
               className={cn(navigableCardClass, "group flex h-full flex-col gap-4 p-6 text-left")}
             >
-              <div>
-                <p className="text-foreground text-lg font-semibold">{plan.name}</p>
-                <p className="text-primary mt-1 text-sm font-medium">
-                  A partir de {formatBRL(plan.startingPrice)}/mês
-                </p>
-              </div>
+              <p className="text-foreground text-lg font-semibold">{plan.name}</p>
               <p className="text-muted-foreground text-sm">{plan.cardSummary}</p>
               <ul className="mt-auto flex flex-col gap-2">
                 {plan.cardHighlights.slice(0, 3).map((highlight) => (

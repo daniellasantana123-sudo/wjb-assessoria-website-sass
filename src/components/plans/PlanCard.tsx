@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
-import { formatBRL } from "@/config/pricing";
 import type { Plan } from "@/config/plans";
 import { getPlanWhatsAppLink } from "@/integrations/whatsapp";
 
@@ -23,26 +22,18 @@ export function PlanCard({ plan }: { plan: Plan }) {
         ))}
       </ul>
 
-      <div className="border-border border-t pt-4">
-        <p className="text-muted-foreground text-xs">A partir de</p>
-        <p className="text-foreground text-2xl font-semibold">
-          {formatBRL(plan.startingPrice)}
-          <span className="text-muted-foreground text-sm font-normal"> / mês</span>
-        </p>
-
-        <div className="mt-4 flex flex-col gap-2">
-          <Link href={plan.detailsPath} className={buttonVariants({ variant: "outline" })}>
-            Saiba mais
-          </Link>
-          <Link
-            href={getPlanWhatsAppLink(plan.name) ?? "/contato"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ variant: "cta" })}
-          >
-            Fale com a nossa equipe
-          </Link>
-        </div>
+      <div className="border-border flex flex-col gap-2 border-t pt-4">
+        <Link href={plan.detailsPath} className={buttonVariants({ variant: "outline" })}>
+          Saiba mais
+        </Link>
+        <Link
+          href={getPlanWhatsAppLink(plan.name) ?? "/contato"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "cta" })}
+        >
+          Fale com a nossa equipe
+        </Link>
       </div>
     </div>
   );

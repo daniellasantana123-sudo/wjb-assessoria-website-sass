@@ -75,11 +75,6 @@ export function getPlansCatalogSchema() {
         "@type": "Offer",
         name: `Plano ${plan.name}`,
         url: `${base}${plan.detailsPath}`,
-        priceSpecification: {
-          "@type": "PriceSpecification",
-          minPrice: plan.startingPrice,
-          priceCurrency: "BRL",
-        },
       })),
     },
   };

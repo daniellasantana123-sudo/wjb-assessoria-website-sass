@@ -76,10 +76,11 @@ export default function PlansPage() {
       </RevealStagger>
 
       <p className="text-muted-foreground mx-auto mt-10 max-w-2xl text-center text-sm">
-        Os valores apresentados são iniciais e podem variar conforme atividade,
-        faturamento, número de sócios, empregados, volume operacional, estado, obrigações
-        específicas e serviços adicionais. A contratação é formalizada somente após
-        validação das informações pela WJB e aceite da proposta/contrato.
+        O valor da mensalidade varia conforme atividade, faturamento, número de sócios,
+        empregados, volume operacional, estado, obrigações específicas e serviços
+        adicionais. Fale com a nossa equipe para receber uma proposta de acordo com o
+        perfil da sua empresa. A contratação é formalizada somente após validação das
+        informações pela WJB e aceite da proposta/contrato.
       </p>
     </Container>
   );
