@@ -5,6 +5,7 @@ import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
 import { planHowItWorksSteps, type Plan } from "@/config/plans";
+import { getPlanWhatsAppLink } from "@/integrations/whatsapp";
 
 import { PlanIncludedServices } from "./PlanIncludedServices";
 
@@ -15,6 +16,8 @@ import { PlanIncludedServices } from "./PlanIncludedServices";
  * `plan.detail` em src/config/plans.ts.
  */
 export function PlanDetails({ plan }: { plan: Plan }) {
+  const whatsAppLink = getPlanWhatsAppLink(plan.name) ?? "/contato";
+
   return (
     <>
       <Container className="py-12 sm:py-16">
@@ -35,7 +38,9 @@ export function PlanDetails({ plan }: { plan: Plan }) {
           </h1>
           <p className="text-muted-foreground mt-3 text-lg">{plan.detail.heroText}</p>
           <Link
-            href={plan.simulatorPath}
+            href={whatsAppLink}
+            target="_blank"
+            rel="noopener noreferrer"
             className={buttonVariants({ variant: "cta", className: "mt-6" })}
           >
             {plan.detail.heroCta}
@@ -99,10 +104,12 @@ export function PlanDetails({ plan }: { plan: Plan }) {
 
         <div className="border-border mt-16 flex flex-col items-center gap-4 rounded-md border p-8 text-center">
           <p className="text-foreground text-lg font-medium">
-            Pronto para ver a estimativa mensal do seu {plan.name}?
+            Pronto para contratar o seu {plan.name}?
           </p>
           <Link
-            href={plan.simulatorPath}
+            href={whatsAppLink}
+            target="_blank"
+            rel="noopener noreferrer"
             className={buttonVariants({ variant: "cta" })}
           >
             {plan.detail.finalCta}

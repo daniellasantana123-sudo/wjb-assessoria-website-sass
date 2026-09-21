@@ -22,14 +22,14 @@ test("selecionar um serviço mostra conteúdo real + CTAs (Cenário 2)", async (
   await expect(page.getByRole("button", { name: "Solicitar atendimento" })).toBeVisible();
 });
 
-test("selecionar o simulador navega para a rota real (Cenário 3)", async ({ page }) => {
+test("selecionar o plano MEI navega para a rota real (Cenário 3)", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Abrir Assistente Virtual WJB" }).click();
-  await page.getByRole("button", { name: "Simular honorários" }).click();
+  await page.getByRole("button", { name: "MEI", exact: true }).click();
   await page.getByRole("button", { name: "Conhecer o serviço" }).click();
 
-  await expect(page).toHaveURL(/\/planos\/simulador$/);
-  await expect(page.getByRole("heading", { name: "Simulador de honorários" })).toBeVisible();
+  await expect(page).toHaveURL(/\/planos\/mei$/);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 
 test("qualificação preenchida e enviada abre o WhatsApp com o resumo (Cenário 4)", async ({

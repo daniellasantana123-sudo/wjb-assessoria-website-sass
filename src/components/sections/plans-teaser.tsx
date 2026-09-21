@@ -4,6 +4,7 @@ import { CheckCircle2 } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { RevealStagger } from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
+import { headerCtas } from "@/config/navigation";
 import { formatBRL } from "@/config/pricing";
 import { plans } from "@/config/plans";
 import { cn, navigableCardClass } from "@/lib/utils";
@@ -37,7 +38,7 @@ export function PlansTeaser() {
           {plans.map((plan) => (
             <Link
               key={plan.id}
-              href={plan.simulatorPath}
+              href={plan.detailsPath}
               className={cn(navigableCardClass, "group flex h-full flex-col gap-4 p-6 text-left")}
             >
               <div>
@@ -61,8 +62,13 @@ export function PlansTeaser() {
             </Link>
           ))}
         </RevealStagger>
-        <Link href="/planos#simulador" className={buttonVariants({ variant: "cta" })}>
-          Simular meu plano
+        <Link
+          href={headerCtas.talkToAccountant.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "cta" })}
+        >
+          Fale com a nossa equipe
         </Link>
       </Container>
     </section>

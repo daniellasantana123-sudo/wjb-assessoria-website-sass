@@ -15,7 +15,6 @@ export const assistantMenuOptions: AssistantMenuOption[] = [
   { key: "trocarContador", label: "Trocar de contador" },
   { key: "contabilidadeCompleta", label: "Contabilidade para minha empresa" },
   { key: "mei", label: "MEI" },
-  { key: "simulador", label: "Simular honorários" },
   { key: "departamentoPessoal", label: "Departamento pessoal / Folha" },
   { key: "impostosRegularizacao", label: "Impostos e regularização" },
   { key: "consultoria", label: "Consultoria contábil e tributária" },
@@ -39,7 +38,6 @@ export const assistantServiceTargets: Record<AssistantServiceKey, AssistantTarge
   trocarContador: { kind: "service", slug: "trocar-de-contador" },
   contabilidadeCompleta: { kind: "service", slug: "contabilidade-completa" },
   mei: { kind: "plan", id: "mei" },
-  simulador: { kind: "route", href: "/planos/simulador" },
   departamentoPessoal: { kind: "service", slug: "departamento-pessoal" },
   impostosRegularizacao: { kind: "service", slug: "fiscal-tributario" },
   consultoria: { kind: "service", slug: "consultoria-contabil" },
@@ -66,7 +64,7 @@ export const assistantPageGreetings: { pathPrefix: string; message: string }[] =
   {
     pathPrefix: "/planos",
     message:
-      "Vi que você está conhecendo os planos da WJB. Posso ajudar a simular os honorários ou encaminhar você para um especialista.",
+      "Vi que você está conhecendo os planos da WJB. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
   },
   {
     pathPrefix: "/contabilidade-digital",

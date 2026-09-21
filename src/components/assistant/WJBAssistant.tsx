@@ -42,7 +42,8 @@ const GREETING_DELAY_MS = 5000;
  *
  * Estado dividido em duas camadas: a baseline persistida em sessionStorage
  * (fechado/minimizado, tela atual, serviço escolhido - lida via
- * `useSyncExternalStore`, mesmo padrão de `src/lib/simulator/storage.ts`) e
+ * `useSyncExternalStore`, mesmo padrão já usado no projeto pra persistência
+ * client-side) e
  * um overlay local (`greeting`/`open`) puramente transitório da aba atual,
  * que nunca é persistido. Isso evita restaurar sessão via `useEffect` +
  * `setState` (rejeitado pelo lint `react-hooks/set-state-in-effect`) e, de

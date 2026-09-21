@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { PlansGrid } from "@/components/plans/PlansGrid";
-import { PricingSimulator } from "@/components/plans/PricingSimulator";
 import { JsonLd } from "@/components/shared/json-ld";
 import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,7 +15,7 @@ import { cn, staticCardHoverClass } from "@/lib/utils";
 export const metadata: Metadata = {
   title: { absolute: "Planos de Contabilidade | WJB Assessoria Contábil" },
   description:
-    "Compare os planos mensais da WJB para MEI, Simples Nacional e Lucro Presumido e simule o valor da contabilidade de acordo com o perfil da sua empresa.",
+    "Compare os planos mensais da WJB para MEI, Simples Nacional e Lucro Presumido e fale com a nossa equipe para receber o valor da contabilidade de acordo com o perfil da sua empresa.",
 };
 
 const breadcrumbItems = [{ label: "Home", href: "/" }, { label: "Planos" }];
@@ -36,21 +35,17 @@ export default function PlansPage() {
           Contabilidade sob medida para a realidade da sua empresa.
         </h1>
         <p className="text-muted-foreground mt-3 text-lg">
-          Escolha o regime da sua empresa, conheça o que está incluído e faça uma
-          simulação de honorários de acordo com atividade, faturamento, estrutura
-          societária e equipe.
+          Escolha o regime da sua empresa e conheça o que está incluído em cada plano.
+          Fale com a nossa equipe para receber o valor exato para o seu negócio.
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Link href="#simulador" className={buttonVariants({ variant: "cta" })}>
-            Simular meu plano
-          </Link>
           <Link
             href={headerCtas.talkToAccountant.href}
             target="_blank"
             rel="noopener noreferrer"
-            className={buttonVariants({ variant: "outline" })}
+            className={buttonVariants({ variant: "cta" })}
           >
-            Falar com contador
+            Fale com a nossa equipe
           </Link>
         </div>
       </div>
@@ -86,19 +81,6 @@ export default function PlansPage() {
         específicas e serviços adicionais. A contratação é formalizada somente após
         validação das informações pela WJB e aceite da proposta/contrato.
       </p>
-
-      <RevealOnScroll as="div" id="simulador" className="mt-16 scroll-mt-24">
-        <h2 className="text-foreground text-2xl font-bold tracking-tight">
-          Simule o seu plano
-        </h2>
-        <p className="text-muted-foreground mt-2 max-w-2xl">
-          Responda algumas perguntas sobre sua empresa e veja uma estimativa mensal na
-          hora.
-        </p>
-        <div className="mt-8">
-          <PricingSimulator />
-        </div>
-      </RevealOnScroll>
     </Container>
   );
 }

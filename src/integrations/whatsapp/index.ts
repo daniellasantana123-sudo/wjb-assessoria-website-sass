@@ -30,3 +30,16 @@ export function getArmelxWhatsAppLink(message: string = ARMELX_DEFAULT_MESSAGE) 
   if (!phone) return null;
   return buildWhatsAppLink(phone.e164, message);
 }
+
+/**
+ * Link de contato direto por plano (2026-09-21) — substitui o simulador de
+ * honorários (removido a pedido do usuário): em vez de simular, os CTAs de
+ * `/planos` levam direto pro WhatsApp com o nome do plano já na mensagem.
+ * Mensagem montada a partir de `plan.name` (nunca duplicada como string
+ * fixa por plano) pra nunca ficar dessincronizada do nome real do plano.
+ */
+export function getPlanWhatsAppLink(planName: string) {
+  return getWhatsAppLink(
+    `Olá! Tenho interesse no plano ${planName} da WJB Assessoria Contábil.`,
+  );
+}

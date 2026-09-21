@@ -11,10 +11,9 @@ export interface AssistantLeadFormProps {
 
 /**
  * Formulário de qualificação do assistente - reaproveita o `LeadForm`
- * (mesmo padrão de `PlanLeadForm.tsx`) em vez de criar uma estrutura de
- * captura paralela (seção "FORMULÁRIOS"). Ao enviar com sucesso, abre o
- * WhatsApp da WJB com o contexto já coletado, mesma lógica de
- * `PlanLeadForm`.
+ * já existente em vez de criar uma estrutura de captura paralela (seção
+ * "FORMULÁRIOS"). Ao enviar com sucesso, abre o WhatsApp da WJB com o
+ * contexto já coletado.
  */
 export function AssistantLeadForm({ serviceLabel, onSuccess }: AssistantLeadFormProps) {
   const defaultMessage = serviceLabel

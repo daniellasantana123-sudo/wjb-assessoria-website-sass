@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { formatBRL } from "@/config/pricing";
 import type { Plan } from "@/config/plans";
+import { getPlanWhatsAppLink } from "@/integrations/whatsapp";
 
 export function PlanCard({ plan }: { plan: Plan }) {
   return (
@@ -34,10 +35,12 @@ export function PlanCard({ plan }: { plan: Plan }) {
             Saiba mais
           </Link>
           <Link
-            href={plan.simulatorPath}
+            href={getPlanWhatsAppLink(plan.name) ?? "/contato"}
+            target="_blank"
+            rel="noopener noreferrer"
             className={buttonVariants({ variant: "cta" })}
           >
-            Simular este plano
+            Fale com a nossa equipe
           </Link>
         </div>
       </div>

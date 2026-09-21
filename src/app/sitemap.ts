@@ -80,12 +80,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${base}/planos/simulador`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
       url: `${base}/como-funciona`,
       lastModified: now,
       changeFrequency: "yearly",

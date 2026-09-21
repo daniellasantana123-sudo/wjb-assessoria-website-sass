@@ -59,14 +59,6 @@ export function getAssistantServiceResponse(
         serviceLabel: `Plano ${plan.name}`,
       };
     }
-    case "simulador": {
-      return {
-        message:
-          "Você pode simular uma estimativa mensal de honorários informando alguns dados da sua empresa - o resultado já sai na hora.",
-        href: "/planos/simulador",
-        serviceLabel: "Simulador de honorários",
-      };
-    }
     case "departamentoPessoal": {
       const service = getServicePage("departamento-pessoal");
       if (!service) return null;

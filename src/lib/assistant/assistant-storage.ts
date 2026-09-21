@@ -4,9 +4,8 @@ import type { AssistantScreen, AssistantServiceKey } from "@/types/assistant";
  * Persistência do assistente (seção "PERSISTÊNCIA"/"LGPD") - guarda só UI
  * state (painel minimizado ou não, tela atual, serviço escolhido) em
  * `sessionStorage`, cada campo sob sua própria chave (string simples, nunca
- * um blob JSON) pra que `useSyncExternalStore` (mesmo padrão de
- * `src/lib/simulator/storage.ts`) receba sempre um primitivo referencialmente
- * estável - evita tanto o erro de lint `react-hooks/set-state-in-effect`
+ * um blob JSON) pra que `useSyncExternalStore` receba sempre um primitivo
+ * referencialmente estável - evita tanto o erro de lint `react-hooks/set-state-in-effect`
  * quanto o aviso "getSnapshot should be cached" do React. "open"/"greeting"
  * nunca são persistidos (são transitórios da aba atual - ver
  * `WJBAssistant.tsx`). Nunca nome/telefone/e-mail: esses ficam só no estado

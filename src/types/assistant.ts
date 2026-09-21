@@ -20,7 +20,6 @@ export type AssistantServiceKey =
   | "trocarContador"
   | "contabilidadeCompleta"
   | "mei"
-  | "simulador"
   | "departamentoPessoal"
   | "impostosRegularizacao"
   | "consultoria"

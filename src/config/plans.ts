@@ -1,4 +1,10 @@
-import type { Regime } from "@/types/pricing";
+/**
+ * `Regime` morava em `src/types/pricing.ts` - movido pra cá em 2026-09-21
+ * (remoção do simulador de honorários) porque era o único tipo daquele
+ * arquivo usado fora do próprio simulador (aqui, e na tipagem do
+ * assistente virtual).
+ */
+export type Regime = "mei" | "simples" | "presumido";
 
 export interface PlanIncludedService {
   title: string;
@@ -11,7 +17,6 @@ export interface Plan {
   slug: string;
   startingPrice: number;
   detailsPath: string;
-  simulatorPath: string;
   cardSummary: string;
   cardHighlights: string[];
   detail: {
@@ -40,8 +45,8 @@ export interface Plan {
 export const planHowItWorksSteps = [
   {
     step: "01",
-    title: "Faça sua simulação",
-    description: "Informe os dados básicos do seu negócio e visualize a estimativa mensal.",
+    title: "Fale com a nossa equipe",
+    description: "Conte um pouco sobre o seu negócio pelo WhatsApp ou pelo formulário de contato.",
   },
   {
     step: "02",
@@ -70,7 +75,6 @@ export const plans: Plan[] = [
     slug: "mei",
     startingPrice: 120,
     detailsPath: "/planos/mei",
-    simulatorPath: "/planos/simulador?regime=mei",
     cardSummary:
       "Para o microempreendedor que quer manter obrigações organizadas, receber orientação contábil e ter apoio para crescer com segurança.",
     cardHighlights: [
@@ -85,7 +89,7 @@ export const plans: Plan[] = [
       heroTitle: "Contabilidade para MEI com acompanhamento simples e próximo.",
       heroText:
         "Mesmo quando a legislação simplifica as obrigações do MEI, o acompanhamento contábil pode ajudar na organização financeira, comprovação de resultados, cumprimento de prazos e preparação para o crescimento do negócio.",
-      heroCta: "Simular Plano MEI",
+      heroCta: "Fale com a nossa equipe",
       whatIsTitle: "O que é MEI?",
       whatIsText: [
         "O Microempreendedor Individual é uma modalidade simplificada destinada a pequenos empreendedores que atendem aos requisitos legais de atividade, faturamento e estrutura previstos para o MEI.",
@@ -132,7 +136,7 @@ export const plans: Plan[] = [
             "Orientação sobre necessidade, emissão e utilização do certificado digital quando aplicável.",
         },
       ],
-      finalCta: "Fazer simulação",
+      finalCta: "Fale com a nossa equipe",
     },
   },
   {
@@ -141,7 +145,6 @@ export const plans: Plan[] = [
     slug: "simples-nacional",
     startingPrice: 350,
     detailsPath: "/planos/simples-nacional",
-    simulatorPath: "/planos/simulador?regime=simples",
     cardSummary:
       "Para micro e pequenas empresas que precisam de uma rotina contábil, fiscal e trabalhista organizada em um único acompanhamento.",
     cardHighlights: [
@@ -157,7 +160,7 @@ export const plans: Plan[] = [
       heroTitle: "Contabilidade completa para empresas do Simples Nacional.",
       heroText:
         "Uma solução para empresas que precisam manter apurações, registros contábeis, obrigações fiscais e rotinas trabalhistas organizadas com acompanhamento profissional.",
-      heroCta: "Simular Plano Simples Nacional",
+      heroCta: "Fale com a nossa equipe",
       whatIsTitle: "O que é Simples Nacional?",
       whatIsText: [
         "O Simples Nacional é um regime tributário voltado a microempresas e empresas de pequeno porte que atendem aos requisitos previstos em lei.",
@@ -209,7 +212,7 @@ export const plans: Plan[] = [
           description: "Canais digitais e acompanhamento de acordo com o plano contratado.",
         },
       ],
-      finalCta: "Fazer simulação",
+      finalCta: "Fale com a nossa equipe",
     },
   },
   {
@@ -218,7 +221,6 @@ export const plans: Plan[] = [
     slug: "lucro-presumido",
     startingPrice: 700,
     detailsPath: "/planos/lucro-presumido",
-    simulatorPath: "/planos/simulador?regime=presumido",
     cardSummary:
       "Para empresas que exigem uma operação fiscal e contábil mais ampla, com acompanhamento das obrigações próprias do Lucro Presumido.",
     cardHighlights: [
@@ -234,7 +236,7 @@ export const plans: Plan[] = [
       heroTitle: "Contabilidade estruturada para empresas no Lucro Presumido.",
       heroText:
         "Acompanhamento contábil e fiscal para empresas que necessitam de apurações periódicas, escriturações completas e controle consistente das obrigações do regime.",
-      heroCta: "Simular Plano Lucro Presumido",
+      heroCta: "Fale com a nossa equipe",
       whatIsTitle: "O que é Lucro Presumido?",
       whatIsText: [
         "O Lucro Presumido é um regime em que IRPJ e CSLL são calculados a partir de percentuais de presunção definidos conforme a atividade, além dos demais tributos aplicáveis à operação.",
@@ -284,7 +286,7 @@ export const plans: Plan[] = [
             "Apoio à empresa na interpretação de números, obrigações e decisões recorrentes.",
         },
       ],
-      finalCta: "Fazer simulação",
+      finalCta: "Fale com a nossa equipe",
     },
   },
 ];
@@ -298,8 +300,10 @@ export function getPlanBySlug(slug: string) {
 }
 
 /**
- * Serviços adicionais (seção 6) — reutilizados no card de "Serviços
- * adicionais" da página /planos e no AddonsSelector do simulador.
+ * Serviços adicionais (seção 6) — mostrados no card de "Serviços
+ * adicionais" da página /planos. Também eram usados pelo AddonsSelector
+ * do simulador (removido em 2026-09-21) — este array continua servindo
+ * só a exibição estática, nada aqui precisou mudar com a remoção.
  */
 export const planAddons = [
   {

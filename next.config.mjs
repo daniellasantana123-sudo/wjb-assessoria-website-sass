@@ -119,6 +119,11 @@ const nextConfig = {
         destination: "/blog/reforma-tributaria-como-preparar-empresa",
         permanent: true,
       },
+      {
+        source: "/planos/simulador",
+        destination: "/planos",
+        permanent: true,
+      },
     ];
   },
 };
