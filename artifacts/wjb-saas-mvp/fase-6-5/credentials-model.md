@@ -37,6 +37,12 @@ Ao confirmar o formato real (via contato com a Omie ou acesso à documentação 
 - `.env.example` (quando esse arquivo for criado - pendência herdada da Fase 0)
 - `credentials-model.md` (este arquivo)
 
+## Atualização (2026-09-21) - confirmado pelo suporte da Omie + fonte terceira
+
+O usuário recebeu resposta do suporte da Omie confirmando o caminho de configuração (Configurações > Integrações & API > Aplicações > "Criar uma Aplicação" gera as credenciais). Uma fonte terceira independente (documentação de suporte da Jettax 360, integradora real do G-Click) confirma os nomes exatos dos 2 valores gerados: **"ID de cliente"** e **"Segredo de cliente"** - ou seja, o modelo é **Client ID / Client Secret**, não mais só uma suposição. `GCLICK_CLIENT_ID`/`GCLICK_CLIENT_SECRET` deixam de ser "nomenclatura candidata" e passam a ser os nomes corretos com alta confiança.
+
+Ainda não confirmado: onde exatamente essas credenciais são trocadas por um token (endpoint/método/host), o nome do campo do token na resposta, o header usado nas chamadas seguintes, e o schema de cada endpoint de cliente/tarefa - a documentação Postman oficial continua inacessível a ferramentas automatizadas (SPA em JavaScript). Ver `docs/integrations/gclick/PENDING_VALIDATION.md` pra o registro vivo desta pendência.
+
 ## Regras seguidas nesta fase
 
 - Nenhum secret real foi solicitado ao usuário nesta conversa.
