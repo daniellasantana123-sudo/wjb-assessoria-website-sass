@@ -47,15 +47,33 @@ export function AssistantPanel({
   onMinimize,
   onClose,
 }: AssistantPanelProps) {
-  const serviceResponse = selectedService ? getAssistantServiceResponse(selectedService) : null;
+  const serviceResponse = selectedService
+    ? getAssistantServiceResponse(selectedService)
+    : null;
 
   return (
     <div
       role="dialog"
       aria-label="Daniella, assistente virtual da WJB"
       className={cn(
-        "border-border bg-background animate-enter fixed inset-x-3 z-50 flex max-h-[min(600px,88dvh)] flex-col overflow-hidden rounded-md border shadow-xl transition-[bottom] duration-300 sm:inset-x-auto sm:right-6 sm:w-95",
-        liftForCookieBanner ? "bottom-44 sm:bottom-40" : "bottom-3 sm:bottom-24",
+        "border-border bg-background animate-enter fixed inset-x-3 z-50 flex flex-col overflow-hidden rounded-md border shadow-xl transition-[bottom] duration-300 sm:inset-x-auto sm:right-6 sm:w-95",
+        /*
+         * `max-h` calculado por `calc(100dvh - <offset do bottom + folga>)`
+         * (2026-09-22, bug real achado testando responsivo em telas curtas)
+         * - o `min(600px,88dvh)` fixo de antes não considerava que
+         * `liftForCookieBanner` muda o `bottom-*` pra bem mais longe da
+         * borda (176px no mobile, contra 12px normal) - num viewport curto
+         * (ex.: 320x568, iPhone SE, banner de cookies ainda visível na
+         * primeira visita), 88dvh de altura + esse deslocamento maior
+         * jogava o topo do painel pra fora da tela (`y` negativo,
+         * cabeçalho/botão de fechar inacessíveis). Subtrair o offset exato
+         * de cada combinação breakpoint/estado garante `top >= 0` por
+         * construção, pra qualquer altura de viewport - não é uma
+         * porcentagem que só funciona nos tamanhos testados.
+         */
+        liftForCookieBanner
+          ? "bottom-44 max-h-[min(600px,calc(100dvh-12.5rem))] sm:bottom-40 sm:max-h-[min(600px,calc(100dvh-11rem))]"
+          : "bottom-3 max-h-[min(600px,calc(100dvh-2rem))] sm:bottom-24 sm:max-h-[min(600px,calc(100dvh-7rem))]",
       )}
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -75,9 +93,9 @@ export function AssistantPanel({
           <>
             <AssistantMessage>{greetingMessage}</AssistantMessage>
             <AssistantMessage>
-              Sou a Daniella, assistente virtual da WJB. Estou aqui para ajudar você a encontrar o
-              serviço ideal para sua empresa ou te encaminhar direto para um especialista. O
-              que você precisa hoje?
+              Sou a Daniella, assistente virtual da WJB. Estou aqui para ajudar
+              você a encontrar o serviço ideal para sua empresa ou te encaminhar
+              direto para um especialista. O que você precisa hoje?
             </AssistantMessage>
             <AssistantQuickReplies
               options={assistantMenuOptions.map((option) => ({
@@ -117,9 +135,13 @@ export function AssistantPanel({
         {screen === "lead" ? (
           <>
             <AssistantMessage>
-              Perfeito! Me conta alguns dados rápidos para que a WJB entre em contato.
+              Perfeito! Me conta alguns dados rápidos para que a WJB entre em
+              contato.
             </AssistantMessage>
-            <AssistantLeadForm serviceLabel={serviceResponse?.serviceLabel ?? null} onSuccess={onLeadCompleted} />
+            <AssistantLeadForm
+              serviceLabel={serviceResponse?.serviceLabel ?? null}
+              onSuccess={onLeadCompleted}
+            />
             <button
               type="button"
               onClick={onBackToMenu}
@@ -133,8 +155,8 @@ export function AssistantPanel({
         {screen === "completed" ? (
           <>
             <AssistantMessage>
-              Obrigado! Recebemos seus dados e abrimos o WhatsApp com o resumo da conversa.
-              Nossa equipe entra em contato em breve.
+              Obrigado! Recebemos seus dados e abrimos o WhatsApp com o resumo
+              da conversa. Nossa equipe entra em contato em breve.
             </AssistantMessage>
             <button
               type="button"

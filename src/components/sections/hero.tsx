@@ -245,12 +245,24 @@ export function Hero() {
                      * O selo de baixo tem um delay levemente maior
                      * (`delay-100` vs sem delay) pra entrar logo depois do de
                      * cima, em vez dos dois aparecerem exatamente juntos.
+                     *
+                     * `pointer-coarse:` (2026-09-22, achado testando
+                     * responsivo/mobile) - `:hover` via `group-hover`
+                     * depende de um ponteiro capaz de pairar sem clicar
+                     * (mouse); em celular/tablet não existe isso - tocar na
+                     * tela não é "hover" de verdade, então sem esse ajuste
+                     * os selos nunca apareceriam pra quem visita pelo
+                     * celular (maioria do tráfego de um site institucional).
+                     * `pointer-coarse:` (variante nativa do Tailwind pra
+                     * `@media (pointer: coarse)`, que cobre telas de toque)
+                     * força os selos sempre visíveis nesses dispositivos, em
+                     * vez de depender de um hover que não existe lá.
                      */}
                     {badge ? (
                       <>
                         <div
                           aria-hidden="true"
-                          className="pointer-events-none absolute top-3 left-3 flex max-w-[85%] translate-y-1 items-center gap-1.5 rounded-full bg-neutral-900/80 px-3 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg backdrop-blur-sm transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+                          className="pointer-coarse:translate-y-0 pointer-coarse:opacity-100 pointer-events-none absolute top-3 left-3 flex max-w-[85%] translate-y-1 items-center gap-1.5 rounded-full bg-neutral-900/80 px-3 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg backdrop-blur-sm transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
                         >
                           <badge.icon
                             aria-hidden="true"
@@ -260,7 +272,7 @@ export function Hero() {
                         </div>
                         <div
                           aria-hidden="true"
-                          className="pointer-events-none absolute right-3 bottom-3 flex max-w-[85%] translate-y-1 items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-neutral-900 opacity-0 shadow-lg transition-all delay-100 duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+                          className="pointer-coarse:translate-y-0 pointer-coarse:opacity-100 pointer-events-none absolute right-3 bottom-3 flex max-w-[85%] translate-y-1 items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-neutral-900 opacity-0 shadow-lg transition-all delay-100 duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
                         >
                           <CheckCircle2
                             aria-hidden="true"
