@@ -148,18 +148,19 @@ export default function ContactPage() {
               Prefere um atendimento rápido?
             </h3>
             <p className="text-muted-foreground mt-2 text-sm">
-              Fale agora com a Bia, a assistente virtual da WJB - ela te ajuda a encontrar o
-              serviço certo e já te encaminha para um especialista quando precisar.
+              Fale agora com a Daniella, a assistente virtual da WJB - ela te ajuda a
+              encontrar o serviço certo e já te encaminha para um especialista quando
+              precisar.
             </p>
             <Link
-              href="/bia"
+              href="/daniella"
               className={buttonVariants({
                 variant: "outline",
                 size: "sm",
                 className: "mt-4 w-full sm:w-auto",
               })}
             >
-              Falar com a Bia
+              Falar com a Daniella
             </Link>
           </div>
 

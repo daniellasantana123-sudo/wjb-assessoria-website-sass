@@ -68,7 +68,7 @@ test("fechar o assistente não faz a saudação reaparecer na mesma sessão (Cen
   // Recarregar a mesma sessão não deve reabrir a saudação automaticamente.
   await page.reload();
   await page.waitForTimeout(6000);
-  await expect(page.getByText("Falar com a Bia")).not.toBeVisible();
+  await expect(page.getByText("Falar com a Daniella")).not.toBeVisible();
 });
 
 test("mobile: painel não cobre o CTA principal do herói (Cenário 7)", async ({
@@ -77,7 +77,9 @@ test("mobile: painel não cobre o CTA principal do herói (Cenário 7)", async (
   testInfo.skip(testInfo.project.name !== "mobile-chrome");
   await page.goto("/");
   await page.getByRole("button", { name: "Abrir Assistente Virtual WJB" }).click();
-  await expect(page.getByRole("dialog", { name: "Bia, assistente virtual da WJB" })).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Daniella, assistente virtual da WJB" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Falar direto com um especialista" }),
   ).toBeVisible();
@@ -104,11 +106,13 @@ test("selecionar Dúvidas frequentes navega para a página real (Cenário 9)", a
   await expect(page).toHaveURL(/\/duvidas$/);
 });
 
-test("link direto /bia abre a Bia automaticamente (Cenário 10)", async ({ page }) => {
-  await page.goto("/bia");
+test("link direto /daniella abre a assistente automaticamente (Cenário 10)", async ({ page }) => {
+  await page.goto("/daniella");
 
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("dialog", { name: "Bia, assistente virtual da WJB" })).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Daniella, assistente virtual da WJB" }),
+  ).toBeVisible();
   // A query string usada só pra sinalizar a abertura some da URL depois.
   await expect(page).not.toHaveURL(/assistente=aberto/);
 });

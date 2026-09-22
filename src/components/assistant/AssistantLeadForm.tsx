@@ -40,7 +40,7 @@ export function AssistantLeadForm({ serviceLabel, onSuccess }: AssistantLeadForm
 
   return (
     <LeadForm
-      formContext="Assistente Virtual WJB (Bia)"
+      formContext="Assistente Virtual WJB (Daniella)"
       defaultServiceInterest={serviceLabel ?? undefined}
       defaultMessage={defaultMessage}
       showServiceInterest={false}

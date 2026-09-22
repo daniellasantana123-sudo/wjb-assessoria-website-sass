@@ -82,9 +82,10 @@ export function WJBAssistant() {
     trackAssistantEvent("assistant_viewed");
   }, []);
 
-  // Link direto "/bia" (redirect em next.config.mjs pra "/?assistente=aberto",
-  // pensado pra bio do Instagram/QR code/assinatura de e-mail) - abre a Bia
-  // automaticamente ao chegar por esse link, em qualquer página. Lido via
+  // Link direto "/daniella" (redirect em next.config.mjs pra
+  // "/?assistente=aberto", pensado pra bio do Instagram/QR code/assinatura
+  // de e-mail) - abre a assistente automaticamente ao chegar por esse link,
+  // em qualquer página. Lido via
   // `window.location.search` (não `useSearchParams`) de propósito: o hook do
   // Next exige um `<Suspense>` ao redor pra não tirar a página inteira da
   // renderização estática - como o componente já roda só no cliente depois

@@ -66,7 +66,7 @@ export const metadata: Metadata = {
  * `viewportFit: "cover"` (2026-09-22, melhoria de mobile do Assistente
  * Virtual) - sem isso, `env(safe-area-inset-bottom)` sempre resolve pra 0
  * (a spec só calcula os safe areas quando o viewport declara "cover"), então
- * o avatar/painel da Bia (`AssistantLauncher`/`AssistantPanel`) já usava
+ * o avatar/painel da assistente virtual (`AssistantLauncher`/`AssistantPanel`) já usava
  * `env(safe-area-inset-bottom)` mas o valor nunca tinha efeito real em
  * iPhones com home indicator. Efeito colateral positivo: qualquer elemento
  * `fixed`/`sticky` futuro que precise respeitar a área segura (notch/home

@@ -58,4 +58,4 @@ export const assistantPageGreetings: { pathPrefix: string; message: string }[] =
 ];
 
 export const assistantDefaultGreeting =
-  "Oi! Eu sou a Bia 👋, assistente virtual da WJB. Posso ajudar você a encontrar a solução contábil ideal para sua empresa.";
+  "Oi! Eu sou a Daniella 👋, assistente virtual da WJB. Posso ajudar você a encontrar a solução contábil ideal para sua empresa.";

@@ -45,7 +45,7 @@ export function AssistantLauncher({
             <X aria-hidden="true" className="h-3.5 w-3.5" />
           </button>
           <p className="text-foreground pr-6 text-xs font-semibold">
-            Bia · WJB Assessoria Contábil
+            Daniella · WJB Assessoria Contábil
           </p>
           <p className="text-foreground mt-1 pr-4 text-sm">{greetingMessage}</p>
           <button
@@ -53,7 +53,7 @@ export function AssistantLauncher({
             onClick={onOpen}
             className="text-primary mt-2 text-sm font-medium hover:underline"
           >
-            Falar com a Bia
+            Falar com a Daniella
           </button>
         </div>
       ) : null}
@@ -76,7 +76,7 @@ export function AssistantLauncher({
           className="border-background bg-success absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2"
         />
         <span className="pointer-events-none absolute right-full mr-3 hidden rounded-md bg-neutral-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 sm:block">
-          Fale com a Bia 💬
+          Fale com a Daniella 💬
         </span>
       </button>
     </div>
