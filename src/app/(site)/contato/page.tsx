@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { FileText, Mail, MapPin } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
@@ -140,6 +141,26 @@ export default function ContactPage() {
             >
               Fale com a nossa equipe
             </a>
+          </div>
+
+          <div className="border-border border-t pt-6">
+            <h3 className="text-foreground text-lg font-semibold">
+              Prefere um atendimento rápido?
+            </h3>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Fale agora com a Bia, a assistente virtual da WJB - ela te ajuda a encontrar o
+              serviço certo e já te encaminha para um especialista quando precisar.
+            </p>
+            <Link
+              href="/bia"
+              className={buttonVariants({
+                variant: "outline",
+                size: "sm",
+                className: "mt-4 w-full sm:w-auto",
+              })}
+            >
+              Falar com a Bia
+            </Link>
           </div>
 
           {mapEmbedUrl ? (

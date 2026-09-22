@@ -19,10 +19,12 @@ export type AssistantServiceKey =
   | "abrirEmpresa"
   | "trocarContador"
   | "contabilidadeCompleta"
+  | "contabilidadeDigital"
   | "mei"
   | "departamentoPessoal"
   | "impostosRegularizacao"
   | "consultoria"
+  | "duvidasFrequentes"
   | "outrosServicos"
   | "especialista";
 

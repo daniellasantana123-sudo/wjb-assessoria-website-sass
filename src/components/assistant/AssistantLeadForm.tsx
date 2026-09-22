@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { LeadForm } from "@/components/forms/lead-form";
 import { trackAssistantEvent } from "@/lib/analytics/assistant-events";
 import { getAssistantWhatsAppLink } from "@/lib/assistant/whatsapp";
@@ -16,6 +18,7 @@ export interface AssistantLeadFormProps {
  * contexto já coletado.
  */
 export function AssistantLeadForm({ serviceLabel, onSuccess }: AssistantLeadFormProps) {
+  const pathname = usePathname();
   const defaultMessage = serviceLabel
     ? `Gostaria de falar sobre: ${serviceLabel}.`
     : "";
@@ -24,7 +27,10 @@ export function AssistantLeadForm({ serviceLabel, onSuccess }: AssistantLeadForm
     trackAssistantEvent("assistant_form_completed", {
       service: serviceLabel ?? "outros",
     });
-    const whatsappLink = getAssistantWhatsAppLink({ service: serviceLabel ?? undefined });
+    const whatsappLink = getAssistantWhatsAppLink({
+      service: serviceLabel ?? undefined,
+      sourcePage: pathname ?? undefined,
+    });
     if (whatsappLink) {
       trackAssistantEvent("assistant_whatsapp_clicked", { source: "lead_form" });
       window.open(whatsappLink, "_blank", "noopener,noreferrer");
@@ -34,7 +40,7 @@ export function AssistantLeadForm({ serviceLabel, onSuccess }: AssistantLeadForm
 
   return (
     <LeadForm
-      formContext="Assistente Virtual WJB"
+      formContext="Assistente Virtual WJB (Bia)"
       defaultServiceInterest={serviceLabel ?? undefined}
       defaultMessage={defaultMessage}
       showServiceInterest={false}

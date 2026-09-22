@@ -52,21 +52,32 @@ export function AssistantPanel({
   return (
     <div
       role="dialog"
-      aria-label="Assistente WJB"
+      aria-label="Bia, assistente virtual da WJB"
       className={cn(
-        "border-border bg-background animate-enter fixed inset-x-3 z-50 flex max-h-[600px] flex-col overflow-hidden rounded-md border shadow-xl transition-[bottom] duration-300 sm:inset-x-auto sm:right-6 sm:w-[360px]",
+        "border-border bg-background animate-enter fixed inset-x-3 z-50 flex max-h-[min(600px,88dvh)] flex-col overflow-hidden rounded-md border shadow-xl transition-[bottom] duration-300 sm:inset-x-auto sm:right-6 sm:w-95",
         liftForCookieBanner ? "bottom-44 sm:bottom-40" : "bottom-3 sm:bottom-24",
       )}
+      style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >
       <AssistantHeader onMinimize={onMinimize} onClose={onClose} />
 
-      <div className="flex flex-col gap-3 overflow-y-auto p-4">
+      {/*
+       * `min-h-0 flex-1` é necessário pro `overflow-y-auto` funcionar de
+       * verdade dentro de um pai flex-col com altura máxima (`max-h-*` +
+       * `overflow-hidden` no dialog) - sem isso, o item flex recusa encolher
+       * abaixo da altura do seu próprio conteúdo (o "min-height: auto"
+       * padrão de flexbox) e o painel simplesmente cresce além do limite,
+       * cortando o rodapé ("Falar direto com um especialista") em vez de
+       * rolar - bug real, mais visível agora que o menu tem mais itens.
+       */}
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4">
         {screen === "menu" ? (
           <>
             <AssistantMessage>{greetingMessage}</AssistantMessage>
             <AssistantMessage>
-              Estou aqui para ajudar você a encontrar o serviço ideal para sua empresa. O que
-              você precisa hoje?
+              Sou a Bia, assistente virtual da WJB. Estou aqui para ajudar você a encontrar o
+              serviço ideal para sua empresa ou te encaminhar direto para um especialista. O
+              que você precisa hoje?
             </AssistantMessage>
             <AssistantQuickReplies
               options={assistantMenuOptions.map((option) => ({
@@ -106,7 +117,7 @@ export function AssistantPanel({
         {screen === "lead" ? (
           <>
             <AssistantMessage>
-              Perfeito! Me conta alguns dados rápidos que a WJB entra em contato.
+              Perfeito! Me conta alguns dados rápidos para que a WJB entre em contato.
             </AssistantMessage>
             <AssistantLeadForm serviceLabel={serviceResponse?.serviceLabel ?? null} onSuccess={onLeadCompleted} />
             <button
@@ -136,7 +147,7 @@ export function AssistantPanel({
         ) : null}
       </div>
 
-      <div className="border-border mt-auto border-t p-3">
+      <div className="border-border shrink-0 border-t p-3">
         <Link
           href={headerCtas.talkToAccountant.href}
           target="_blank"

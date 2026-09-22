@@ -14,36 +14,15 @@ export const assistantMenuOptions: AssistantMenuOption[] = [
   { key: "abrirEmpresa", label: "Abrir minha empresa" },
   { key: "trocarContador", label: "Trocar de contador" },
   { key: "contabilidadeCompleta", label: "Contabilidade para minha empresa" },
+  { key: "contabilidadeDigital", label: "Contabilidade Digital" },
   { key: "mei", label: "MEI" },
   { key: "departamentoPessoal", label: "Departamento pessoal / Folha" },
   { key: "impostosRegularizacao", label: "Impostos e regularização" },
   { key: "consultoria", label: "Consultoria contábil e tributária" },
+  { key: "duvidasFrequentes", label: "Dúvidas frequentes" },
   { key: "outrosServicos", label: "Outros serviços" },
   { key: "especialista", label: "Falar com um especialista" },
 ];
-
-/**
- * Resolve cada chave do menu para onde ela aponta de fato no projeto -
- * slug de `service-pages.ts`, id de `plans.ts`, uma rota real, ou o
- * "escape hatch" direto pro WhatsApp (seção "ESCAPE HATCH").
- */
-export type AssistantTarget =
-  | { kind: "service"; slug: string }
-  | { kind: "plan"; id: "mei" | "simples" | "presumido" }
-  | { kind: "route"; href: string }
-  | { kind: "whatsapp" };
-
-export const assistantServiceTargets: Record<AssistantServiceKey, AssistantTarget> = {
-  abrirEmpresa: { kind: "service", slug: "abrir-empresa" },
-  trocarContador: { kind: "service", slug: "trocar-de-contador" },
-  contabilidadeCompleta: { kind: "service", slug: "contabilidade-completa" },
-  mei: { kind: "plan", id: "mei" },
-  departamentoPessoal: { kind: "service", slug: "departamento-pessoal" },
-  impostosRegularizacao: { kind: "service", slug: "fiscal-tributario" },
-  consultoria: { kind: "service", slug: "consultoria-contabil" },
-  outrosServicos: { kind: "route", href: "/servicos" },
-  especialista: { kind: "whatsapp" },
-};
 
 /**
  * Saudação contextual por página (seção "CONTEXTO DA PÁGINA") - prefixo de
@@ -71,7 +50,12 @@ export const assistantPageGreetings: { pathPrefix: string; message: string }[] =
     message:
       "Vi que você está conhecendo a Contabilidade Digital da WJB. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
   },
+  {
+    pathPrefix: "/duvidas",
+    message:
+      "Vi que você está na página de dúvidas frequentes. Se não encontrou a resposta que procurava, posso te ajudar por aqui ou te encaminhar para um especialista.",
+  },
 ];
 
 export const assistantDefaultGreeting =
-  "Olá! 👋 Bem-vindo à WJB. Posso ajudar você a encontrar a solução contábil ideal para sua empresa.";
+  "Oi! Eu sou a Bia 👋, assistente virtual da WJB. Posso ajudar você a encontrar a solução contábil ideal para sua empresa.";

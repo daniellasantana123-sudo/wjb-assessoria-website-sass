@@ -50,6 +50,13 @@ export function getAssistantServiceResponse(
         serviceLabel: service.title,
       };
     }
+    case "contabilidadeDigital":
+      return {
+        message:
+          "Contabilidade organizada, acessível e conectada à rotina da sua empresa, com suporte humano por trás.",
+        href: "/contabilidade-digital",
+        serviceLabel: "Contabilidade Digital",
+      };
     case "mei": {
       const plan = getPlan("mei");
       if (!plan) return null;
@@ -86,6 +93,13 @@ export function getAssistantServiceResponse(
         serviceLabel: service.title,
       };
     }
+    case "duvidasFrequentes":
+      return {
+        message:
+          "Você pode ver as perguntas mais comuns sobre abertura de empresa, MEI, troca de contador e outros temas na nossa página de dúvidas frequentes.",
+        href: "/duvidas",
+        serviceLabel: "Dúvidas frequentes",
+      };
     case "outrosServicos":
       return {
         message: "A WJB tem serviços organizados por categoria - contabilidade, fiscal e tributário, departamento pessoal, societário e consultoria.",

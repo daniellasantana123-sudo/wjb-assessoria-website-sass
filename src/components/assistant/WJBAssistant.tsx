@@ -82,6 +82,38 @@ export function WJBAssistant() {
     trackAssistantEvent("assistant_viewed");
   }, []);
 
+  // Link direto "/bia" (redirect em next.config.mjs pra "/?assistente=aberto",
+  // pensado pra bio do Instagram/QR code/assinatura de e-mail) - abre a Bia
+  // automaticamente ao chegar por esse link, em qualquer página. Lido via
+  // `window.location.search` (não `useSearchParams`) de propósito: o hook do
+  // Next exige um `<Suspense>` ao redor pra não tirar a página inteira da
+  // renderização estática - como o componente já roda só no cliente depois
+  // de montado, ler a query direto do DOM evita esse custo sem perder nada.
+  // Remove só a chave "assistente" da URL depois de abrir, preservando
+  // qualquer outro parâmetro (ex.: utm_source, lido depois por
+  // `getTrackingParams` em `tracking.ts`). Roda só na chegada (mount), nunca
+  // de novo a cada mudança de pathname/router. `setTimeout` (mesmo padrão da
+  // saudação automática abaixo) em vez de chamar `setState` direto no corpo
+  // do efeito - o lint `react-hooks/set-state-in-effect` rejeita a segunda
+  // forma (risco de cascading renders); aqui o delay é 0, só o suficiente
+  // pra tirar o `setState` do corpo síncrono do efeito.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("assistente") !== "aberto") return;
+    const timer = setTimeout(() => {
+      params.delete("assistente");
+      setLiveOverlay("open");
+      setStoredWidgetState("minimized");
+      markGreetingShown();
+      trackAssistantEvent("assistant_opened", { source: "direct_link" });
+      const query = params.toString();
+      router.replace(`${pathname ?? "/"}${query ? `?${query}` : ""}`, { scroll: false });
+    }, 0);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Saudação automática única por sessão (seção "IMPORTANTE SOBRE FREQUÊNCIA").
   // Reconfere `hasShownGreeting()` também no momento do disparo (não só ao
   // montar o efeito) - se o usuário já abriu o assistente manualmente

@@ -8,7 +8,7 @@ import type { AssistantLead } from "@/types/assistant";
  * enviados como vazio/"undefined".
  */
 export function buildAssistantWhatsAppMessage(lead: AssistantLead): string {
-  const lines = ["Olá, equipe WJB!", "", "Estou entrando em contato pelo assistente virtual do site."];
+  const lines = ["Olá, equipe WJB!", "", "Estou entrando em contato pela Bia, a assistente virtual do site."];
 
   if (lead.name) lines.push("", `Nome: ${lead.name}`);
   if (lead.service) lines.push(`Serviço desejado: ${lead.service}`);
@@ -16,6 +16,7 @@ export function buildAssistantWhatsAppMessage(lead: AssistantLead): string {
   if (lead.taxRegime) lines.push(`Regime tributário: ${lead.taxRegime}`);
   if (lead.revenueRange) lines.push(`Faturamento aproximado: ${lead.revenueRange}`);
   if (lead.employees) lines.push(`Funcionários: ${lead.employees}`);
+  if (lead.sourcePage) lines.push(`Página de origem: ${lead.sourcePage}`);
 
   lines.push("", "Gostaria de receber mais informações.");
   return lines.join("\n");

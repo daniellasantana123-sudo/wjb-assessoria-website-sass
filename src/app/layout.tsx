@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Lexend, Noto_Sans_Thai, Source_Sans_3 } from "next/font/google";
 
 import { SkipLink } from "@/components/layout/skip-link";
@@ -60,6 +60,22 @@ export const metadata: Metadata = {
     type: "website",
     images: [{ url: "/images/og/home.webp", width: 1200, height: 630 }],
   },
+};
+
+/**
+ * `viewportFit: "cover"` (2026-09-22, melhoria de mobile do Assistente
+ * Virtual) - sem isso, `env(safe-area-inset-bottom)` sempre resolve pra 0
+ * (a spec só calcula os safe areas quando o viewport declara "cover"), então
+ * o avatar/painel da Bia (`AssistantLauncher`/`AssistantPanel`) já usava
+ * `env(safe-area-inset-bottom)` mas o valor nunca tinha efeito real em
+ * iPhones com home indicator. Efeito colateral positivo: qualquer elemento
+ * `fixed`/`sticky` futuro que precise respeitar a área segura (notch/home
+ * indicator) já funciona sem precisar tocar aqui de novo.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 /**

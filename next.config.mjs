@@ -124,6 +124,21 @@ const nextConfig = {
         destination: "/planos",
         permanent: true,
       },
+      /**
+       * Link direto e memorizável pra Bia, a assistente virtual do site
+       * (2026-09-22) - pensado pra bio do Instagram, QR code impresso e
+       * assinatura de e-mail. `permanent: false` (307, não 301) de propósito
+       * - diferente dos redirects acima (conteúdo que mudou de lugar pra
+       * sempre), este é um atalho de produto que pode mudar de mecanismo no
+       * futuro, então não deve ser cacheado como permanente por navegador/
+       * buscador. `WJBAssistant.tsx` lê "?assistente=aberto" no destino e
+       * abre o painel automaticamente.
+       */
+      {
+        source: "/bia",
+        destination: "/?assistente=aberto",
+        permanent: false,
+      },
     ];
   },
 };

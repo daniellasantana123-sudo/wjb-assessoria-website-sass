@@ -16,7 +16,7 @@ export function AssistantQuickReplies({ options }: AssistantQuickRepliesProps) {
           key={option.label}
           type="button"
           onClick={option.onClick}
-          className="border-border hover:border-primary hover:bg-muted focus-visible:ring-primary rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="border-border hover:border-primary hover:bg-muted focus-visible:ring-primary min-h-11 rounded-md border px-3.5 py-2.5 text-left text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           {option.label}
         </button>
