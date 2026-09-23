@@ -63,7 +63,7 @@ export function AssistantPanel({
   return (
     <div
       role="dialog"
-      aria-label="Daniella, assistente virtual da WJB"
+      aria-label="Dani, assistente virtual da WJB"
       className={cn(
         "border-border bg-background animate-enter fixed inset-x-3 z-50 flex flex-col overflow-hidden rounded-md border shadow-xl transition-[bottom] duration-300 sm:inset-x-auto sm:right-6 sm:w-95",
         /*
@@ -102,8 +102,8 @@ export function AssistantPanel({
           <>
             <AssistantMessage>{greetingMessage}</AssistantMessage>
             <AssistantMessage>
-              Sou a Daniella, assistente virtual da WJB. Estou aqui para ajudar
-              você a encontrar o serviço ideal para sua empresa ou te encaminhar
+              Sou a Dani, assistente virtual da WJB. Estou aqui para ajudar você
+              a encontrar o serviço ideal para sua empresa ou te encaminhar
               direto para um especialista. O que você precisa hoje?
             </AssistantMessage>
             <AssistantQuickReplies

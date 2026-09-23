@@ -18,7 +18,7 @@ async function openAssistant(page: Page) {
     .getByRole("button", { name: "Abrir Assistente Virtual WJB" })
     .click();
   await expect(
-    page.getByRole("dialog", { name: "Daniella, assistente virtual da WJB" }),
+    page.getByRole("dialog", { name: "Dani, assistente virtual da WJB" }),
   ).toBeVisible();
 }
 
@@ -35,7 +35,7 @@ test("minimizar fecha o painel e mantém o launcher clicável de novo", async ({
 
   await page.getByRole("button", { name: "Minimizar assistente" }).click();
   await expect(
-    page.getByRole("dialog", { name: "Daniella, assistente virtual da WJB" }),
+    page.getByRole("dialog", { name: "Dani, assistente virtual da WJB" }),
   ).toBeHidden();
 
   await openAssistant(page);
@@ -53,7 +53,7 @@ test("fechar volta pro launcher e reabre no menu inicial", async ({ page }) => {
 
   await page.getByRole("button", { name: "Fechar assistente" }).click();
   await expect(
-    page.getByRole("dialog", { name: "Daniella, assistente virtual da WJB" }),
+    page.getByRole("dialog", { name: "Dani, assistente virtual da WJB" }),
   ).toBeHidden();
 
   await openAssistant(page);

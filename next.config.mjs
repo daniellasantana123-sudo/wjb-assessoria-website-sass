@@ -125,20 +125,23 @@ const nextConfig = {
         permanent: true,
       },
       /**
-       * Link direto e memorizável pra Daniella, a assistente virtual do site
-       * (2026-09-22, nome trocado de "Bia" pra "Daniella" no mesmo dia a
-       * pedido do usuário) - pensado pra bio do Instagram, QR code impresso
+       * Link direto e memorizável pra Dani, a assistente virtual do site
+       * (nome trocado de "Bia" pra "Daniella" em 2026-09-22 e pra "Dani" em
+       * 2026-09-23, ambas a pedido do usuário; "Dani" também evita a
+       * confusão com Daniella Santana, a CEO real da WJB) - pensado pra
+       * bio do Instagram, QR code impresso
        * e assinatura de e-mail. `permanent: false` (307, não 301) de
        * propósito - diferente dos redirects acima (conteúdo que mudou de
        * lugar pra sempre), este é um atalho de produto que pode mudar de
        * mecanismo no futuro, então não deve ser cacheado como permanente por
        * navegador/buscador. `WJBAssistant.tsx` lê "?assistente=aberto" no
        * destino e abre o painel automaticamente. Sem redirect de
-       * compatibilidade a partir de "/bia" - a rota nunca chegou a ser
-       * divulgada fora do código (implementada e renomeada no mesmo dia).
+       * compatibilidade a partir de "/bia" nem de "/daniella" - nenhuma das
+       * duas chegou a ser divulgada fora do código, e o único link interno
+       * (em /contato) muda junto.
        */
       {
-        source: "/daniella",
+        source: "/dani",
         destination: "/?assistente=aberto",
         permanent: false,
       },

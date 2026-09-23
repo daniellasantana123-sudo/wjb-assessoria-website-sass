@@ -10,7 +10,11 @@ import { LeadForm } from "@/components/forms/lead-form";
 import { RevealOnScroll } from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
 import { contactHeroImage } from "@/config/images";
-import { getAddressEmbedMapUrl, getAddressMapUrl, siteConfig } from "@/config/site";
+import {
+  getAddressEmbedMapUrl,
+  getAddressMapUrl,
+  siteConfig,
+} from "@/config/site";
 
 export const metadata: Metadata = {
   title: "Contato",
@@ -76,13 +80,17 @@ export default function ContactPage() {
 
   return (
     <Container className="py-12 sm:py-16">
-      <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Contato" }]} />
+      <Breadcrumb
+        items={[{ label: "Home", href: "/" }, { label: "Contato" }]}
+      />
 
       <div className="mt-4 max-w-2xl">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Contato</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          Contato
+        </h1>
         <p className="text-muted-foreground mt-3">
-          Fale com um contador da WJB. Conte um pouco sobre sua empresa e retornaremos o
-          quanto antes.
+          Fale com um contador da WJB. Conte um pouco sobre sua empresa e
+          retornaremos o quanto antes.
         </p>
       </div>
 
@@ -102,12 +110,21 @@ export default function ContactPage() {
         className="mt-10 grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_1.2fr]"
       >
         <div className="bg-muted/30 border-border flex flex-col gap-6 rounded-[8px] border p-6">
-          <ContactRow icon={Mail} label="E-mail" href={`mailto:${siteConfig.contact.email}`}>
+          <ContactRow
+            icon={Mail}
+            label="E-mail"
+            href={`mailto:${siteConfig.contact.email}`}
+          >
             {siteConfig.contact.email}
           </ContactRow>
 
           {siteConfig.contact.phones.map((phone) => (
-            <ContactRow key={phone.e164} icon={WhatsAppIcon} label="WhatsApp" href={phone.href}>
+            <ContactRow
+              key={phone.e164}
+              icon={WhatsAppIcon}
+              label="WhatsApp"
+              href={phone.href}
+            >
               {phone.display}
             </ContactRow>
           ))}
@@ -125,9 +142,9 @@ export default function ContactPage() {
               Vamos cuidar da contabilidade da sua empresa?
             </h3>
             <p className="text-muted-foreground mt-2 text-sm">
-              Converse com a WJB e descubra como podemos apoiar sua empresa com mais
-              clareza, organização e segurança nas decisões contábeis, fiscais e
-              tributárias.
+              Converse com a WJB e descubra como podemos apoiar sua empresa com
+              mais clareza, organização e segurança nas decisões contábeis,
+              fiscais e tributárias.
             </p>
             <a
               href={siteConfig.contact.phones[0].href}
@@ -148,19 +165,19 @@ export default function ContactPage() {
               Prefere um atendimento rápido?
             </h3>
             <p className="text-muted-foreground mt-2 text-sm">
-              Fale agora com a Daniella, a assistente virtual da WJB - ela te ajuda a
-              encontrar o serviço certo e já te encaminha para um especialista quando
-              precisar.
+              Fale agora com a Dani, a assistente virtual da WJB - ela te ajuda
+              a encontrar o serviço certo e já te encaminha para um especialista
+              quando precisar.
             </p>
             <Link
-              href="/daniella"
+              href="/dani"
               className={buttonVariants({
                 variant: "outline",
                 size: "sm",
                 className: "mt-4 w-full sm:w-auto",
               })}
             >
-              Falar com a Daniella
+              Falar com a Dani
             </Link>
           </div>
 

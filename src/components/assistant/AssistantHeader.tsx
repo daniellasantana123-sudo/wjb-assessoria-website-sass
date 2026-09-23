@@ -9,7 +9,7 @@ export interface AssistantHeaderProps {
 }
 
 /**
- * Cabeçalho do painel - avatar, nome ("Daniella"), indicador de disponibilidade
+ * Cabeçalho do painel - avatar, nome ("Dani"), indicador de disponibilidade
  * (honesto: "Sempre disponível" é verdade pro fluxo automatizado, sem
  * afirmar que há uma pessoa "online agora" - seção "INDICADOR DE
  * DISPONIBILIDADE") e os botões minimizar/fechar.
@@ -26,9 +26,10 @@ export function AssistantHeader({ onMinimize, onClose }: AssistantHeaderProps) {
           className="h-10 w-10 shrink-0 rounded-full"
         />
         <div>
-          <p className="text-sm font-semibold">Daniella</p>
+          <p className="text-sm font-semibold">Dani</p>
           <p className="text-primary-foreground/80 flex items-center gap-1 text-xs">
-            <span aria-hidden="true">🟢</span> Sempre disponível · WJB Assessoria Contábil
+            <span aria-hidden="true">🟢</span> Sempre disponível · WJB
+            Assessoria Contábil
           </p>
         </div>
       </div>

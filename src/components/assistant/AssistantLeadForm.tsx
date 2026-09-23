@@ -59,7 +59,7 @@ export function AssistantLeadForm({
 
   return (
     <LeadForm
-      formContext="Assistente Virtual WJB (Daniella)"
+      formContext="Assistente Virtual WJB (Dani)"
       defaultServiceInterest={serviceLabel ?? undefined}
       defaultMessage={defaultMessage}
       showServiceInterest={false}

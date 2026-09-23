@@ -29,33 +29,34 @@ export const assistantMenuOptions: AssistantMenuOption[] = [
  * rota -> texto. Resolvida por `assistant-flow.ts`, nunca hardcoded em
  * componente. Cai na saudação padrão quando nenhum prefixo bate.
  */
-export const assistantPageGreetings: { pathPrefix: string; message: string }[] = [
-  {
-    pathPrefix: "/servicos/abrir-empresa",
-    message:
-      "Vi que você está conhecendo o serviço de abertura de empresas. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
-  },
-  {
-    pathPrefix: "/servicos/trocar-de-contador",
-    message:
-      "Vi que você está conhecendo o serviço de troca de contador. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
-  },
-  {
-    pathPrefix: "/planos",
-    message:
-      "Vi que você está conhecendo os planos da WJB. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
-  },
-  {
-    pathPrefix: "/contabilidade-digital",
-    message:
-      "Vi que você está conhecendo a Contabilidade Digital da WJB. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
-  },
-  {
-    pathPrefix: "/duvidas",
-    message:
-      "Vi que você está na página de dúvidas frequentes. Se não encontrou a resposta que procurava, posso te ajudar por aqui ou te encaminhar para um especialista.",
-  },
-];
+export const assistantPageGreetings: { pathPrefix: string; message: string }[] =
+  [
+    {
+      pathPrefix: "/servicos/abrir-empresa",
+      message:
+        "Vi que você está conhecendo o serviço de abertura de empresas. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
+    },
+    {
+      pathPrefix: "/servicos/trocar-de-contador",
+      message:
+        "Vi que você está conhecendo o serviço de troca de contador. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
+    },
+    {
+      pathPrefix: "/planos",
+      message:
+        "Vi que você está conhecendo os planos da WJB. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
+    },
+    {
+      pathPrefix: "/contabilidade-digital",
+      message:
+        "Vi que você está conhecendo a Contabilidade Digital da WJB. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
+    },
+    {
+      pathPrefix: "/duvidas",
+      message:
+        "Vi que você está na página de dúvidas frequentes. Se não encontrou a resposta que procurava, posso te ajudar por aqui ou te encaminhar para um especialista.",
+    },
+  ];
 
 export const assistantDefaultGreeting =
-  "Oi! Eu sou a Daniella 👋, assistente virtual da WJB. Posso ajudar você a encontrar a solução contábil ideal para sua empresa.";
+  "Oi! Eu sou a Dani 👋, assistente virtual da WJB. Posso ajudar você a encontrar a solução contábil ideal para sua empresa.";

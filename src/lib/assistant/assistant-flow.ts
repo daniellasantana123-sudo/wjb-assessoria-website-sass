@@ -2,7 +2,10 @@ import { getServicePage } from "@/config/service-pages";
 import { getPlan } from "@/config/plans";
 import type { AssistantServiceKey } from "@/types/assistant";
 
-import { assistantPageGreetings, assistantDefaultGreeting } from "./assistant-config";
+import {
+  assistantPageGreetings,
+  assistantDefaultGreeting,
+} from "./assistant-config";
 
 export interface AssistantServiceResponse {
   /** Texto da resposta - sempre derivado de conteúdo real do projeto. */
@@ -102,7 +105,8 @@ export function getAssistantServiceResponse(
       };
     case "outrosServicos":
       return {
-        message: "A WJB tem serviços organizados por categoria - contabilidade, fiscal e tributário, departamento pessoal, societário e consultoria.",
+        message:
+          "A WJB tem serviços organizados por categoria - contabilidade, fiscal e tributário, departamento pessoal, societário e consultoria.",
         href: "/servicos",
         serviceLabel: "Outros serviços",
       };
@@ -115,6 +119,8 @@ export function getAssistantServiceResponse(
 
 /** Saudação contextual (seção "CONTEXTO DA PÁGINA") a partir do caminho atual. */
 export function getContextualGreeting(pathname: string): string {
-  const match = assistantPageGreetings.find((entry) => pathname.startsWith(entry.pathPrefix));
+  const match = assistantPageGreetings.find((entry) =>
+    pathname.startsWith(entry.pathPrefix),
+  );
   return match?.message ?? assistantDefaultGreeting;
 }

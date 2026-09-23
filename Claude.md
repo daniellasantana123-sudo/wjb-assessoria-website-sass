@@ -280,6 +280,13 @@ Antes de qualquer tarefa, seguir sempre esta ordem (seção 46 de `Wjb-Website.m
   - **Responsivo das telas novas** (nunca testadas em mobile): 164 verificações - 9 dispositivos (320/360/375/390/412/430 px, iPad mini/Pro, e paisagem 844x390) × 9 páginas × 2 projetos. Zero overflow horizontal. Campos e botão do `/login` cabem e têm alvo de toque >= 40px em 320 px.
   - **Pendência de segurança em aberto**: as 2 contas de teste `super_admin` seguem ativas com o login já público. Recomendado apagar via Authentication > Users.
 
+- **Assistente Virtual renomeado de "Daniella" pra "Dani"** (2026-09-23, a pedido do usuário). Terceiro nome do widget (Bia → Daniella → Dani, todos no mesmo intervalo de 2 dias, todos a pedido dele).
+  - **Resolve o risco que eu tinha sinalizado** ao aplicar "Daniella": aquele é o nome real da CEO/fundadora, já exibida com nome próprio em `/sobre`, rodapé e `/contato`, e nomear um bot 100% automatizado com o nome dela podia dar a impressão de conversa direta com ela. "Dani" é distinto o bastante pra desfazer isso.
+  - Trocado em: header do painel, balão de saudação, mensagem fixa de boas-vindas, `formContext` do lead, mensagem de WhatsApp, `aria-label` do diálogo, texto e link em `/contato`, e a rota do link direto (`/daniella` → `/dani` em `next.config.mjs`).
+  - **NÃO trocado, de propósito**: `siteConfig.company.responsibleAccountant`, o card da equipe em `/sobre`, os slots de imagem `teamImages.daniellaSantana` e o fixture `"Daniella"` de `audit-log.test.ts` - são a pessoa real (ou não têm relação com o assistente). A separação foi feita arquivo a arquivo, não com substituição global, justamente por isso.
+  - Sem redirect de compatibilidade a partir de `/daniella` (mesma decisão de `/bia`): a rota tinha 1 dia, nunca foi divulgada fora do código, e o único link interno muda junto.
+  - Verificação: lint/typecheck/test (212)/build limpos; `/dani` responde 307 pro destino certo e `/daniella` volta a ser 404; 57 testes E2E do assistente passando nos 2 projetos contra build de produção.
+
 ---
 
 ## Regras inegociáveis

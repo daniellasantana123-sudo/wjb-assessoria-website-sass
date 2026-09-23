@@ -72,17 +72,23 @@ export function WJBAssistant() {
   // `consent` for null, o banner está visível na parte inferior da tela e o
   // assistente precisa subir pra não ficar coberto por ele nem cobri-lo
   // (prompt mestre, seção "AJUSTE IMPORTANTE"/"REGRAS DE UX IMPORTANTES").
-  const consent = useSyncExternalStore(subscribeConsent, getStoredConsent, getServerConsentSnapshot);
+  const consent = useSyncExternalStore(
+    subscribeConsent,
+    getStoredConsent,
+    getServerConsentSnapshot,
+  );
   const liftForCookieBanner = consent === null;
 
-  const [liveOverlay, setLiveOverlay] = useState<"greeting" | "open" | null>(null);
+  const [liveOverlay, setLiveOverlay] = useState<"greeting" | "open" | null>(
+    null,
+  );
   const widgetState = liveOverlay ?? persistedWidgetState;
 
   useEffect(() => {
     trackAssistantEvent("assistant_viewed");
   }, []);
 
-  // Link direto "/daniella" (redirect em next.config.mjs pra
+  // Link direto "/dani" (redirect em next.config.mjs pra
   // "/?assistente=aberto", pensado pra bio do Instagram/QR code/assinatura
   // de e-mail) - abre a assistente automaticamente ao chegar por esse link,
   // em qualquer página. Lido via
@@ -109,7 +115,9 @@ export function WJBAssistant() {
       markGreetingShown();
       trackAssistantEvent("assistant_opened", { source: "direct_link" });
       const query = params.toString();
-      router.replace(`${pathname ?? "/"}${query ? `?${query}` : ""}`, { scroll: false });
+      router.replace(`${pathname ?? "/"}${query ? `?${query}` : ""}`, {
+        scroll: false,
+      });
     }, 0);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -173,7 +181,9 @@ export function WJBAssistant() {
 
   function handleStartLead() {
     setStoredScreen("lead");
-    trackAssistantEvent("assistant_form_started", { service: selectedService ?? "outros" });
+    trackAssistantEvent("assistant_form_started", {
+      service: selectedService ?? "outros",
+    });
   }
 
   function handleLeadCompleted() {
