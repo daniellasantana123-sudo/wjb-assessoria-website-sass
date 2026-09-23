@@ -272,6 +272,14 @@ Antes de qualquer tarefa, seguir sempre esta ordem (seção 46 de `Wjb-Website.m
   - **Incidente de credencial**: o usuário mandou um print do painel da Hostinger com "Mostrar todos os valores" ligado, expondo `RESEND_API_KEY` e `GCLICK_CLIENT_SECRET` em texto claro. Sinalizei na hora, expliquei que `NEXT_PUBLIC_*` não é problema (vai pro navegador por design) e conduzi a rotação das duas - **sempre criando a nova credencial antes de apagar a antiga**, pra não abrir janela sem chave válida. Ambas rotacionadas e validadas.
   - Testes: 33 novos/reescritos (os antigos afirmavam o bloqueio permanente, que era o comportamento correto até hoje). Suíte: 212 unitários, lint/typecheck/build limpos.
 
+- **Plataforma SaaS aberta ao público** (2026-09-23, a pedido do usuário: "pode liberar todas as telas que a utilizam e continuam fechadas"). Encerra a decisão de 2026-09-18 de publicar só a V1 institucional.
+  - **Bug achado antes de abrir**: `NEXT_PUBLIC_SAAS_PUBLIC_ENABLED` era lida como literal em 3 lugares (`proxy.ts`, `sitemap.ts`, `navigation.ts`), então o Next embutia o valor no build - e o build da Hostinger não recebe as variáveis do painel. **Ligar a flag não teria aberto nada**, sem nenhuma pista do motivo (mesma armadilha do Supabase horas antes). Novo `src/lib/saas-gate.ts` com leitura dinâmica (`SAAS_PUBLIC_ENABLED` ou o nome antigo).
+  - `clientAreaNav` virou `getClientAreaNav()`: como constante de módulo o valor congelaria no build. `SiteHeader` (server) resolve e passa por prop pro `MobileNav` (client), que não enxerga `process.env`. **Regra geral pra esta hospedagem**: valor que precisa ser lido em runtime e usado no cliente tem que descer por prop de Server Component.
+  - **Pré-requisitos levantados antes de abrir, não depois**: (1) `SUPABASE_SERVICE_ROLE_KEY` não estava configurada - sem ela as ações administrativas (criar empresa, convidar equipe, notificações) quebrariam; (2) a tabela `profiles` só tinha contas de teste, duas delas `super_admin` (`teste-staff@`, `e2e-staff@`) - abrir o login com elas ativas seria porta de entrada com acesso total. Usuário criou a conta real (`daniella.santana123@gmail.com`, `is_wjb_staff=true`, `super_admin`).
+  - Verificado em produção: `/login` 200, `/portal` e `/admin` redirecionam deslogado pro login (307), site institucional intacto.
+  - **Responsivo das telas novas** (nunca testadas em mobile): 164 verificações - 9 dispositivos (320/360/375/390/412/430 px, iPad mini/Pro, e paisagem 844x390) × 9 páginas × 2 projetos. Zero overflow horizontal. Campos e botão do `/login` cabem e têm alvo de toque >= 40px em 320 px.
+  - **Pendência de segurança em aberto**: as 2 contas de teste `super_admin` seguem ativas com o login já público. Recomendado apagar via Authentication > Users.
+
 ---
 
 ## Regras inegociáveis
