@@ -46,13 +46,21 @@ export async function GET() {
    * permissão do Postgres) de bloqueio por RLS (sem erro, só zero linhas,
    * já que `leads_select_staff_only` filtra visitante anônimo).
    */
-  let probe: { code?: string; message?: string } | null = null;
+  let probe: Record<string, unknown> | null = null;
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
-    const { error } = await supabase
+    const { error, status, statusText } = await supabase
       .from("leads")
-      .select("id", { count: "exact", head: true });
-    probe = error ? { code: error.code, message: error.message } : null;
+      .select("id")
+      .limit(1);
+    probe = {
+      status,
+      statusText,
+      code: error?.code ?? null,
+      message: error?.message ?? null,
+      details: error?.details ?? null,
+      hint: error?.hint ?? null,
+    };
   }
 
   return NextResponse.json({
