@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 import { getSupabaseEnv } from "@/lib/db/supabase/env";
+import { isSaasPublicEnabled } from "@/lib/saas-gate";
 
 /**
  * `proxy.ts` (2026-09-16) — nesta versão do Next.js o antigo `middleware.ts`
@@ -48,7 +49,7 @@ const GATED_PREFIXES = [
 ];
 
 function isSaasGated(pathname: string) {
-  if (process.env.NEXT_PUBLIC_SAAS_PUBLIC_ENABLED === "true") return false;
+  if (isSaasPublicEnabled()) return false;
   return GATED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );

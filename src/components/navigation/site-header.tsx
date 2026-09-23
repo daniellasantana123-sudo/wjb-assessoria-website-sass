@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { buttonVariants } from "@/components/ui/button";
 import {
-  clientAreaNav,
+  getClientAreaNav,
   empresaDropdown,
   headerCtas,
   mainNavLinks,
@@ -16,6 +16,7 @@ import { MobileNav } from "./mobile-nav";
 import { NavDropdown } from "./nav-dropdown";
 
 export function SiteHeader() {
+  const clientAreaNav = getClientAreaNav();
   return (
     <header className="border-border bg-background sticky top-0 z-40 border-b">
       {/*
@@ -30,7 +31,10 @@ export function SiteHeader() {
       <Container className="flex min-h-20 items-center justify-between gap-4 py-3">
         <Logo />
 
-        <nav aria-label="Menu principal" className="hidden items-center gap-6 xl:flex">
+        <nav
+          aria-label="Menu principal"
+          className="hidden items-center gap-6 xl:flex"
+        >
           <NavDropdown {...empresaDropdown} />
           <MegaMenu />
           <NavDropdown {...solucoesDropdown} />
@@ -68,7 +72,7 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        <MobileNav />
+        <MobileNav clientAreaNav={clientAreaNav} />
       </Container>
     </header>
   );

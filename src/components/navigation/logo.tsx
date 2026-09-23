@@ -4,7 +4,13 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
 
-export function Logo({ className, href = "/" }: { className?: string; href?: string }) {
+export function Logo({
+  className,
+  href = "/",
+}: {
+  className?: string;
+  href?: string;
+}) {
   return (
     <Link
       href={href}

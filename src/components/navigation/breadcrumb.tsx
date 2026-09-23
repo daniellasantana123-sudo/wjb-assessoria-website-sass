@@ -15,7 +15,10 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
           return (
             <li key={item.label} className="flex items-center gap-2">
               {index > 0 ? (
-                <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                <ChevronRight
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 shrink-0"
+                />
               ) : null}
               {item.href && !isLast ? (
                 <Link

@@ -7,11 +7,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Menu, X } from "lucide-react";
 
 import {
-  clientAreaNav,
   empresaDropdown,
   mainNavLinks,
   solucoesDropdown,
 } from "@/config/navigation";
+import type { NavItem } from "@/config/navigation";
 import { servicePages } from "@/config/service-pages";
 import { cn } from "@/lib/utils";
 
@@ -102,7 +102,17 @@ function MobileDisclosure({
   );
 }
 
-export function MobileNav() {
+export interface MobileNavProps {
+  /**
+   * Vem por prop do `SiteHeader` (Server Component): o item "Entrar na
+   * Plataforma" depende de env var lida em runtime, e um Client Component
+   * não enxerga `process.env` - importar `getClientAreaNav()` aqui deixaria
+   * o link permanentemente escondido.
+   */
+  clientAreaNav: NavItem & { children: NavItem[] };
+}
+
+export function MobileNav({ clientAreaNav }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const [empresaOpen, setEmpresaOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);

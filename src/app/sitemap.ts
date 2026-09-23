@@ -3,13 +3,14 @@ import type { MetadataRoute } from "next";
 import { servicePages } from "@/config/service-pages";
 import { blogPosts } from "@/content/blog/posts";
 import { getSiteUrl } from "@/lib/seo/site-url";
+import { isSaasPublicEnabled } from "@/lib/saas-gate";
 
 /** Lista só rotas que existem de verdade — não submeter 404 para buscadores. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getSiteUrl();
   const now = new Date();
   /** SAAS V2 bloqueado até publicação (ver `src/middleware.ts`) — não listar /login enquanto isso. */
-  const saasPublicEnabled = process.env.NEXT_PUBLIC_SAAS_PUBLIC_ENABLED === "true";
+  const saasPublicEnabled = isSaasPublicEnabled();
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "weekly", priority: 1 },
@@ -19,7 +20,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.9,
     },
-    { url: `${base}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    {
+      url: `${base}/blog`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
     {
       url: `${base}/conteudos`,
       lastModified: now,
@@ -54,7 +60,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
           },
         ]
       : []),
-    { url: `${base}/sobre`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
+    {
+      url: `${base}/sobre`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.5,
+    },
     {
       url: `${base}/planos`,
       lastModified: now,

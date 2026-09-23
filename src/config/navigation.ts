@@ -1,4 +1,5 @@
 import { getWhatsAppLink } from "@/integrations/whatsapp";
+import { isSaasPublicEnabled } from "@/lib/saas-gate";
 
 export interface NavItem {
   label: string;
@@ -45,18 +46,30 @@ export const mainNavLinks: NavItem[] = [
  * `src/middleware.ts`. Mesma env var esconde o link "Entrar na Plataforma"
  * daqui, pra nunca ter um item de menu apontando pra uma rota bloqueada.
  */
-const saasPublicEnabled = process.env.NEXT_PUBLIC_SAAS_PUBLIC_ENABLED === "true";
-
-export const clientAreaNav: NavItem & { children: NavItem[] } = {
-  label: "Área do Cliente",
-  href: "/area-do-cliente",
-  children: [
-    ...(saasPublicEnabled ? [{ label: "Entrar na Plataforma", href: "/login" }] : []),
-    { label: "Acompanhar abertura", href: "/area-do-cliente" },
-    { label: "Central de documentos", href: "/area-do-cliente" },
-    { label: "Suporte", href: "/area-do-cliente" },
-  ],
-};
+/**
+ * Função, não constante (2026-09-23): o item "Entrar na Plataforma"
+ * depende de uma env var lida em **tempo de execução** (ver
+ * `@/lib/saas-gate`). Como constante de módulo, o valor seria congelado no
+ * build - e na Hostinger o build não recebe as variáveis do painel, então
+ * o link nunca apareceria por mais que a flag fosse ligada.
+ *
+ * Só deve ser chamada em Server Component; quem renderiza no cliente
+ * (`MobileNav`) recebe o resultado por prop.
+ */
+export function getClientAreaNav(): NavItem & { children: NavItem[] } {
+  return {
+    label: "Área do Cliente",
+    href: "/area-do-cliente",
+    children: [
+      ...(isSaasPublicEnabled()
+        ? [{ label: "Entrar na Plataforma", href: "/login" }]
+        : []),
+      { label: "Acompanhar abertura", href: "/area-do-cliente" },
+      { label: "Central de documentos", href: "/area-do-cliente" },
+      { label: "Suporte", href: "/area-do-cliente" },
+    ],
+  };
+}
 
 /**
  * "Falar com contador" abre o WhatsApp direto (WJB_Conteudos_Incompletos...md,
