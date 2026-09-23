@@ -73,6 +73,19 @@ export async function GET() {
     supabaseEnvNames: Object.keys(process.env)
       .filter((name) => name.toUpperCase().includes("SUPABASE"))
       .sort(),
+    /**
+     * Formato da chave, nunca a chave: comprimento e prefixo bastam pra
+     * detectar cópia truncada (causa provável do "Invalid API key") ou
+     * espaço/aspas coladas junto por engano.
+     */
+    anonKeyShape: anonKey
+      ? {
+          length: anonKey.length,
+          prefix: anonKey.slice(0, 15),
+          hasWhitespace: /\s/.test(anonKey),
+          hasQuotes: /["']/.test(anonKey),
+        }
+      : null,
     probe,
   });
 }
