@@ -34,6 +34,31 @@
 [ ] Portal Visão do Cliente ...... segue sem SSO/deep link documentado
 ```
 
+## Status em produção (2026-09-23)
+
+**Integração real ligada e validada.** Credenciais criadas no painel do G-Click (Configurações > Integrações & API > API > "+ Criar uma Aplicação") e configuradas na Hostinger. Confirmado contra a API real:
+
+```text
+health .................. available
+criar/alterar cliente ... liberado
+buscar/listar clientes .. liberado
+listar tarefas .......... liberado
+criar pré-tarefa ........ desligado (falta GCLICK_DEPARTAMENTO_ID, opcional)
+partner_only ............ desligado (2 recursos, como deve ser)
+```
+
+Conta da WJB - valores lidos da própria API durante a configuração:
+
+| Visibilidades | | Grupos | |
+|---|---|---|---|
+| 1 | Geral (**em uso**) | 1 | Clientes Exemplo |
+| 2 | Geral Sócios | 2 | IRPF |
+| 3 | Exemplo | | |
+
+`GCLICK_VISIBILIDADE_IDS=1`. `GCLICK_GRUPO_IDS` deixado vazio de propósito: nenhum grupo existente representa "veio pelo site" - se isso virar necessário, criar um grupo próprio no G-Click em vez de reaproveitar um com outro significado.
+
+**Importante sobre alcance**: as telas que consomem esta integração (`/admin/integracoes`, `/admin/empresas/[id]`, `/portal`) estão atrás do gate do SaaS (`NEXT_PUBLIC_SAAS_PUBLIC_ENABLED`), que segue desligado. A integração é infraestrutura pronta, não algo visível no site hoje.
+
 ## Campos obrigatórios confirmados
 
 **`POST /clientes`** (obrigatórios marcados com `*` na documentação):
