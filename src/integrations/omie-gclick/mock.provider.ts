@@ -53,17 +53,33 @@ const CAPABILITIES: ProviderCapabilities = {
 function scenarioToError(scenario: MockScenario): ProviderError | null {
   switch (scenario) {
     case "AUTH_ERROR":
-      return { code: "AUTHENTICATION_ERROR", message: "Mock: autenticação inválida simulada." };
+      return {
+        code: "AUTHENTICATION_ERROR",
+        message: "Mock: autenticação inválida simulada.",
+      };
     case "RATE_LIMIT":
-      return { code: "RATE_LIMITED", message: "Mock: limite de requisições simulado.", retryAfterMs: 1000 };
+      return {
+        code: "RATE_LIMITED",
+        message: "Mock: limite de requisições simulado.",
+        retryAfterMs: 1000,
+      };
     case "TIMEOUT":
       return { code: "TIMEOUT", message: "Mock: tempo limite simulado." };
     case "UNAVAILABLE":
-      return { code: "UNAVAILABLE", message: "Mock: provider indisponível simulado." };
+      return {
+        code: "UNAVAILABLE",
+        message: "Mock: provider indisponível simulado.",
+      };
     case "VALIDATION_ERROR":
-      return { code: "VALIDATION_ERROR", message: "Mock: dados inválidos simulados." };
+      return {
+        code: "VALIDATION_ERROR",
+        message: "Mock: dados inválidos simulados.",
+      };
     case "UNKNOWN_ERROR":
-      return { code: "UNKNOWN_PROVIDER_ERROR", message: "Mock: erro não classificado simulado." };
+      return {
+        code: "UNKNOWN_PROVIDER_ERROR",
+        message: "Mock: erro não classificado simulado.",
+      };
     case "SUCCESS":
       return null;
   }
@@ -83,8 +99,12 @@ export function createMockGClickProvider(): MockGClickProvider {
   let clientsByReference = new Map<string, ExternalClient>();
 
   function seed() {
-    clientsByExternalId = new Map([[MOCK_CLIENT_EXISTING.externalId as string, MOCK_CLIENT_EXISTING]]);
-    clientsByReference = new Map([[MOCK_CLIENT_EXISTING.externalReference, MOCK_CLIENT_EXISTING]]);
+    clientsByExternalId = new Map([
+      [MOCK_CLIENT_EXISTING.externalId as string, MOCK_CLIENT_EXISTING],
+    ]);
+    clientsByReference = new Map([
+      [MOCK_CLIENT_EXISTING.externalReference, MOCK_CLIENT_EXISTING],
+    ]);
   }
   seed();
 
@@ -103,14 +123,20 @@ export function createMockGClickProvider(): MockGClickProvider {
     },
 
     clients: {
-      async create(input: CreateExternalClientInput): Promise<ProviderResult<ExternalClient>> {
+      async create(
+        input: CreateExternalClientInput,
+      ): Promise<ProviderResult<ExternalClient>> {
         const early = fail<ExternalClient>();
         if (early) return early;
 
         if (clientsByReference.has(input.externalReference)) {
           return {
             ok: false,
-            error: { code: "DUPLICATE", message: "Mock: já existe um cliente com essa referência externa." },
+            error: {
+              code: "DUPLICATE",
+              message:
+                "Mock: já existe um cliente com essa referência externa.",
+            },
           };
         }
 
@@ -131,19 +157,28 @@ export function createMockGClickProvider(): MockGClickProvider {
         return { ok: true, data: client };
       },
 
-      async update(input: UpdateExternalClientInput): Promise<ProviderResult<ExternalClient>> {
+      async update(
+        input: UpdateExternalClientInput,
+      ): Promise<ProviderResult<ExternalClient>> {
         const early = fail<ExternalClient>();
         if (early) return early;
 
         const existing = clientsByExternalId.get(input.externalId);
         if (!existing) {
-          return { ok: false, error: { code: "NOT_FOUND", message: "Mock: cliente não encontrado." } };
+          return {
+            ok: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Mock: cliente não encontrado.",
+            },
+          };
         }
 
         const updated: ExternalClient = {
           ...existing,
           name: input.name ?? existing.name,
-          document: input.document !== undefined ? input.document : existing.document,
+          document:
+            input.document !== undefined ? input.document : existing.document,
           updatedAt: new Date().toISOString(),
         };
         clientsByExternalId.set(updated.externalId as string, updated);
@@ -151,13 +186,17 @@ export function createMockGClickProvider(): MockGClickProvider {
         return { ok: true, data: updated };
       },
 
-      async findById(externalId: string): Promise<ProviderResult<ExternalClient | null>> {
+      async findById(
+        externalId: string,
+      ): Promise<ProviderResult<ExternalClient | null>> {
         const early = fail<ExternalClient | null>();
         if (early) return early;
         return { ok: true, data: clientsByExternalId.get(externalId) ?? null };
       },
 
-      async findByExternalReference(reference: string): Promise<ProviderResult<ExternalClient | null>> {
+      async findByExternalReference(
+        reference: string,
+      ): Promise<ProviderResult<ExternalClient | null>> {
         const early = fail<ExternalClient | null>();
         if (early) return early;
         return { ok: true, data: clientsByReference.get(reference) ?? null };
@@ -175,13 +214,20 @@ export function createMockGClickProvider(): MockGClickProvider {
         const start = (page - 1) * pageSize;
         return {
           ok: true,
-          data: { items: items.slice(start, start + pageSize), page, pageSize, total: items.length },
+          data: {
+            items: items.slice(start, start + pageSize),
+            page,
+            pageSize,
+            total: items.length,
+          },
         };
       },
     },
 
     tasks: {
-      async list(input?: ListExternalTasksInput): Promise<ProviderResult<PaginatedResult<ExternalTask>>> {
+      async list(
+        input?: ListExternalTasksInput,
+      ): Promise<ProviderResult<PaginatedResult<ExternalTask>>> {
         const early = fail<PaginatedResult<ExternalTask>>();
         if (early) return early;
 
@@ -199,7 +245,9 @@ export function createMockGClickProvider(): MockGClickProvider {
         };
       },
 
-      async createPreTask(input: CreateExternalPreTaskInput): Promise<ProviderResult<ExternalTask>> {
+      async createPreTask(
+        input: CreateExternalPreTaskInput,
+      ): Promise<ProviderResult<ExternalTask>> {
         const early = fail<ExternalTask>();
         if (early) return early;
 

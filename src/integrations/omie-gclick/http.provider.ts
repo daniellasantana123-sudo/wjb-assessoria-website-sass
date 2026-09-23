@@ -1,48 +1,52 @@
 import "server-only";
 
 import type { GClickConfig } from "./config";
+import {
+  fromExternalPayload as clientFromExternal,
+  toCreatePayload,
+  toUpdatePayload,
+  type GClickClientPayload,
+} from "./mappers/client.mapper";
+import { fromExternalError, fromTransportError } from "./mappers/error.mapper";
+import {
+  fromExternalPayload as taskFromExternal,
+  toCreatePreTaskPayload,
+} from "./mappers/task.mapper";
 import type {
+  CreateExternalClientInput,
+  CreateExternalPreTaskInput,
   ExternalClient,
   ExternalTask,
+  ListExternalClientsInput,
+  ListExternalTasksInput,
   OmieGClickAdapter,
   PaginatedResult,
   ProviderCapabilities,
+  ProviderError,
   ProviderHealth,
   ProviderResult,
+  UpdateExternalClientInput,
 } from "./types";
 
 /**
- * Esqueleto do provider real (seção 9 do prompt da Fase 6.5) - implementa
- * o contrato, mas NENHUM método faz uma chamada HTTP de verdade. Cada um
- * resolve `PROVIDER_NOT_CONFIGURED` de forma síncrona e sanitizada.
+ * Provider real da Omie.G-Click.
  *
- * Isto existe pra: (1) confirmar que o contrato `OmieGClickAdapter` é
- * implementável por um provider real sem mudar a interface, e (2) marcar
- * exatamente onde a implementação real entra quando a documentação
- * técnica (Postman) e/ou credenciais forem confirmadas - ver
- * `docs/integrations/gclick/PENDING_VALIDATION.md`.
+ * **Implementado em 2026-09-23**, depois que a documentação técnica
+ * oficial foi obtida (coleção Postman completa, versionada em
+ * `docs/integrations/gclick/postman-collection.json`). Até então isto era
+ * um esqueleto que bloqueava toda chamada - ver o histórico da Fase 6.5 e
+ * do Checkpoint 6.5.1.
  *
- * `GClickClientMapper`/`GClickTaskMapper`/`GClickErrorMapper`
- * (`./mappers/`) é onde a tradução `ExternalClient` <-> payload real da
- * G-Click vai entrar - hoje só existem como esqueleto, nunca chamados
- * daqui, porque não há nenhuma chamada de rede que produza algo pra
- * mapear ainda.
- *
- * **Checkpoint 6.5.1 - duas proteções independentes** (seções 1/2):
- * 1. Feature flag (`GCLICK_REAL_INTEGRATION_ENABLED`) - decidida no
- *    factory (`provider.ts`), chega aqui como `options.blockedByFeatureFlag`.
- * 2. `REAL_PROVIDER_IMPLEMENTED` (abaixo) - hardcoded em código, não uma
- *    env var. Ninguém consegue "ligar" a integração real só mexendo em
- *    configuração; só uma mudança de código (depois que a especificação
- *    técnica da G-Click for confirmada) vira isto `true`.
- *
- * As duas são checadas de forma independente em `isRealIntegrationAvailable()`
- * - mesmo que a Proteção 1 esteja "aberta" (flag = true), a Proteção 2
- * continua bloqueando sozinha, e vice-versa.
+ * **A Proteção 1 continua valendo**: `GCLICK_REAL_INTEGRATION_ENABLED`
+ * precisa ser exatamente "true" pra qualquer chamada de rede acontecer.
+ * Sem ela, todo método resolve `PROVIDER_NOT_CONFIGURED` como antes. A
+ * Proteção 2 (`REAL_PROVIDER_IMPLEMENTED`) deixou de bloquear porque a
+ * condição que ela guardava - "não existe implementação real, não invente
+ * uma" - deixou de ser verdade.
  */
-const REAL_PROVIDER_IMPLEMENTED = false as const;
+const REAL_PROVIDER_IMPLEMENTED = true as const;
 
-/** Exportado só pra o Checkpoint 6.5.1 confirmar via teste que continua `false`. */
+/** Exportado pra o teste do Checkpoint 6.5.1 afirmar o estado atual da Proteção 2. */
 export function isRealProviderImplemented(): boolean {
   return REAL_PROVIDER_IMPLEMENTED;
 }
@@ -52,91 +56,406 @@ export interface GClickHttpProviderOptions {
   blockedByFeatureFlag: boolean;
 }
 
-function isRealIntegrationAvailable(options: GClickHttpProviderOptions): boolean {
-  return !options.blockedByFeatureFlag && REAL_PROVIDER_IMPLEMENTED;
+/** Renova o token um minuto antes do vencimento, pra nunca usar um já expirado em voo. */
+const TOKEN_SAFETY_MARGIN_MS = 60_000;
+
+interface TokenState {
+  accessToken: string;
+  expiresAt: number;
 }
 
-function blockedMessage(options: GClickHttpProviderOptions): string {
-  if (options.blockedByFeatureFlag) {
-    return 'Integração real G-Click desabilitada (GCLICK_REAL_INTEGRATION_ENABLED != "true").';
-  }
-  return "G-Click real integration is disabled. Official API configuration has not yet been validated (TODO_GCLICK_VALIDATION).";
-}
-
-const REAL_CAPABILITIES: ProviderCapabilities = {
-  // "unknown" na prática - nenhuma capacidade real foi confirmada, então tudo começa false, nunca true por suposição.
-  canCreateClients: false,
-  canUpdateClients: false,
-  canFindClients: false,
-  canListClients: false,
-  canListTasks: false,
-  canCreatePreTasks: false,
-  canReplyActivity: false,
-  canCreatePreTaskWithTag: false,
-};
-
-/**
- * `config.timeoutMs` (`GCLICK_TIMEOUT_MS`) já existe como configuração
- * interna (Checkpoint 6.5.1, seção 19), mas só será efetivamente usado
- * quando uma chamada de rede real existir aqui dentro (via
- * `AbortController`, mesmo padrão já usado no adapter Meta WhatsApp) -
- * hoje nenhum método chega a fazer uma requisição, então não há o que
- * limitar por tempo ainda.
- */
 export function createGClickHttpProvider(
   config: GClickConfig,
   options: GClickHttpProviderOptions,
 ): OmieGClickAdapter {
-  function blocked<T>(): ProviderResult<T> {
+  /** Cache por instância do provider (que já é memoizada por processo no factory). */
+  let token: TokenState | null = null;
+
+  function configurationError(): ProviderError | null {
+    if (options.blockedByFeatureFlag) {
+      return {
+        code: "PROVIDER_NOT_CONFIGURED",
+        message:
+          'Integração real G-Click desabilitada (GCLICK_REAL_INTEGRATION_ENABLED != "true").',
+      };
+    }
+    if (!config.clientId || !config.clientSecret) {
+      return {
+        code: "PROVIDER_NOT_CONFIGURED",
+        message: "GCLICK_CLIENT_ID/GCLICK_CLIENT_SECRET não configurados.",
+      };
+    }
+    return null;
+  }
+
+  async function withTimeout(
+    input: string,
+    init: RequestInit,
+  ): Promise<
+    { ok: true; response: Response } | { ok: false; error: ProviderError }
+  > {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), config.timeoutMs);
+    try {
+      const response = await fetch(input, {
+        ...init,
+        signal: controller.signal,
+      });
+      return { ok: true, response };
+    } catch (error) {
+      return { ok: false, error: fromTransportError(error) };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /**
+   * `POST /oauth/token` com `grant_type=client_credentials` em
+   * form-urlencoded - formato confirmado pela coleção oficial. A resposta
+   * traz `access_token` e `expires_in` (~24h); não há refresh token, a
+   * renovação é repetir esta mesma chamada.
+   */
+  async function getAccessToken(
+    force = false,
+  ): Promise<
+    { ok: true; token: string } | { ok: false; error: ProviderError }
+  > {
+    if (!force && token && token.expiresAt > Date.now()) {
+      return { ok: true, token: token.accessToken };
+    }
+
+    const body = new URLSearchParams({
+      client_id: config.clientId ?? "",
+      client_secret: config.clientSecret ?? "",
+      grant_type: "client_credentials",
+    });
+
+    const attempt = await withTimeout(`${config.baseUrl}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+    if (!attempt.ok) return attempt;
+
+    const { response } = attempt;
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return { ok: false, error: fromExternalError(response.status, payload) };
+    }
+
+    const raw = (payload ?? {}) as {
+      access_token?: unknown;
+      expires_in?: unknown;
+    };
+    if (typeof raw.access_token !== "string" || raw.access_token.length === 0) {
+      return {
+        ok: false,
+        error: {
+          code: "AUTHENTICATION_ERROR",
+          message: "O G-Click não devolveu um access_token válido.",
+        },
+      };
+    }
+
+    const expiresInSeconds =
+      typeof raw.expires_in === "number" ? raw.expires_in : 0;
+    token = {
+      accessToken: raw.access_token,
+      expiresAt:
+        Date.now() +
+        Math.max(expiresInSeconds * 1000 - TOKEN_SAFETY_MARGIN_MS, 0),
+    };
+    return { ok: true, token: token.accessToken };
+  }
+
+  /**
+   * Toda chamada autenticada passa por aqui. Em 401, descarta o token em
+   * cache e tenta uma única vez com um token novo - cobre o caso do token
+   * ter sido revogado antes do vencimento previsto, sem virar laço.
+   */
+  async function request<T>(
+    path: string,
+    init: RequestInit = {},
+    retriedAfter401 = false,
+  ): Promise<ProviderResult<T>> {
+    const configError = configurationError();
+    if (configError) return { ok: false, error: configError };
+
+    const auth = await getAccessToken(retriedAfter401);
+    if (!auth.ok) return { ok: false, error: auth.error };
+
+    const attempt = await withTimeout(`${config.baseUrl}${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${auth.token}`,
+        Accept: "application/json",
+        ...(init.body ? { "Content-Type": "application/json" } : {}),
+        ...init.headers,
+      },
+    });
+    if (!attempt.ok) return { ok: false, error: attempt.error };
+
+    const { response } = attempt;
+
+    if (response.status === 401 && !retriedAfter401) {
+      token = null;
+      return request<T>(path, init, true);
+    }
+
+    if (response.status === 204) return { ok: true, data: undefined as T };
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const retryAfter = Number(response.headers.get("retry-after"));
+      return {
+        ok: false,
+        error: fromExternalError(
+          response.status,
+          payload,
+          Number.isFinite(retryAfter) && retryAfter > 0
+            ? retryAfter * 1000
+            : undefined,
+        ),
+      };
+    }
+
+    return { ok: true, data: payload as T };
+  }
+
+  /** Formato paginado do Spring, confirmado nas respostas de exemplo da coleção. */
+  interface SpringPage<T> {
+    content?: T[];
+    number?: number;
+    size?: number;
+    totalElements?: number;
+  }
+
+  function toPaginated<TRaw, TOut>(
+    payload: SpringPage<TRaw> | TRaw[] | null,
+    map: (raw: TRaw) => TOut,
+    fallbackPage: number,
+    fallbackSize: number,
+  ): PaginatedResult<TOut> {
+    // A API às vezes devolve um array puro (ex.: `GET /clientes` sem
+    // paginação explícita) e às vezes o envelope paginado.
+    if (Array.isArray(payload)) {
+      return {
+        items: payload.map(map),
+        page: fallbackPage,
+        pageSize: fallbackSize,
+        total: payload.length,
+      };
+    }
+    const content = payload?.content ?? [];
     return {
-      ok: false,
-      error: { code: "PROVIDER_NOT_CONFIGURED", message: blockedMessage(options) },
+      items: content.map(map),
+      page: payload?.number ?? fallbackPage,
+      pageSize: payload?.size ?? fallbackSize,
+      total: payload?.totalElements ?? content.length,
     };
   }
 
+  const CAPABILITIES: ProviderCapabilities = {
+    canCreateClients: config.account.visibilidadeIds.length > 0,
+    canUpdateClients: true,
+    canFindClients: true,
+    canListClients: true,
+    canListTasks: true,
+    canCreatePreTasks: config.account.departamentoId !== null,
+    // partner_only - documentado oficialmente, nunca liberar sem autorização comercial da Omie.
+    canReplyActivity: false,
+    canCreatePreTaskWithTag: false,
+  };
+
   return {
     async healthCheck(): Promise<ProviderHealth> {
+      if (configurationError()) {
+        return {
+          provider: "gclick",
+          mode: config.mode,
+          status: "not_configured",
+        };
+      }
+      const auth = await getAccessToken();
       return {
         provider: "gclick",
         mode: config.mode,
-        status: isRealIntegrationAvailable(options) ? "available" : "not_configured",
+        status: auth.ok ? "available" : "unavailable",
       };
     },
 
     getCapabilities(): ProviderCapabilities {
-      return REAL_CAPABILITIES;
+      return CAPABILITIES;
     },
 
     clients: {
-      // TODO_GCLICK_VALIDATION: mapear via GClickClientMapper.toExternalPayload(input)
-      // e montar a request real (host/path/headers confirmados) quando a
-      // especificação técnica oficial estiver acessível.
-      async create(): Promise<ProviderResult<ExternalClient>> {
-        return blocked();
+      async create(
+        input: CreateExternalClientInput,
+      ): Promise<ProviderResult<ExternalClient>> {
+        // Ordem importa: Proteção 1 (flag) e credenciais vêm antes da
+        // configuração de conta - quem está com a integração desligada
+        // precisa ouvir isso, não um aviso sobre visibilidadeIds.
+        const configError = configurationError();
+        if (configError) return { ok: false, error: configError };
+
+        if (config.account.visibilidadeIds.length === 0) {
+          return {
+            ok: false,
+            error: {
+              code: "PROVIDER_NOT_CONFIGURED",
+              message:
+                "GCLICK_VISIBILIDADE_IDS não configurado - a API exige visibilidadeIds para criar cliente.",
+            },
+          };
+        }
+
+        const payload = toCreatePayload(input, config);
+        if (!payload) {
+          return {
+            ok: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message:
+                "CNPJ/CPF ausente ou inválido - o G-Click exige inscrição para cadastrar cliente.",
+            },
+          };
+        }
+
+        const result = await request<unknown>("/clientes", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        if (!result.ok) return result;
+        return {
+          ok: true,
+          data: clientFromExternal(result.data, input.internalId),
+        };
       },
-      async update(): Promise<ProviderResult<ExternalClient>> {
-        return blocked();
+
+      async update(
+        input: UpdateExternalClientInput,
+      ): Promise<ProviderResult<ExternalClient>> {
+        // `PUT /clientes/{id}` substitui o cadastro inteiro, então é preciso
+        // ler o atual antes pra não zerar campo por omissão.
+        const current = await request<GClickClientPayload>(
+          `/clientes/${encodeURIComponent(input.externalId)}`,
+        );
+        if (!current.ok) return current;
+
+        const payload = toUpdatePayload(input, current.data);
+        const result = await request<unknown>(
+          `/clientes/${encodeURIComponent(input.externalId)}`,
+          {
+            method: "PUT",
+            body: JSON.stringify(payload),
+          },
+        );
+        if (!result.ok) return result;
+        return { ok: true, data: clientFromExternal(result.data) };
       },
-      async findById(): Promise<ProviderResult<ExternalClient | null>> {
-        return blocked();
+
+      async findById(
+        externalId: string,
+      ): Promise<ProviderResult<ExternalClient | null>> {
+        const result = await request<unknown>(
+          `/clientes/${encodeURIComponent(externalId)}`,
+        );
+        // "Não existe" é resposta válida da consulta, não erro de integração.
+        if (!result.ok) {
+          return result.error.code === "NOT_FOUND"
+            ? { ok: true, data: null }
+            : result;
+        }
+        return { ok: true, data: clientFromExternal(result.data) };
       },
-      async findByExternalReference(): Promise<ProviderResult<ExternalClient | null>> {
-        return blocked();
+
+      async findByExternalReference(
+        reference: string,
+      ): Promise<ProviderResult<ExternalClient | null>> {
+        const result = await request<
+          SpringPage<Record<string, unknown>> | Record<string, unknown>[]
+        >(`/clientes/search?texto=${encodeURIComponent(reference)}`);
+        if (!result.ok) {
+          return result.error.code === "NOT_FOUND"
+            ? { ok: true, data: null }
+            : result;
+        }
+
+        const page = toPaginated(result.data, (raw) => raw, 0, 0);
+        // A busca é textual e pode trazer vizinhos; só vale como match o
+        // registro cujo `integracao` bate exatamente com a referência.
+        const exact = page.items.find((raw) => raw.integracao === reference);
+        return { ok: true, data: exact ? clientFromExternal(exact) : null };
       },
-      async list(): Promise<ProviderResult<PaginatedResult<ExternalClient>>> {
-        return blocked();
+
+      async list(
+        input: ListExternalClientsInput = {},
+      ): Promise<ProviderResult<PaginatedResult<ExternalClient>>> {
+        const page = input.page ?? 0;
+        const size = input.pageSize ?? 20;
+        const result = await request<
+          SpringPage<Record<string, unknown>> | Record<string, unknown>[]
+        >(`/clientes?page=${page}&size=${size}`);
+        if (!result.ok) return result;
+        return {
+          ok: true,
+          data: toPaginated(
+            result.data,
+            (raw) => clientFromExternal(raw),
+            page,
+            size,
+          ),
+        };
       },
     },
 
     tasks: {
-      // TODO_GCLICK_VALIDATION: "Listar tarefas"/"Criar pré-tarefa" existem
-      // na documentação oficial (não são partner_only), mas sem schema
-      // técnico confirmado nesta sessão - ver GClickTaskMapper.
-      async list(): Promise<ProviderResult<PaginatedResult<ExternalTask>>> {
-        return blocked();
+      async list(
+        input: ListExternalTasksInput = {},
+      ): Promise<ProviderResult<PaginatedResult<ExternalTask>>> {
+        const page = input.page ?? 0;
+        const size = input.pageSize ?? 20;
+        const result = await request<
+          SpringPage<Record<string, unknown>> | Record<string, unknown>[]
+        >(`/tarefas?page=${page}&size=${size}`);
+        if (!result.ok) return result;
+        return {
+          ok: true,
+          data: toPaginated(
+            result.data,
+            (raw) => taskFromExternal(raw),
+            page,
+            size,
+          ),
+        };
       },
-      async createPreTask(): Promise<ProviderResult<ExternalTask>> {
-        return blocked();
+
+      async createPreTask(
+        input: CreateExternalPreTaskInput,
+      ): Promise<ProviderResult<ExternalTask>> {
+        const configError = configurationError();
+        if (configError) return { ok: false, error: configError };
+
+        const payload = toCreatePreTaskPayload(input, config);
+        if (!payload) {
+          return {
+            ok: false,
+            error: {
+              code: "PROVIDER_NOT_CONFIGURED",
+              message:
+                "GCLICK_DEPARTAMENTO_ID não configurado - a API exige departamentoId para criar pré-tarefa.",
+            },
+          };
+        }
+
+        const result = await request<unknown>("/v2/tarefas/preTarefas", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        if (!result.ok) return result;
+        return { ok: true, data: taskFromExternal(result.data) };
       },
     },
   };

@@ -77,8 +77,14 @@ describe("getGClickConfig", () => {
 });
 
 describe("getOmieGClickAdapter - seleção de provider", () => {
-  it("isOmieConfigured() é sempre falso (nenhuma implementação real existe ainda)", () => {
+  it("isOmieConfigured() é falso sem credenciais e verdadeiro com elas + flag ligada", () => {
     expect(isOmieConfigured()).toBe(false);
+
+    process.env.GCLICK_MODE = "production";
+    process.env.GCLICK_REAL_INTEGRATION_ENABLED = "true";
+    process.env.GCLICK_CLIENT_ID = "id";
+    process.env.GCLICK_CLIENT_SECRET = "segredo";
+    expect(isOmieConfigured()).toBe(true);
   });
 
   it("modo mock (padrão) devolve um provider com healthCheck 'available'", async () => {
@@ -93,7 +99,7 @@ describe("getOmieGClickAdapter - seleção de provider", () => {
     expect(health).toEqual({ provider: "gclick", mode: "sandbox", status: "not_configured" });
   });
 
-  it("modo production, mesmo com GCLICK_REAL_INTEGRATION_ENABLED=true, continua bloqueado (nenhuma implementação real existe)", async () => {
+  it("modo production com a flag ligada mas SEM credenciais continua 'not_configured'", async () => {
     process.env.GCLICK_MODE = "production";
     process.env.GCLICK_REAL_INTEGRATION_ENABLED = "true";
     const health = await getOmieGClickAdapter().healthCheck();
@@ -118,7 +124,7 @@ describe("getOmieGClickAdapter - seleção de provider", () => {
       });
     });
 
-    it("production COM a flag=true: ainda bloqueado, mas por outro motivo (Proteção 2, TODO_GCLICK_VALIDATION)", async () => {
+    it("production COM a flag=true mas sem credenciais: barrado pela config, não pela flag", async () => {
       process.env.GCLICK_MODE = "production";
       process.env.GCLICK_REAL_INTEGRATION_ENABLED = "true";
 
@@ -132,7 +138,7 @@ describe("getOmieGClickAdapter - seleção de provider", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.message).not.toContain("GCLICK_REAL_INTEGRATION_ENABLED");
-        expect(result.error.message).toContain("TODO_GCLICK_VALIDATION");
+        expect(result.error.message).toContain("GCLICK_CLIENT_ID");
       }
     });
   });

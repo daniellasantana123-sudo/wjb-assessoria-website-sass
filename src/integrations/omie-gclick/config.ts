@@ -24,20 +24,45 @@ export interface GClickConfig {
    * pra uma chamada real algum dia acontecer, e hoje nenhuma das duas é.
    */
   realIntegrationEnabled: boolean;
-  /** TODO_GCLICK_VALIDATION - host real nunca confirmado nesta sessão. */
-  baseUrl: string | undefined;
-  /** TODO_GCLICK_VALIDATION - nome do campo não confirmado (poderia ser outro). */
+  /** Host oficial, confirmado pela coleção Postman (2026-09-23). Sobrescrevível por `GCLICK_BASE_URL`. */
+  baseUrl: string;
+  /** Gerado em Configurações > Integrações & API > Aplicações, no painel do G-Click. */
   clientId: string | undefined;
-  /** TODO_GCLICK_VALIDATION - nome do campo não confirmado. */
+  /** Idem. Secret - nunca logar, nunca expor em resposta de API. */
   clientSecret: string | undefined;
-  /** TODO_GCLICK_VALIDATION - alternativa candidata caso o modelo real não seja client_id/secret. */
-  apiKey: string | undefined;
-  /** TODO_GCLICK_VALIDATION - token já emitido, se o fluxo real permitir configurar um diretamente. */
-  token: string | undefined;
   timeoutMs: number;
+  /**
+   * Valores específicos da conta da WJB no G-Click - não dá pra inferir da
+   * documentação, e inventá-los faria a API recusar o cadastro. Listáveis
+   * por `GET /visibilidades` e `GET /grupos` depois de autenticar.
+   */
+  account: {
+    /** Obrigatório pra `POST /clientes`. Vazio = criação de cliente indisponível. */
+    visibilidadeIds: number[];
+    /** Opcional na API. */
+    grupoIds: number[];
+    /** "FIXO" ou "EVENTUAL" - regra de negócio da WJB, não da API. */
+    clienteTipo: "FIXO" | "EVENTUAL";
+    /** Obrigatório pra `POST /v2/tarefas/preTarefas`. `GET /departamentos` é partner_only, então sai da tela do G-Click. */
+    departamentoId: number | null;
+    /** Identificador do sistema integrador, gravado em `sistema` no cadastro do cliente. */
+    sistema: string;
+  };
 }
 
-function parseMode(raw: string | undefined): { mode: ProviderMode; modeConfigError: string | null } {
+/** "1,2, 3" -> [1, 2, 3]. Ignora vazios e valores não numéricos em vez de quebrar. */
+function parseIdList(raw: string | undefined): number[] {
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((part) => Number(part.trim()))
+    .filter((value) => Number.isInteger(value) && value > 0);
+}
+
+function parseMode(raw: string | undefined): {
+  mode: ProviderMode;
+  modeConfigError: string | null;
+} {
   if (raw === undefined || raw === "" || raw === "mock") {
     return { mode: "mock", modeConfigError: null };
   }
@@ -60,12 +85,20 @@ export function getGClickConfig(): GClickConfig {
   return {
     mode,
     modeConfigError,
-    realIntegrationEnabled: process.env.GCLICK_REAL_INTEGRATION_ENABLED === "true",
-    baseUrl: process.env.GCLICK_BASE_URL || undefined,
+    realIntegrationEnabled:
+      process.env.GCLICK_REAL_INTEGRATION_ENABLED === "true",
+    baseUrl: process.env.GCLICK_BASE_URL || "https://api.gclick.com.br",
     clientId: process.env.GCLICK_CLIENT_ID || undefined,
     clientSecret: process.env.GCLICK_CLIENT_SECRET || undefined,
-    apiKey: process.env.GCLICK_API_KEY || undefined,
-    token: process.env.GCLICK_TOKEN || undefined,
     timeoutMs: parseTimeout(process.env.GCLICK_TIMEOUT_MS),
+    account: {
+      visibilidadeIds: parseIdList(process.env.GCLICK_VISIBILIDADE_IDS),
+      grupoIds: parseIdList(process.env.GCLICK_GRUPO_IDS),
+      clienteTipo:
+        process.env.GCLICK_CLIENTE_TIPO === "EVENTUAL" ? "EVENTUAL" : "FIXO",
+      departamentoId:
+        parseIdList(process.env.GCLICK_DEPARTAMENTO_ID)[0] ?? null,
+      sistema: process.env.GCLICK_SISTEMA || "WJB Assessoria Contábil",
+    },
   };
 }

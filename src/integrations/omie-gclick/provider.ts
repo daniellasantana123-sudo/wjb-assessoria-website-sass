@@ -61,11 +61,20 @@ export function resetOmieGClickAdapterForTests(): void {
 }
 
 /**
- * Sempre `false` hoje - não existe nenhuma implementação real
- * (`GClickHttpProvider` sempre bloqueia, independente de credenciais).
- * Mantido como função (não inline na UI) pra ter um único lugar a mudar
- * quando isso deixar de ser verdade.
+ * A integração real está de fato ligada? (atualizado em 2026-09-23, quando
+ * a implementação real passou a existir - antes isto era `false` fixo.)
+ *
+ * Exige as três coisas ao mesmo tempo: sair do modo mock, a Proteção 1
+ * (`GCLICK_REAL_INTEGRATION_ENABLED`) e credenciais. Não confirma que a
+ * credencial é *válida* - isso só `healthCheck()` sabe, porque depende de
+ * bater na API.
  */
 export function isOmieConfigured(): boolean {
-  return false;
+  const config = getGClickConfig();
+  return (
+    config.mode !== "mock" &&
+    config.realIntegrationEnabled &&
+    Boolean(config.clientId) &&
+    Boolean(config.clientSecret)
+  );
 }

@@ -137,7 +137,8 @@ export interface ProviderError {
  * resultado tipado. Preferido aqui em vez do estilo de exceções do
  * exemplo conceitual do prompt - ver `decisions.md` D1.
  */
-export type ProviderResult<T> = { ok: true; data: T } | { ok: false; error: ProviderError };
+export type ProviderResult<T> =
+  { ok: true; data: T } | { ok: false; error: ProviderError };
 
 // ---------------------------------------------------------------------
 // Contrato do provider
@@ -159,15 +160,29 @@ export interface OmieGClickAdapter {
   getCapabilities(): ProviderCapabilities;
 
   clients: {
-    create(input: CreateExternalClientInput): Promise<ProviderResult<ExternalClient>>;
-    update(input: UpdateExternalClientInput): Promise<ProviderResult<ExternalClient>>;
-    findById(externalId: string): Promise<ProviderResult<ExternalClient | null>>;
-    findByExternalReference(reference: string): Promise<ProviderResult<ExternalClient | null>>;
-    list(input?: ListExternalClientsInput): Promise<ProviderResult<PaginatedResult<ExternalClient>>>;
+    create(
+      input: CreateExternalClientInput,
+    ): Promise<ProviderResult<ExternalClient>>;
+    update(
+      input: UpdateExternalClientInput,
+    ): Promise<ProviderResult<ExternalClient>>;
+    findById(
+      externalId: string,
+    ): Promise<ProviderResult<ExternalClient | null>>;
+    findByExternalReference(
+      reference: string,
+    ): Promise<ProviderResult<ExternalClient | null>>;
+    list(
+      input?: ListExternalClientsInput,
+    ): Promise<ProviderResult<PaginatedResult<ExternalClient>>>;
   };
 
   tasks: {
-    list(input?: ListExternalTasksInput): Promise<ProviderResult<PaginatedResult<ExternalTask>>>;
-    createPreTask(input: CreateExternalPreTaskInput): Promise<ProviderResult<ExternalTask>>;
+    list(
+      input?: ListExternalTasksInput,
+    ): Promise<ProviderResult<PaginatedResult<ExternalTask>>>;
+    createPreTask(
+      input: CreateExternalPreTaskInput,
+    ): Promise<ProviderResult<ExternalTask>>;
   };
 }

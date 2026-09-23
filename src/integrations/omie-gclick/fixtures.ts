@@ -8,7 +8,10 @@ import type { ExternalClient, ExternalTask } from "./types";
  * suficiente pra não colidir entre fixtures).
  */
 
-export const MOCK_CLIENT_DEFAULT: Omit<ExternalClient, "externalId" | "createdAt" | "updatedAt"> = {
+export const MOCK_CLIENT_DEFAULT: Omit<
+  ExternalClient,
+  "externalId" | "createdAt" | "updatedAt"
+> = {
   internalId: "00000000-0000-0000-0000-000000000001",
   externalReference: "wjb-tenant-mock-default",
   name: "Empresa Exemplo LTDA",
@@ -45,4 +48,7 @@ export const MOCK_TASK_COMPLETED: ExternalTask = {
   dueDate: "2026-08-15",
 };
 
-export const MOCK_TASK_FIXTURES: ExternalTask[] = [MOCK_TASK_OPEN, MOCK_TASK_COMPLETED];
+export const MOCK_TASK_FIXTURES: ExternalTask[] = [
+  MOCK_TASK_OPEN,
+  MOCK_TASK_COMPLETED,
+];
