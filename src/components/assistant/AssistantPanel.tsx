@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { headerCtas } from "@/config/navigation";
 import { assistantMenuOptions } from "@/lib/assistant/assistant-config";
 import { getAssistantServiceResponse } from "@/lib/assistant/assistant-flow";
+import { getAssistantWhatsAppLink } from "@/lib/assistant/whatsapp";
 import { cn } from "@/lib/utils";
 import type { AssistantScreen, AssistantServiceKey } from "@/types/assistant";
 
@@ -50,6 +51,14 @@ export function AssistantPanel({
   const serviceResponse = selectedService
     ? getAssistantServiceResponse(selectedService)
     : null;
+  /*
+   * Só o serviço escolhido entra aqui - nome/telefone/e-mail vivem apenas
+   * no estado em memória de `AssistantLeadForm` e nunca podem vazar pra
+   * uma URL guardada em outro componente (regra de LGPD do projeto).
+   */
+  const completedWhatsAppLink = getAssistantWhatsAppLink({
+    service: serviceResponse?.serviceLabel ?? undefined,
+  });
 
   return (
     <div
@@ -154,10 +163,33 @@ export function AssistantPanel({
 
         {screen === "completed" ? (
           <>
+            {/*
+             * Texto e link revisados em 2026-09-23. O anterior afirmava
+             * "recebemos seus dados", o que nem sempre é verdade (se
+             * `/api/leads` falhou, o encaminhamento acontece só pelo
+             * WhatsApp) - e o `window.open` roda depois de um `await`, o
+             * que faz bloqueador de pop-up barrar a aba em vários
+             * navegadores mobile. O link visível abaixo é a saída pra esses
+             * dois casos: sempre dá pra concluir a conversa manualmente.
+             */}
             <AssistantMessage>
-              Obrigado! Recebemos seus dados e abrimos o WhatsApp com o resumo
-              da conversa. Nossa equipe entra em contato em breve.
+              Pronto! Abrimos o WhatsApp com o resumo da sua conversa. Se a
+              janela não tiver aberto, use o botão abaixo.
             </AssistantMessage>
+            {completedWhatsAppLink ? (
+              <a
+                href={completedWhatsAppLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({
+                  variant: "outline",
+                  size: "sm",
+                  className: "self-start",
+                })}
+              >
+                Abrir o WhatsApp
+              </a>
+            ) : null}
             <button
               type="button"
               onClick={onBackToMenu}

@@ -14,6 +14,8 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { activityOptions, brazilianStates } from "@/config/pricing";
 import { serviceCategories } from "@/config/services";
+import { siteConfig } from "@/config/site";
+import { getWhatsAppLink } from "@/integrations/whatsapp";
 import { type LeadFormValues, leadFormSchema } from "@/lib/validation/lead";
 
 export interface LeadFormProps {
@@ -28,6 +30,14 @@ export interface LeadFormProps {
   messageLabel?: string;
   submitLabel?: string;
   onSuccess?: () => void;
+  /**
+   * Chamado quando o envio falhou (2026-09-23). Existe pra quem tem um
+   * canal alternativo próprio - o Assistente Virtual abre o WhatsApp com os
+   * dados já preenchidos em vez de deixar a pessoa num beco sem saída.
+   * Quando não é passado, o formulário mostra sozinho o aviso com WhatsApp/
+   * e-mail abaixo.
+   */
+  onError?: () => void;
 }
 
 export function LeadForm({
@@ -42,9 +52,13 @@ export function LeadForm({
   messageLabel = "Mensagem",
   submitLabel = "Enviar",
   onSuccess,
+  onError,
 }: LeadFormProps) {
   const pathname = usePathname();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const whatsAppFallbackLink = getWhatsAppLink(
+    `Olá! Tentei enviar uma mensagem pelo site (${formContext}) e não consegui. Pode me ajudar por aqui?`,
+  );
 
   const {
     register,
@@ -81,7 +95,10 @@ export function LeadForm({
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...values, tracking: getTrackingParams(pathname) }),
+        body: JSON.stringify({
+          ...values,
+          tracking: getTrackingParams(pathname),
+        }),
       });
       if (!response.ok) throw new Error("request failed");
       setStatus("success");
@@ -108,11 +125,16 @@ export function LeadForm({
       onSuccess?.();
     } catch {
       setStatus("error");
+      onError?.();
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      className="flex flex-col gap-5"
+    >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <Label htmlFor="name">Nome completo</Label>
@@ -167,7 +189,11 @@ export function LeadForm({
         {showCompany ? (
           <div className="flex flex-col gap-2">
             <Label htmlFor="company">Empresa (opcional)</Label>
-            <Input id="company" autoComplete="organization" {...register("company")} />
+            <Input
+              id="company"
+              autoComplete="organization"
+              {...register("company")}
+            />
           </div>
         ) : null}
 
@@ -179,14 +205,22 @@ export function LeadForm({
         {showCity ? (
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="city">Cidade</Label>
-            <Input id="city" autoComplete="address-level2" {...register("city")} />
+            <Input
+              id="city"
+              autoComplete="address-level2"
+              {...register("city")}
+            />
           </div>
         ) : null}
 
         {showState ? (
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="state">Estado</Label>
-            <Select id="state" autoComplete="address-level1" {...register("state")}>
+            <Select
+              id="state"
+              autoComplete="address-level1"
+              {...register("state")}
+            >
               <option value="">Selecione o estado</option>
               {brazilianStates.map((uf) => (
                 <option key={uf} value={uf}>
@@ -203,7 +237,9 @@ export function LeadForm({
             <Select
               id="serviceInterest"
               aria-invalid={!!errors.serviceInterest}
-              aria-describedby={errors.serviceInterest ? "serviceInterest-error" : undefined}
+              aria-describedby={
+                errors.serviceInterest ? "serviceInterest-error" : undefined
+              }
               {...register("serviceInterest")}
             >
               <option value="">Selecione um assunto</option>
@@ -214,7 +250,11 @@ export function LeadForm({
               ))}
             </Select>
             {errors.serviceInterest ? (
-              <p id="serviceInterest-error" role="alert" className="text-danger text-sm">
+              <p
+                id="serviceInterest-error"
+                role="alert"
+                className="text-danger text-sm"
+              >
                 {errors.serviceInterest.message}
               </p>
             ) : null}
@@ -264,10 +304,16 @@ export function LeadForm({
             className="border-border text-primary focus-visible:ring-primary mt-0.5 h-4 w-4 shrink-0 rounded focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             {...register("consent")}
           />
-          <Label htmlFor="consent" className="text-muted-foreground text-sm font-normal">
-            Concordo que a WJB Assessoria Contábil utilize os dados informados para
-            responder ao meu contato, de acordo com a{" "}
-            <Link href="/politica-de-privacidade" className="text-primary underline">
+          <Label
+            htmlFor="consent"
+            className="text-muted-foreground text-sm font-normal"
+          >
+            Concordo que a WJB Assessoria Contábil utilize os dados informados
+            para responder ao meu contato, de acordo com a{" "}
+            <Link
+              href="/politica-de-privacidade"
+              className="text-primary underline"
+            >
               Política de Privacidade
             </Link>
             .
@@ -290,9 +336,31 @@ export function LeadForm({
               Mensagem enviada! Em breve alguém da WJB entra em contato.
             </span>
           ) : null}
+          {/*
+           * Fallback real em vez de "tente novamente em instantes"
+           * (2026-09-23): quando o envio falha por indisponibilidade do
+           * nosso lado (`/api/leads` responde 503), repetir não resolve -
+           * o que resolve é oferecer os canais que continuam funcionando.
+           */}
           {status === "error" ? (
             <span className="text-danger">
-              Não foi possível enviar agora. Tente novamente em instantes.
+              Não foi possível enviar agora. Fale com a gente pelo{" "}
+              <a
+                href={whatsAppFallbackLink ?? siteConfig.contact.phones[0].href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2"
+              >
+                WhatsApp
+              </a>{" "}
+              ou por{" "}
+              <a
+                href={`mailto:${siteConfig.contact.email}`}
+                className="underline underline-offset-2"
+              >
+                e-mail
+              </a>
+              .
             </span>
           ) : null}
         </p>

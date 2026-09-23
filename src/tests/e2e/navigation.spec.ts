@@ -16,7 +16,12 @@ test("home carrega com o hero e navega para Serviços pelo mega menu", async ({
     .getByRole("navigation", { name: "Menu principal" })
     .getByRole("button", { name: "Serviços" })
     .click();
-  await page.getByRole("link", { name: "Contabilidade Completa" }).click();
+  // `exact` porque o nome acessível casa por substring: os cards de plano da
+  // Home têm "Contabilidade completa" na lista de destaques, e sem isso o
+  // seletor resolvia pra 3 elementos (strict mode violation).
+  await page
+    .getByRole("link", { name: "Contabilidade Completa", exact: true })
+    .click();
   await expect(page).toHaveURL("/servicos/contabilidade-completa");
 });
 
@@ -29,7 +34,9 @@ test("footer tem os links institucionais e legais", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("menu mobile abre, foca no botão fechar e fecha com Escape", async ({ page }) => {
+test("menu mobile abre, foca no botão fechar e fecha com Escape", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
