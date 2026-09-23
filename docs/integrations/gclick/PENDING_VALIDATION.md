@@ -1,32 +1,55 @@
 # Pendências de validação oficial - Omie.G-Click
 
-Tudo abaixo depende de confirmação da documentação técnica oficial (Postman: `documenter.getpostman.com/view/12417251/UV5TFeha`, inacessível nesta sessão - conteúdo renderizado via JavaScript) ou de contato direto com a Omie/G-Click. Nada aqui foi assumido ou inventado no código - ver `TODO_GCLICK_VALIDATION` nos arquivos-fonte.
+> **RESOLVIDO em 2026-09-23.** A documentação técnica oficial foi obtida. O Postman documenter é uma SPA (por isso as tentativas anteriores só traziam o título), mas o front dele consome uma API pública que devolve a coleção inteira em JSON:
+>
+> ```
+> https://documenter.gw.postman.com/api/collections/12417251/UV5TFeha
+> ```
+>
+> A coleção completa (~120 KB, sem nenhuma credencial - as variáveis vêm como `{{client_id}}`/`{{client_secret}}`) está salva em [`postman-collection.json`](./postman-collection.json) como fonte de verdade versionada. **Ao reabrir qualquer dúvida de schema, consultar esse arquivo antes de supor qualquer coisa.**
 
 ```text
-[ ] Base URL oficial
-[ ] Endpoint de autenticação
-[ ] Request de autenticação
-[ ] Response de autenticação
-[ ] Header de autenticação
-[ ] Expiração do token
-[ ] Renovação do token
-[ ] Rate limit
-[ ] Sandbox
-[ ] Criar cliente
-[ ] Alterar cliente
-[ ] Listar clientes
-[ ] Buscar cliente
-[ ] Buscar clienteId
-[ ] Campo de external reference
-[ ] Grupos
-[ ] Visibilidade
-[ ] Listar tarefas
-[ ] Criar pré-tarefa
-[ ] Partner only
-[ ] Responder atividade
-[ ] Criar pré-tarefa com tag
-[ ] Portal Visão do Cliente
+[x] Base URL oficial ............. https://api.gclick.com.br
+[x] Endpoint de autenticação ..... POST /oauth/token
+[x] Request de autenticação ...... form-urlencoded: client_id, client_secret, grant_type=client_credentials
+[x] Response de autenticação ..... { access_token, token_type: "bearer", expires_in, scope }
+[x] Header de autenticação ....... Authorization: Bearer <access_token>
+[x] Expiração do token ........... expires_in = 86399s (~24h)
+[x] Renovação do token ........... repetir o POST /oauth/token (não há refresh_token)
+[ ] Rate limit ................... não documentado na coleção
+[ ] Sandbox ...................... não há host de sandbox documentado - só o host de produção
+[x] Criar cliente ................ POST /clientes
+[x] Alterar cliente .............. PUT /clientes/{id}
+[x] Listar clientes .............. GET /clientes
+[x] Buscar cliente ............... GET /clientes/search?texto=
+[x] Buscar clienteId ............. GET /clientes/{id}
+[x] Campo de external reference .. `integracao` (máx. 255) + `sistema` (máx. 200)
+[x] Grupos ....................... GET /grupos, GET /grupos/busca?termo=
+[x] Visibilidade ................. GET /visibilidades, GET /visibilidades/busca?termo=
+[x] Listar tarefas ............... GET /tarefas?categoria=&dataAcaoInicio=
+[x] Criar pré-tarefa ............. POST /v2/tarefas/preTarefas
+[x] Partner only ................. /departamentos, /processos, /atividades/resposta, /tarefas/preTarefas (v1 com tag)
+[x] Responder atividade .......... POST /atividades/resposta (partner_only)
+[x] Criar pré-tarefa com tag ..... POST /tarefas/preTarefas (partner_only)
+[ ] Portal Visão do Cliente ...... segue sem SSO/deep link documentado
 ```
+
+## Campos obrigatórios confirmados
+
+**`POST /clientes`** (obrigatórios marcados com `*` na documentação):
+`tipoInscricao*` (CNPJ|CPF|CEI|SREG), `inscricao*` (máx. 18), `nome*` (máx. 64), `apelido*` (máx. 64), `tipo*` (FIXO|EVENTUAL), `visibilidadeIds*` (lista de ids válidos), `dataInicio*` (yyyy-MM-dd).
+Opcionais: `statusComplementarId`, `grupoIds`, `sistema`, `integracao`, `nascimento`, `honorario`, `observacao`, `endereco`, `telefones`, `emails`.
+
+**`POST /v2/tarefas/preTarefas`**: `departamentoId*`, `assunto*`, `andamento*`. Opcionais: `inscricoes`, `clienteId`, `responsavelId`, `processoId`, `fluxoId`, `arquivos`, `convidadosIds`.
+
+## O que depende da conta da WJB (não dá pra inferir da documentação)
+
+- **`visibilidadeIds`** - obrigatório pra criar cliente. Listar com `GET /visibilidades` depois de autenticar e escolher o(s) id(s) que a WJB usa.
+- **`grupoIds`** - opcional, mas provavelmente desejável. Listar com `GET /grupos`.
+- **`departamentoId`** - obrigatório pra criar pré-tarefa. **`GET /departamentos` é partner_only**, então esse id precisa sair da própria tela do G-Click.
+- **`tipo`** (FIXO|EVENTUAL) e **`dataInicio`** - regra de negócio da WJB, não da API.
+
+Por isso esses valores entram como **configuração** (`GCLICK_*` em `config.ts`), nunca hardcoded.
 
 ## O que já foi confirmado (auditoria anterior, `artifacts/wjb-saas-mvp/fase-6-5/`)
 
