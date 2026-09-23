@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { isRateLimited } from "@/lib/security/rate-limit";
 import { leadFormSchema, newsletterFormSchema } from "@/lib/validation/lead";
 import { createClient, isSupabaseConfigured } from "@/lib/db/supabase/server";
+import { getSupabaseEnv } from "@/lib/db/supabase/env";
 import { getEmailAdapter } from "@/integrations/email";
 import { renderNotificationEmail } from "@/integrations/email/templates";
 import { getWhatsAppBusinessAdapter } from "@/integrations/whatsapp-business";
@@ -16,15 +17,40 @@ import { getSiteUrl } from "@/lib/seo/site-url";
  * repetir o envio não resolve), pra oferecer o canal alternativo certo em
  * vez do antigo "tente novamente em instantes", que era falso nesse caso.
  */
-function storageUnavailable() {
+function storageUnavailable(reason: "not_configured" | "write_failed") {
   return NextResponse.json(
     {
       ok: false,
       code: "storage_unavailable",
+      // Distingue "sem credenciais" de "credenciais ok, gravação falhou"
+      // (2026-09-23) - sem isso os dois casos eram indistinguíveis de fora,
+      // o que custou horas de diagnóstico às cegas em produção.
+      reason,
       error: "Não foi possível registrar seu contato agora.",
     },
     { status: 503 },
   );
+}
+
+/**
+ * Diagnóstico de configuração (2026-09-23) - responde **apenas nomes** de
+ * variáveis e booleanos, nunca valores. Serve pra distinguir de fora, sem
+ * acesso a log de servidor, entre: deploy antigo no ar, variável com nome
+ * diferente do esperado, e credencial presente mas inválida.
+ */
+export async function GET() {
+  const { url, anonKey } = getSupabaseEnv();
+  return NextResponse.json({
+    ok: true,
+    storageConfigured: isSupabaseConfigured(),
+    urlPresent: Boolean(url),
+    anonKeyPresent: Boolean(anonKey),
+    // Só o host (informação pública, aparece no navegador) - nunca a chave.
+    urlHost: url ? new URL(url).host : null,
+    supabaseEnvNames: Object.keys(process.env)
+      .filter((name) => name.toUpperCase().includes("SUPABASE"))
+      .sort(),
+  });
 }
 
 /**
@@ -94,7 +120,7 @@ export async function POST(request: Request) {
       console.error(
         "[leads] Supabase não configurado — inscrição de newsletter não foi salva.",
       );
-      return storageUnavailable();
+      return storageUnavailable("not_configured");
     }
 
     const { error } = await supabase.from("leads").insert({
@@ -110,7 +136,7 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("[leads] falha ao salvar inscrição de newsletter:", error);
-      return storageUnavailable();
+      return storageUnavailable("write_failed");
     }
 
     return NextResponse.json({ ok: true, persisted: true });
@@ -213,7 +239,8 @@ export async function POST(request: Request) {
    * funciona - no Assistente Virtual, abrir o WhatsApp com os dados já
    * preenchidos; nos demais formulários, mostrar WhatsApp/e-mail direto.
    */
-  if (!persisted && !notified) return storageUnavailable();
+  if (!persisted && !notified)
+    return storageUnavailable(supabase ? "write_failed" : "not_configured");
 
   return NextResponse.json({ ok: true, persisted });
 }
