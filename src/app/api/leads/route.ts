@@ -179,6 +179,13 @@ export async function POST(request: Request) {
         ctaUrl: adminLeadsUrl,
       }),
       text: `${result.data.name} (${result.data.email}, ${result.data.phone}) preencheu "${result.data.formContext}". Ver em ${adminLeadsUrl}`,
+      /**
+       * Responder a notificação vai direto pro lead (2026-09-23) - sem
+       * isso a resposta voltaria pro remetente técnico (`EMAIL_FROM`, um
+       * endereço de envio que ninguém lê), e quem atende teria que copiar
+       * o e-mail na mão a cada contato novo.
+       */
+      replyTo: result.data.email,
     });
     notified = sendResult.ok;
   } catch (sendError) {
