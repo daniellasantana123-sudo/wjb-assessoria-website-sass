@@ -40,6 +40,21 @@ function storageUnavailable(reason: "not_configured" | "write_failed") {
  */
 export async function GET() {
   const { url, anonKey } = getSupabaseEnv();
+
+  /**
+   * Sonda somente leitura: distingue falta de GRANT de tabela (erro de
+   * permissão do Postgres) de bloqueio por RLS (sem erro, só zero linhas,
+   * já que `leads_select_staff_only` filtra visitante anônimo).
+   */
+  let probe: { code?: string; message?: string } | null = null;
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from("leads")
+      .select("id", { count: "exact", head: true });
+    probe = error ? { code: error.code, message: error.message } : null;
+  }
+
   return NextResponse.json({
     ok: true,
     storageConfigured: isSupabaseConfigured(),
@@ -50,6 +65,7 @@ export async function GET() {
     supabaseEnvNames: Object.keys(process.env)
       .filter((name) => name.toUpperCase().includes("SUPABASE"))
       .sort(),
+    probe,
   });
 }
 
