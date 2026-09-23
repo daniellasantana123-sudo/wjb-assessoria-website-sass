@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 
 import type { Database } from "@/types/database";
 
+import { getSupabaseEnv } from "./env";
+
 /**
  * Há credenciais de Supabase no ambiente? (2026-09-23) Mesmo guard que
  * `src/proxy.ts` já fazia desde a FASE 1 do SaaS: sem as env vars,
@@ -16,10 +18,8 @@ import type { Database } from "@/types/database";
  * depender de uma infra de SaaS que ainda não está provisionada lá.
  */
 export function isSupabaseConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
+  const { url, anonKey } = getSupabaseEnv();
+  return Boolean(url && anonKey);
 }
 
 /**
@@ -35,25 +35,22 @@ export function isSupabaseConfigured() {
  */
 export async function createClient() {
   const cookieStore = await cookies();
+  const { url, anonKey } = getSupabaseEnv();
 
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            for (const { name, value, options } of cookiesToSet) {
-              cookieStore.set(name, value, options);
-            }
-          } catch {
-            // Chamado de um Server Component — o proxy.ts já renova a sessão.
+  return createServerClient<Database>(url!, anonKey!, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          for (const { name, value, options } of cookiesToSet) {
+            cookieStore.set(name, value, options);
           }
-        },
+        } catch {
+          // Chamado de um Server Component — o proxy.ts já renova a sessão.
+        }
       },
     },
-  );
+  });
 }

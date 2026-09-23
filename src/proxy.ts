@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { getSupabaseEnv } from "@/lib/db/supabase/env";
+
 /**
  * `proxy.ts` (2026-09-16) — nesta versão do Next.js o antigo `middleware.ts`
  * foi descontinuado e renomeado para `proxy.ts` (ver
@@ -47,14 +49,19 @@ const GATED_PREFIXES = [
 
 function isSaasGated(pathname: string) {
   if (process.env.NEXT_PUBLIC_SAAS_PUBLIC_ENABLED === "true") return false;
-  return GATED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  return GATED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 export async function proxy(request: NextRequest) {
   if (isSaasGated(request.nextUrl.pathname)) {
-    return NextResponse.rewrite(new URL(`/saas-indisponivel${request.nextUrl.pathname}`, request.url), {
-      status: 404,
-    });
+    return NextResponse.rewrite(
+      new URL(`/saas-indisponivel${request.nextUrl.pathname}`, request.url),
+      {
+        status: 404,
+      },
+    );
   }
 
   /*
@@ -66,8 +73,11 @@ export async function proxy(request: NextRequest) {
    */
   request.headers.set("x-pathname", request.nextUrl.pathname);
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Lidas em tempo de execução (2026-09-23, ver `db/supabase/env.ts`): o
+  // build desta hospedagem não recebe as variáveis do painel, então a
+  // referência literal a `process.env.NEXT_PUBLIC_*` virava `undefined` no
+  // código compilado e a sessão nunca era renovada em produção.
+  const { url: supabaseUrl, anonKey: supabaseAnonKey } = getSupabaseEnv();
 
   /*
    * Sem projeto Supabase configurado ainda (SAAS FASE 1 em andamento — ver
@@ -104,7 +114,8 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isProtectedRoute = pathname.startsWith("/portal") || pathname.startsWith("/admin");
+  const isProtectedRoute =
+    pathname.startsWith("/portal") || pathname.startsWith("/admin");
   const isAuthRoute = pathname === "/login" || pathname === "/recuperar-senha";
 
   if (isProtectedRoute && !user) {
