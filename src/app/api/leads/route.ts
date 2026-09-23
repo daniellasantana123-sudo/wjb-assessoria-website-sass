@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { isRateLimited } from "@/lib/security/rate-limit";
 import { leadFormSchema, newsletterFormSchema } from "@/lib/validation/lead";
 import { createClient, isSupabaseConfigured } from "@/lib/db/supabase/server";
-import { getSupabaseEnv } from "@/lib/db/supabase/env";
 import { getEmailAdapter } from "@/integrations/email";
 import { renderNotificationEmail } from "@/integrations/email/templates";
 import { getWhatsAppBusinessAdapter } from "@/integrations/whatsapp-business";
@@ -30,64 +29,6 @@ function storageUnavailable(reason: "not_configured" | "write_failed") {
     },
     { status: 503 },
   );
-}
-
-/**
- * Diagnóstico de configuração (2026-09-23) - responde **apenas nomes** de
- * variáveis e booleanos, nunca valores. Serve pra distinguir de fora, sem
- * acesso a log de servidor, entre: deploy antigo no ar, variável com nome
- * diferente do esperado, e credencial presente mas inválida.
- */
-export async function GET() {
-  const { url, anonKey } = getSupabaseEnv();
-
-  /**
-   * Sonda somente leitura: distingue falta de GRANT de tabela (erro de
-   * permissão do Postgres) de bloqueio por RLS (sem erro, só zero linhas,
-   * já que `leads_select_staff_only` filtra visitante anônimo).
-   */
-  let probe: Record<string, unknown> | null = null;
-  if (isSupabaseConfigured()) {
-    const supabase = await createClient();
-    const { error, status, statusText } = await supabase
-      .from("leads")
-      .select("id")
-      .limit(1);
-    probe = {
-      status,
-      statusText,
-      code: error?.code ?? null,
-      message: error?.message ?? null,
-      details: error?.details ?? null,
-      hint: error?.hint ?? null,
-    };
-  }
-
-  return NextResponse.json({
-    ok: true,
-    storageConfigured: isSupabaseConfigured(),
-    urlPresent: Boolean(url),
-    anonKeyPresent: Boolean(anonKey),
-    // Só o host (informação pública, aparece no navegador) - nunca a chave.
-    urlHost: url ? new URL(url).host : null,
-    supabaseEnvNames: Object.keys(process.env)
-      .filter((name) => name.toUpperCase().includes("SUPABASE"))
-      .sort(),
-    /**
-     * Formato da chave, nunca a chave: comprimento e prefixo bastam pra
-     * detectar cópia truncada (causa provável do "Invalid API key") ou
-     * espaço/aspas coladas junto por engano.
-     */
-    anonKeyShape: anonKey
-      ? {
-          length: anonKey.length,
-          prefix: anonKey.slice(0, 15),
-          hasWhitespace: /\s/.test(anonKey),
-          hasQuotes: /["']/.test(anonKey),
-        }
-      : null,
-    probe,
-  });
 }
 
 /**
