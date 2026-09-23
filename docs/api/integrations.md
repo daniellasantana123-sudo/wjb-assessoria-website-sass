@@ -30,7 +30,11 @@ Pontos de disparo:
 - `notifyTicketOrMessageEvent` (`src/lib/notifications.ts`) — além da notificação in-app já existente, envia e-mail para cada destinatário com e-mail cadastrado (staff avisado de nova mensagem/ticket de cliente, e vice-versa).
 - `POST /api/leads` (`src/app/api/leads/route.ts`) — avisa `siteConfig.contact.email` a cada novo lead do formulário (não para inscrições de newsletter, pra não gerar um e-mail por assinante).
 
-Pendente do lado do usuário: criar a conta Resend, gerar a API key e verificar o domínio de envio (`wjbassessoriacontabil.com.br` ou um subdomínio como `mail.wjbassessoriacontabil.com.br`) antes de preencher `RESEND_API_KEY`/`EMAIL_FROM` em produção — sem isso, os e-mails continuam caindo no adapter no-op (não é um bug, é o fallback esperado).
+**Configurado e funcionando em produção desde 2026-09-23.** Domínio verificado no Resend: `wjbassessoriacontabil.com.br` (raiz); `EMAIL_FROM` = `WJB Assessoria Contábil <nao-responda@wjbassessoriacontabil.com.br>`; `RESEND_API_KEY` configurada no painel da Hostinger. Entrega confirmada de ponta a ponta (lead de teste → `Delivered` no painel do Resend → caixa `contato@`).
+
+O aviso de novo lead usa `replyTo` com o e-mail do próprio lead (2026-09-23) — responder a notificação fala direto com o cliente, em vez de voltar pro endereço técnico de envio.
+
+**Armadilha que custou um ciclo de deploy**: `EMAIL_FROM` precisa ser um endereço **do domínio verificado**. Estava apontando pra um subdomínio (`envios.wjbassessoriacontabil.com.br`) que nunca foi cadastrado no Resend — o envio é recusado antes de virar registro no log de *Emails*, então o sintoma é "nenhum envio aparece", não "envio com erro". Se um dia migrar pra subdomínio (boa prática de isolamento de reputação), cadastre e verifique ele no Resend **antes** de mudar a variável.
 
 ## WhatsApp (Meta WhatsApp Business Platform) — implementado em 2026-09-18
 
@@ -80,7 +84,7 @@ Somente implementar uma integração após confirmar API oficial, plano, credenc
 
 ## Pendências desta fase
 
-- [x] E-mail — Resend escolhido e implementado (2026-09-17). Falta só a conta/domínio real do usuário (ver acima).
+- [x] E-mail — Resend escolhido e implementado (2026-09-17); **conta, domínio verificado e env vars de produção concluídos em 2026-09-23**, com entrega confirmada de ponta a ponta. Nada pendente.
 - [x] WhatsApp — Meta WhatsApp Business Platform (Cloud API) escolhido e implementado (2026-09-18). Falta a conta/número/template real do usuário (ver acima).
 - [x] ~~CRM~~ — **cancelado pelo usuário em 2026-09-18**, fora do escopo da FASE 5.
 - [x] ~~Armazenamento~~ — **removido em 2026-09-18**, já coberto pelo Supabase Storage (FASES 1/2).
