@@ -32,6 +32,12 @@ export const digitalAccountingItems: DigitalAccountingItem[] = [
   { title: "Calendário de obrigações", status: "Disponível", icon: CalendarClock },
   // /portal/notificacoes + /portal/suporte
   { title: "Solicitações e notificações", status: "Disponível", icon: Bell },
-  // Sem rota no Portal — continua sendo promessa futura, não entregue.
-  { title: "Relatórios e indicadores", status: "Planejado", icon: BarChart3 },
+  /*
+   * /portal/relatorios — indicadores OPERACIONAIS (obrigações, documentos,
+   * guias, chamados) por período, com exportação em CSV. Indicadores
+   * FINANCEIROS (faturamento, impostos, DRE) não existem e dependem de
+   * integração com o sistema contábil; a própria página diz isso, para o
+   * status "Disponível" aqui não ser lido como promessa de algo mais.
+   */
+  { title: "Relatórios e indicadores", status: "Disponível", icon: BarChart3 },
 ];

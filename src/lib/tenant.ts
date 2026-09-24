@@ -3,6 +3,12 @@ import "server-only";
 import { cookies } from "next/headers";
 
 import { createClient } from "@/lib/db/supabase/server";
+import {
+  buildMonthBuckets,
+  periodRange,
+  type ReportMonthRow,
+  type ReportPeriod,
+} from "@/lib/reports/period";
 import type { TenantMemberRole } from "@/types/database";
 
 export interface MyOrganization {
@@ -236,4 +242,122 @@ export async function getDocumentsCategorySummary(
   );
 
   return results;
+}
+
+export interface TenantPeriodReport {
+  months: ReportMonthRow[];
+  totals: ReportMonthRow;
+  tickets: { opened: number; closed: number; open: number };
+  complianceRate: number | null;
+}
+
+/**
+ * Relatório do período do Portal (2026-09-24) - o que a "Visão geral" não
+ * dá: uma janela de tempo escolhida pelo cliente, chamados de suporte e um
+ * recorte exportável.
+ *
+ * Duas datas diferentes governam este relatório, de propósito:
+ * obrigação é contada pelo **vencimento** (`due_date` - é o que importa
+ * num relatório fiscal), documento e chamado pela **data de criação**
+ * (`created_at` - não têm vencimento). Misturar as duas produziria um
+ * número que não significa nada.
+ *
+ * "Atrasada" é sempre medida contra HOJE, não contra o fim do período: uma
+ * obrigação de março ainda pendente continua atrasada em setembro.
+ */
+export async function getTenantPeriodReport(
+  tenantId: string,
+  period: ReportPeriod,
+): Promise<TenantPeriodReport> {
+  const supabase = await createClient();
+  const buckets = buildMonthBuckets(period);
+  const { start, end } = periodRange(buckets);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [obligations, documents, ticketsOpened, ticketsOpen] = await Promise.all([
+    supabase
+      .from("obligations")
+      .select("due_date, status")
+      .eq("tenant_id", tenantId)
+      .gte("due_date", start)
+      .lte("due_date", end),
+    supabase
+      .from("documents")
+      .select("created_at, category")
+      .eq("tenant_id", tenantId)
+      .gte("created_at", `${start}T00:00:00`)
+      .lte("created_at", `${end}T23:59:59`),
+    supabase
+      .from("tickets")
+      .select("status", { count: "exact" })
+      .eq("tenant_id", tenantId)
+      .gte("created_at", `${start}T00:00:00`)
+      .lte("created_at", `${end}T23:59:59`),
+    supabase
+      .from("tickets")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .neq("status", "closed"),
+  ]);
+
+  const months: ReportMonthRow[] = buckets.map((bucket) => {
+    const inMonth = (iso: string) => {
+      const d = new Date(iso.length > 10 ? iso : `${iso}T00:00:00`);
+      return d.getFullYear() === bucket.year && d.getMonth() === bucket.month;
+    };
+
+    const rows = (obligations.data ?? []).filter((row) => inMonth(row.due_date));
+    const files = (documents.data ?? []).filter((row) => inMonth(row.created_at));
+
+    return {
+      label: bucket.label,
+      obligationsTotal: rows.length,
+      obligationsDone: rows.filter((row) => row.status === "done").length,
+      obligationsPending: rows.filter((row) => row.status === "pending").length,
+      obligationsOverdue: rows.filter(
+        (row) => row.status === "pending" && row.due_date < today,
+      ).length,
+      documents: files.filter((row) => row.category === "documento").length,
+      guias: files.filter((row) => row.category === "guia").length,
+    };
+  });
+
+  const totals = months.reduce<ReportMonthRow>(
+    (acc, row) => ({
+      label: "Total",
+      obligationsTotal: acc.obligationsTotal + row.obligationsTotal,
+      obligationsDone: acc.obligationsDone + row.obligationsDone,
+      obligationsPending: acc.obligationsPending + row.obligationsPending,
+      obligationsOverdue: acc.obligationsOverdue + row.obligationsOverdue,
+      documents: acc.documents + row.documents,
+      guias: acc.guias + row.guias,
+    }),
+    {
+      label: "Total",
+      obligationsTotal: 0,
+      obligationsDone: 0,
+      obligationsPending: 0,
+      obligationsOverdue: 0,
+      documents: 0,
+      guias: 0,
+    },
+  );
+
+  const ticketRows = ticketsOpened.data ?? [];
+
+  return {
+    months,
+    totals,
+    tickets: {
+      opened: ticketsOpened.count ?? 0,
+      closed: ticketRows.filter((row) => row.status === "closed").length,
+      open: ticketsOpen.count ?? 0,
+    },
+    // Sem nenhuma obrigação no período não existe taxa - `null` em vez de
+    // 0%, que leria como "não cumpriu nada".
+    complianceRate:
+      totals.obligationsTotal > 0
+        ? Math.round((totals.obligationsDone / totals.obligationsTotal) * 100)
+        : null,
+  };
 }

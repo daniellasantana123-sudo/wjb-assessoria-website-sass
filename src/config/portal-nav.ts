@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Bell,
   CalendarDays,
   ClipboardCheck,
@@ -27,6 +28,7 @@ export const portalNavItems: PortalNavItem[] = [
   { href: "/portal/usuarios", label: "Usuários", icon: Users },
   { href: "/portal/obrigacoes", label: "Obrigações", icon: ClipboardCheck },
   { href: "/portal/calendario", label: "Calendário", icon: CalendarDays },
+  { href: "/portal/relatorios", label: "Relatórios", icon: BarChart3 },
   { href: "/portal/mensagens", label: "Mensagens", icon: MessageCircle },
   { href: "/portal/suporte", label: "Suporte", icon: LifeBuoy },
   { href: "/portal/seguranca", label: "Segurança", icon: ShieldCheck },
