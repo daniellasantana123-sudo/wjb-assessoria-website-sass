@@ -99,6 +99,20 @@ export interface ExternalTask {
 export interface ListExternalTasksInput {
   page?: number;
   pageSize?: number;
+  /**
+   * Categoria da tarefa no G-Click. A API separa "Obrigacao" (prazo
+   * fiscal) de "Solicitacao" (pedido pontual) - só a primeira vira
+   * obrigação no Portal.
+   */
+  category?: "Obrigacao" | "Solicitacao";
+  /**
+   * `dataAcaoInicio` - início da janela de datas, em `YYYY-MM-DD`.
+   *
+   * **Obrigatório na prática**: sem ele (e sem `categoria`) o endpoint
+   * responde **HTTP 500**, não um erro de validação - confirmado em
+   * produção em 2026-09-24.
+   */
+  actionDateFrom?: string;
 }
 
 export interface CreateExternalPreTaskInput {

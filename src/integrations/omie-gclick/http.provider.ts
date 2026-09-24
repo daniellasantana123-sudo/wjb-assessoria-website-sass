@@ -40,6 +40,26 @@ import type {
   UpdateExternalClientInput,
 } from "./types";
 
+/** Só obrigações viram prazo no Portal; solicitações são outro fluxo. */
+const DEFAULT_TASK_CATEGORY = "Obrigacao" as const;
+
+/** Quantos meses para trás a listagem de tarefas cobre por padrão. */
+const TASK_WINDOW_MONTHS = 12;
+
+/**
+ * Início da janela de tarefas: 12 meses atrás, no primeiro dia do mês.
+ *
+ * Cobre o ano fiscal corrente e o anterior sem pedir à API a base
+ * inteira. Data montada no fuso local (não `toISOString()`, que
+ * converteria para UTC e devolveria o dia anterior no Brasil).
+ */
+function defaultActionDateFrom(): string {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth() - TASK_WINDOW_MONTHS, 1);
+  const month = String(start.getMonth() + 1).padStart(2, "0");
+  return `${start.getFullYear()}-${month}-01`;
+}
+
 /** Corpo esperado pelos endpoints de sócios: ids já cadastrados no G-Click. */
 function toPartnerIdsPayload(input: SetExternalPartnersInput) {
   return {
@@ -514,9 +534,23 @@ export function createGClickHttpProvider(
       ): Promise<ProviderResult<PaginatedResult<ExternalTask>>> {
         const page = input.page ?? 0;
         const size = input.pageSize ?? 20;
+        /*
+         * `categoria` e `dataAcaoInicio` são obrigatórios na prática:
+         * sem eles a API responde **HTTP 500**, não um erro de validação
+         * - descoberto em produção em 2026-09-24, quando a primeira
+         * sincronização real falhou com "Internal Server Error". O
+         * exemplo da coleção oficial já trazia os dois
+         * (`?categoria=Obrigacao&dataAcaoInicio=2026-02-01`); a
+         * implementação inicial os ignorou por assumir que fossem
+         * filtros opcionais.
+         */
+        const category = input.category ?? DEFAULT_TASK_CATEGORY;
+        const from = input.actionDateFrom ?? defaultActionDateFrom();
         const result = await request<
           SpringPage<Record<string, unknown>> | Record<string, unknown>[]
-        >(`/tarefas?page=${page}&size=${size}`);
+        >(
+          `/tarefas?categoria=${encodeURIComponent(category)}&dataAcaoInicio=${from}&page=${page}&size=${size}`,
+        );
         if (!result.ok) return result;
         return {
           ok: true,

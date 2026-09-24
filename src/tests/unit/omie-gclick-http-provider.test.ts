@@ -700,3 +700,53 @@ describe("GClickHttpProvider - endpoints de consulta (2026-09-24)", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * Regressão de um erro real em produção (2026-09-24): a primeira
+ * sincronização de obrigações falhou com "Internal Server Error" porque
+ * `GET /tarefas` foi chamado sem `categoria` e `dataAcaoInicio`. A API não
+ * responde erro de validação nesse caso - responde 500 - então nada no
+ * retorno indicava que faltava parâmetro.
+ */
+describe("GClickHttpProvider - GET /tarefas exige categoria e dataAcaoInicio", () => {
+  function captureUrl(body: unknown) {
+    const calls: string[] = [];
+    global.fetch = vi.fn(async (url: unknown) => {
+      const href = String(url);
+      calls.push(href);
+      if (href.includes("/oauth/token")) return jsonResponse(TOKEN_BODY);
+      return jsonResponse(body);
+    }) as unknown as typeof fetch;
+    return calls;
+  }
+
+  it("manda categoria=Obrigacao e dataAcaoInicio por padrão", async () => {
+    const calls = captureUrl({ content: [] });
+    const provider = createGClickHttpProvider(configuredConfig(), {
+      blockedByFeatureFlag: false,
+    });
+    await provider.tasks.list();
+
+    const url = calls.at(-1) ?? "";
+    expect(url).toContain("categoria=Obrigacao");
+    expect(url).toMatch(/dataAcaoInicio=\d{4}-\d{2}-01/);
+    expect(url).toContain("page=0");
+  });
+
+  it("respeita categoria e data informadas por quem chama", async () => {
+    const calls = captureUrl({ content: [] });
+    const provider = createGClickHttpProvider(configuredConfig(), {
+      blockedByFeatureFlag: false,
+    });
+    await provider.tasks.list({
+      category: "Solicitacao",
+      actionDateFrom: "2025-01-01",
+      page: 2,
+    });
+
+    const url = calls.at(-1) ?? "";
+    expect(url).toContain("categoria=Solicitacao");
+    expect(url).toContain("dataAcaoInicio=2025-01-01");
+    expect(url).toContain("page=2");
+  });
+});
