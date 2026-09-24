@@ -6,6 +6,7 @@ import {
   saveOmieMapping,
   setOmieMappingDisabled,
   syncOmieClient,
+  syncOmieObligations,
   type OmieActionState,
 } from "@/actions/omie-gclick";
 import { Button } from "@/components/ui/button";
@@ -44,14 +45,25 @@ export function OmieMappingPanel({
   const [saveState, saveAction, savePending] = useActionState(saveMappingForTenant, undefined);
   const [syncPending, startSyncTransition] = useTransition();
   const [syncResult, setSyncResult] = useState<OmieActionState>(undefined);
+  const [obligationsPending, startObligationsTransition] = useTransition();
   const [disablePending, startDisableTransition] = useTransition();
 
   const status = mapping?.status ?? "not_connected";
   const isDisabled = status === "disabled";
+  // Sem cliente vinculado não há de quem puxar tarefa - o botão fica
+  // inativo em vez de aparecer e falhar com mensagem de erro.
+  const canSyncObligations = Boolean(mapping?.externalClientId) && !isDisabled;
 
   function handleSync() {
     startSyncTransition(async () => {
       const result = await syncOmieClient(tenantId);
+      setSyncResult(result);
+    });
+  }
+
+  function handleSyncObligations() {
+    startObligationsTransition(async () => {
+      const result = await syncOmieObligations(tenantId);
       setSyncResult(result);
     });
   }
@@ -114,7 +126,20 @@ export function OmieMappingPanel({
             {savePending ? "Salvando..." : "Salvar mapeamento"}
           </Button>
           <Button type="button" onClick={handleSync} disabled={syncPending || isDisabled}>
-            {syncPending ? "Sincronizando..." : "Sincronizar com o Omie.G-Click"}
+            {syncPending ? "Sincronizando..." : "Sincronizar cadastro da empresa"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleSyncObligations}
+            disabled={obligationsPending || !canSyncObligations}
+            title={
+              canSyncObligations
+                ? undefined
+                : "Salve o ID do cliente no G-Click para liberar a sincronização de obrigações."
+            }
+          >
+            {obligationsPending ? "Trazendo obrigações..." : "Sincronizar obrigações"}
           </Button>
           <Button type="button" variant="ghost" onClick={handleToggleDisabled} disabled={disablePending}>
             {isDisabled ? "Reativar integração" : "Desativar integração"}
@@ -135,8 +160,8 @@ export function OmieMappingPanel({
 
       <p className="text-muted-foreground text-xs">
         {mode === "mock"
-          ? "Modo mock (ambiente de desenvolvimento) - toda sincronização aqui é simulada em memória, nenhum dado real é enviado ao G-Click. Integração real: não habilitada."
-          : "A sincronização real está bloqueada - a documentação técnica oficial da API do G-Click precisa ser confirmada antes de implementar a chamada real (ver auditoria técnica da Fase 6.5)."}
+          ? "Modo mock (ambiente de desenvolvimento) - toda sincronização aqui é simulada em memória, nenhum dado real é enviado ao G-Click nem lido de lá."
+          : "\"Sincronizar cadastro\" envia o nome e o CNPJ da empresa para o G-Click. \"Sincronizar obrigações\" traz as tarefas daquele cliente para a plataforma, onde o cliente as vê - nada é escrito de volta no G-Click, e obrigações lançadas à mão pela WJB nunca são alteradas."}
       </p>
     </div>
   );

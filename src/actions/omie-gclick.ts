@@ -8,7 +8,13 @@ import { hasPermission } from "@/lib/permissions/permissions";
 import {
   getGClickConfig,
   getOmieGClickAdapter,
+  type ExternalTask,
 } from "@/integrations/omie-gclick";
+import {
+  describeSyncResult,
+  EXTERNAL_SOURCE,
+  planObligationSync,
+} from "@/lib/obligations/external-sync";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { notifyIntegrationStatus } from "@/lib/notifications";
@@ -295,5 +301,202 @@ export async function testOmieConnection(): Promise<OmieActionState> {
       health.mode === "mock"
         ? "Verificação simulada com sucesso (modo mock - nenhuma conexão real foi testada)."
         : `Conexão com o Omie.G-Click confirmada (modo ${health.mode}).`,
+  };
+}
+
+/**
+ * Traz as obrigações do tenant a partir das tarefas do Omie.G-Click
+ * (2026-09-24). É a peça que faltava para o cliente ver na plataforma o
+ * que a WJB já controla no G-Click, sem ninguém redigitar nada.
+ *
+ * Direção única, de fora para dentro. Escrever de volta no G-Click não
+ * está no escopo: lá é onde a equipe trabalha, e um erro nosso viraria
+ * ruído na ferramenta de produção do escritório.
+ *
+ * O que esta função nunca faz:
+ * - tocar obrigação criada à mão (`external_id` nulo) - a autoria da WJB
+ *   tem precedência sobre qualquer coisa vinda de fora;
+ * - inventar vencimento para tarefa que não tem um (são contadas e
+ *   reportadas como ignoradas);
+ * - importar tarefa de outro cliente (filtro em `planObligationSync`).
+ */
+export async function syncOmieObligations(
+  tenantId: string,
+): Promise<OmieActionState> {
+  const session = await requireStaffSession();
+  if (!hasPermission(session, "integrations.manage")) {
+    return { error: "Você não tem permissão para gerenciar integrações." };
+  }
+
+  if (!(await isFeatureEnabled("omie_gclick"))) {
+    return {
+      error: "A integração Omie.G-Click está desativada pela WJB no momento.",
+    };
+  }
+
+  const supabase = await createClient();
+
+  const { data: mapping } = await supabase
+    .from("omie_client_mappings")
+    .select("external_client_id, status")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
+  if (!mapping?.external_client_id) {
+    return {
+      error:
+        "Vincule primeiro o cliente no G-Click (campo \"ID do cliente\") antes de sincronizar as obrigações.",
+    };
+  }
+
+  if (mapping.status === "disabled") {
+    return { error: "A integração está desativada para esta empresa." };
+  }
+
+  /*
+   * A API devolve as tarefas da conta inteira, paginadas - não há filtro
+   * por cliente no endpoint. Percorremos as páginas e filtramos aqui.
+   * O teto de páginas evita um laço infinito caso a paginação da API
+   * responda de forma inesperada; ao ser atingido, a sincronização
+   * termina com o que já leu, sem fingir que viu tudo.
+   */
+  const MAX_PAGES = 25;
+  const PAGE_SIZE = 100;
+  const tasks: ExternalTask[] = [];
+  const adapter = getOmieGClickAdapter();
+  let truncated = false;
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const result = await adapter.tasks.list({ page, pageSize: PAGE_SIZE });
+
+    if (!result.ok) {
+      await supabase.from("omie_client_mappings").upsert(
+        {
+          tenant_id: tenantId,
+          status: "error",
+          last_error: result.error.code,
+          updated_by: session.userId,
+        },
+        { onConflict: "tenant_id" },
+      );
+      return {
+        error: `Falha ao ler as tarefas do Omie.G-Click (${result.error.message}).`,
+      };
+    }
+
+    tasks.push(...result.data.items);
+
+    if (result.data.items.length < PAGE_SIZE) break;
+    if (page === MAX_PAGES) truncated = true;
+  }
+
+  const plan = planObligationSync(tasks, mapping.external_client_id);
+
+  const { data: existing } = await supabase
+    .from("obligations")
+    .select("id, external_id, title, due_date, status")
+    .eq("tenant_id", tenantId)
+    .eq("external_source", EXTERNAL_SOURCE)
+    .not("external_id", "is", null);
+
+  const existingByExternalId = new Map(
+    (existing ?? []).map((row) => [row.external_id as string, row]),
+  );
+
+  const now = new Date().toISOString();
+  let created = 0;
+  let updated = 0;
+  let removed = 0;
+
+  for (const item of plan.upserts) {
+    const current = existingByExternalId.get(item.externalId);
+
+    if (!current) {
+      const { error } = await supabase.from("obligations").insert({
+        tenant_id: tenantId,
+        title: item.title,
+        due_date: item.dueDate,
+        status: item.status,
+        created_by: session.userId,
+        external_id: item.externalId,
+        external_source: EXTERNAL_SOURCE,
+        external_synced_at: now,
+      });
+      if (!error) created++;
+      continue;
+    }
+
+    const changed =
+      current.title !== item.title ||
+      current.due_date !== item.dueDate ||
+      current.status !== item.status;
+
+    // Sem mudança real, só carimba a data de conferência - assim
+    // "sincronizado agora" continua verdadeiro sem inflar a contagem de
+    // atualizações mostrada na tela.
+    const { error } = await supabase
+      .from("obligations")
+      .update(
+        changed
+          ? {
+              title: item.title,
+              due_date: item.dueDate,
+              status: item.status,
+              external_synced_at: now,
+            }
+          : { external_synced_at: now },
+      )
+      .eq("id", current.id);
+
+    if (!error && changed) updated++;
+  }
+
+  if (plan.removals.length > 0) {
+    const { error, count } = await supabase
+      .from("obligations")
+      .delete({ count: "exact" })
+      .eq("tenant_id", tenantId)
+      .eq("external_source", EXTERNAL_SOURCE)
+      .in("external_id", plan.removals);
+    if (!error) removed = count ?? 0;
+  }
+
+  await supabase.from("omie_client_mappings").upsert(
+    {
+      tenant_id: tenantId,
+      status: "synced",
+      last_synced_at: now,
+      last_error: null,
+      updated_by: session.userId,
+    },
+    { onConflict: "tenant_id" },
+  );
+
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    tenant_id: tenantId,
+    action: "integration.omie_obligations_synced",
+    entity: "obligation",
+    metadata: { created, updated, removed, skipped: plan.skipped, truncated },
+  });
+
+  revalidatePath(`/admin/empresas/${tenantId}`);
+  revalidatePath("/portal/obrigacoes");
+
+  const summary = describeSyncResult({
+    created,
+    updated,
+    removed,
+    skipped: plan.skipped,
+  });
+  const { mode } = getGClickConfig();
+
+  return {
+    success:
+      mode === "mock"
+        ? `${summary} (modo mock - as tarefas vieram de dados fictícios, não do G-Click real.)`
+        : truncated
+          ? `${summary} Havia mais tarefas do que o limite de leitura desta rodada - sincronize de novo para continuar.`
+          : summary,
   };
 }

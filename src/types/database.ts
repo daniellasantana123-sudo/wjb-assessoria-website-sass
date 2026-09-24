@@ -9,6 +9,8 @@
 export type TenantMemberRole = "owner" | "member";
 export type StaffRole = "super_admin" | "contador" | "atendimento";
 export type ObligationStatus = "pending" | "done";
+/** Sistemas dos quais uma obrigação pode vir espelhada (migration 0020). */
+export type ExternalObligationSource = "omie_gclick";
 export type DocumentCategory = "documento" | "guia";
 export type LeadStatus = "new" | "contacted" | "won" | "lost";
 export type TicketStatus = "open" | "in_progress" | "closed";
@@ -202,6 +204,10 @@ export interface Database {
           status: ObligationStatus;
           created_by: string | null;
           created_at: string;
+          /* 0020 — origem externa; nulo = lançada à mão pela WJB. */
+          external_id: string | null;
+          external_source: ExternalObligationSource | null;
+          external_synced_at: string | null;
         };
         Insert: {
           id?: string;
@@ -212,6 +218,9 @@ export interface Database {
           status?: ObligationStatus;
           created_by?: string | null;
           created_at?: string;
+          external_id?: string | null;
+          external_source?: ExternalObligationSource | null;
+          external_synced_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["obligations"]["Insert"]>;
         Relationships: [
