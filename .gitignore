@@ -28,3 +28,6 @@ LOG_imapsync/
 
 # config local do Claude Code (skills, locks) - específico da máquina
 .claude/
+
+# estado local do Supabase CLI (criado por `npx supabase`) - nao versionar
+supabase/.temp/
