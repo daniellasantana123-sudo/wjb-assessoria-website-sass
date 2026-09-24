@@ -149,7 +149,12 @@ export default async function EmpresaDetailPage({
 
       <div className="border-border rounded-md border p-6">
         <h2 className="text-foreground mb-4 text-sm font-semibold">Integração Omie.G-Click</h2>
-        <OmieMappingPanel tenantId={tenant.id} mapping={omieMapping} mode={omieMode} />
+        <OmieMappingPanel
+          tenantId={tenant.id}
+          tenantDocument={tenant.cnpj}
+          mapping={omieMapping}
+          mode={omieMode}
+        />
       </div>
     </Container>
   );

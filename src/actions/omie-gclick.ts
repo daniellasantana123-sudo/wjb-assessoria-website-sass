@@ -15,6 +15,11 @@ import {
   EXTERNAL_SOURCE,
   planObligationSync,
 } from "@/lib/obligations/external-sync";
+import {
+  isSearchable,
+  MIN_SEARCH_LENGTH,
+  normalizeClientSearch,
+} from "@/lib/integrations/client-search";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { notifyIntegrationStatus } from "@/lib/notifications";
@@ -498,5 +503,64 @@ export async function syncOmieObligations(
         : truncated
           ? `${summary} Havia mais tarefas do que o limite de leitura desta rodada - sincronize de novo para continuar.`
           : summary,
+  };
+}
+
+export interface GClickClientOption {
+  externalId: string;
+  name: string;
+  document: string | null;
+}
+
+export type OmieSearchState =
+  | { error: string }
+  | { results: GClickClientOption[] };
+
+/**
+ * Busca clientes no G-Click por CNPJ ou nome (2026-09-24), para o staff
+ * vincular a empresa escolhendo numa lista em vez de digitar o id.
+ *
+ * Existe porque digitar o id à mão era o passo mais frágil do cadastro:
+ * um dígito errado vincula a empresa errada, e o erro só apareceria muito
+ * depois, quando as obrigações de outro cliente surgissem no portal.
+ */
+export async function searchGClickClients(
+  text: string,
+): Promise<OmieSearchState> {
+  const session = await requireStaffSession();
+  if (!hasPermission(session, "integrations.manage")) {
+    return { error: "Você não tem permissão para gerenciar integrações." };
+  }
+
+  if (!(await isFeatureEnabled("omie_gclick"))) {
+    return { error: "A integração Omie.G-Click está desativada no momento." };
+  }
+
+  if (!isSearchable(text)) {
+    return {
+      error: `Digite pelo menos ${MIN_SEARCH_LENGTH} caracteres do CNPJ ou do nome.`,
+    };
+  }
+
+  const result = await getOmieGClickAdapter().clients.search({
+    text: normalizeClientSearch(text),
+    pageSize: 20,
+  });
+
+  if (!result.ok) {
+    return { error: `Não foi possível buscar no G-Click (${result.error.message}).` };
+  }
+
+  return {
+    results: result.data.items
+      // Cliente sem id não serve para vincular - só ocuparia a lista.
+      .filter((client): client is typeof client & { externalId: string } =>
+        Boolean(client.externalId),
+      )
+      .map((client) => ({
+        externalId: client.externalId,
+        name: client.name,
+        document: client.document,
+      })),
   };
 }
