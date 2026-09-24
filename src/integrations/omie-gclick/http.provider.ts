@@ -9,14 +9,24 @@ import {
 } from "./mappers/client.mapper";
 import { fromExternalError, fromTransportError } from "./mappers/error.mapper";
 import {
+  activitiesFromExternal,
+  catalogItemsFromExternal,
+  personsFromExternal,
+  portfolioFromExternal,
+} from "./mappers/lookup.mapper";
+import {
   fromExternalPayload as taskFromExternal,
   toCreatePreTaskPayload,
 } from "./mappers/task.mapper";
 import type {
   CreateExternalClientInput,
   CreateExternalPreTaskInput,
+  ExternalCatalogItem,
   ExternalClient,
+  ExternalPerson,
+  ExternalPortfolioItem,
   ExternalTask,
+  ExternalTaskActivity,
   ListExternalClientsInput,
   ListExternalTasksInput,
   OmieGClickAdapter,
@@ -25,8 +35,19 @@ import type {
   ProviderError,
   ProviderHealth,
   ProviderResult,
+  SearchInput,
+  SetExternalPartnersInput,
   UpdateExternalClientInput,
 } from "./types";
+
+/** Corpo esperado pelos endpoints de sócios: ids já cadastrados no G-Click. */
+function toPartnerIdsPayload(input: SetExternalPartnersInput) {
+  return {
+    sociosIds: input.partnerIds
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id)),
+  };
+}
 
 /**
  * Provider real da Omie.G-Click.
@@ -409,6 +430,82 @@ export function createGClickHttpProvider(
           ),
         };
       },
+
+      async search(
+        input: SearchInput,
+      ): Promise<ProviderResult<PaginatedResult<ExternalClient>>> {
+        const page = input.page ?? 0;
+        const size = input.pageSize ?? 20;
+        const result = await request<
+          SpringPage<Record<string, unknown>> | Record<string, unknown>[]
+        >(
+          `/clientes/search?texto=${encodeURIComponent(input.text)}&page=${page}&size=${size}`,
+        );
+        // Busca sem resultado é lista vazia, não erro - quem pesquisa um
+        // CNPJ que ainda não está no G-Click precisa ouvir "não achei",
+        // não "falhou".
+        if (!result.ok) {
+          return result.error.code === "NOT_FOUND"
+            ? { ok: true, data: { items: [], page, pageSize: size, total: 0 } }
+            : result;
+        }
+        return {
+          ok: true,
+          data: toPaginated(
+            result.data,
+            (raw) => clientFromExternal(raw),
+            page,
+            size,
+          ),
+        };
+      },
+
+      async listResponsibles(
+        clientExternalId: string,
+      ): Promise<ProviderResult<ExternalPerson[]>> {
+        const result = await request<unknown>(
+          `/clientes/${encodeURIComponent(clientExternalId)}/responsaveis`,
+        );
+        if (!result.ok) {
+          return result.error.code === "NOT_FOUND"
+            ? { ok: true, data: [] }
+            : result;
+        }
+        return { ok: true, data: personsFromExternal(result.data) };
+      },
+
+      async setPartners(
+        input: SetExternalPartnersInput,
+      ): Promise<ProviderResult<void>> {
+        const configError = configurationError();
+        if (configError) return { ok: false, error: configError };
+
+        const result = await request<unknown>(
+          `/clientes/${encodeURIComponent(input.clientExternalId)}/socios`,
+          { method: "PUT", body: JSON.stringify(toPartnerIdsPayload(input)) },
+        );
+        if (!result.ok) return result;
+        return { ok: true, data: undefined };
+      },
+
+      async removePartners(
+        input: SetExternalPartnersInput,
+      ): Promise<ProviderResult<void>> {
+        const configError = configurationError();
+        if (configError) return { ok: false, error: configError };
+
+        // DELETE com corpo: a API espera os ids a desvincular, não apaga
+        // todos por omissão - confirmado no exemplo da coleção oficial.
+        const result = await request<unknown>(
+          `/clientes/${encodeURIComponent(input.clientExternalId)}/socios`,
+          {
+            method: "DELETE",
+            body: JSON.stringify(toPartnerIdsPayload(input)),
+          },
+        );
+        if (!result.ok) return result;
+        return { ok: true, data: undefined };
+      },
     },
 
     tasks: {
@@ -456,6 +553,86 @@ export function createGClickHttpProvider(
         });
         if (!result.ok) return result;
         return { ok: true, data: taskFromExternal(result.data) };
+      },
+
+      async listResponsibles(
+        taskId: string,
+      ): Promise<ProviderResult<ExternalPerson[]>> {
+        const result = await request<unknown>(
+          `/tarefas/${encodeURIComponent(taskId)}/responsaveis`,
+        );
+        if (!result.ok) {
+          return result.error.code === "NOT_FOUND"
+            ? { ok: true, data: [] }
+            : result;
+        }
+        return { ok: true, data: personsFromExternal(result.data) };
+      },
+
+      async listGuests(
+        taskId: string,
+      ): Promise<ProviderResult<ExternalPerson[]>> {
+        const result = await request<unknown>(
+          `/tarefas/${encodeURIComponent(taskId)}/convidados`,
+        );
+        if (!result.ok) {
+          return result.error.code === "NOT_FOUND"
+            ? { ok: true, data: [] }
+            : result;
+        }
+        return { ok: true, data: personsFromExternal(result.data) };
+      },
+
+      async listActivities(
+        taskId: string,
+      ): Promise<ProviderResult<ExternalTaskActivity[]>> {
+        const result = await request<unknown>(
+          `/tarefas/${encodeURIComponent(taskId)}/atividades`,
+        );
+        if (!result.ok) {
+          return result.error.code === "NOT_FOUND"
+            ? { ok: true, data: [] }
+            : result;
+        }
+        return { ok: true, data: activitiesFromExternal(result.data) };
+      },
+    },
+
+    catalog: {
+      async groups(
+        search?: string,
+      ): Promise<ProviderResult<ExternalCatalogItem[]>> {
+        // `termo` aqui, `texto` na busca de clientes - os dois endpoints
+        // usam nomes diferentes de propósito na API, não é engano.
+        const path = search
+          ? `/grupos/busca?termo=${encodeURIComponent(search)}`
+          : "/grupos?page=0&size=100";
+        const result = await request<unknown>(path);
+        if (!result.ok) return result;
+        return { ok: true, data: catalogItemsFromExternal(result.data) };
+      },
+
+      async visibilities(
+        search?: string,
+      ): Promise<ProviderResult<ExternalCatalogItem[]>> {
+        const path = search
+          ? `/visibilidades/busca?termo=${encodeURIComponent(search)}`
+          : "/visibilidades?page=0&size=100";
+        const result = await request<unknown>(path);
+        if (!result.ok) return result;
+        return { ok: true, data: catalogItemsFromExternal(result.data) };
+      },
+
+      async flows(): Promise<ProviderResult<ExternalCatalogItem[]>> {
+        const result = await request<unknown>("/fluxos");
+        if (!result.ok) return result;
+        return { ok: true, data: catalogItemsFromExternal(result.data) };
+      },
+
+      async portfolio(): Promise<ProviderResult<ExternalPortfolioItem[]>> {
+        const result = await request<unknown>("/carteira?page=0&size=200");
+        if (!result.ok) return result;
+        return { ok: true, data: portfolioFromExternal(result.data) };
       },
     },
   };

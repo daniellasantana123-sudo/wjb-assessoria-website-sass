@@ -34,6 +34,43 @@
 [ ] Portal Visão do Cliente ...... segue sem SSO/deep link documentado
 ```
 
+## Cobertura do adaptador (2026-09-24)
+
+Todos os endpoints **públicos** da coleção estão implementados em
+`http.provider.ts` e no mock. Os 4 `partner_only` continuam de fora por
+não estarem liberados para a conta da WJB.
+
+```text
+[x] GET  /clientes/search?texto=        clients.search
+[x] GET  /clientes/{id}/responsaveis    clients.listResponsibles
+[x] PUT  /clientes/{id}/socios          clients.setPartners      (corpo: { sociosIds: [...] })
+[x] DEL  /clientes/{id}/socios          clients.removePartners   (corpo: { sociosIds: [...] })
+[x] GET  /carteira                      catalog.portfolio        (cliente + usuário responsável)
+[x] GET  /grupos, /grupos/busca         catalog.groups(search?)
+[x] GET  /visibilidades, .../busca      catalog.visibilities(search?)
+[x] GET  /fluxos                        catalog.flows
+[x] GET  /tarefas/{id}/responsaveis     tasks.listResponsibles
+[x] GET  /tarefas/{id}/convidados       tasks.listGuests
+[x] GET  /tarefas/{id}/atividades       tasks.listActivities
+```
+
+**Três detalhes da API que só apareceram ao ler as respostas de exemplo** -
+qualquer um deles quebraria a chamada se tivesse sido deduzido:
+
+1. A busca de catálogo usa **`termo`**, enquanto a de clientes usa
+   **`texto`**. Nomes diferentes, no mesmo serviço.
+2. Sócios são enviados como **ids já cadastrados** no G-Click
+   (`{ sociosIds: [6131, 6193] }`), nunca como nome/CPF - e o `DELETE`
+   também leva corpo, ou seja, desvincula os informados em vez de apagar
+   todos.
+3. Uma atividade **não tem status textual**: tem `respondida` (booleano),
+   `respondidaPor` e `respondidaEm`.
+
+Ainda **sem uso no produto**: responsáveis, convidados, atividades,
+fluxos, carteira e sócios estão disponíveis no adaptador mas nenhuma tela
+os consome. Sócios, em particular, não têm origem possível - a plataforma
+da WJB não guarda sócios de empresa.
+
 ## Status em produção (2026-09-23)
 
 **Integração real ligada e validada.** Credenciais criadas no painel do G-Click (Configurações > Integrações & API > API > "+ Criar uma Aplicação") e configuradas na Hostinger. Confirmado contra a API real:

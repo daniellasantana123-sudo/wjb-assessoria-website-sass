@@ -1,4 +1,11 @@
-import type { ExternalClient, ExternalTask } from "./types";
+import type {
+  ExternalCatalogItem,
+  ExternalClient,
+  ExternalPerson,
+  ExternalPortfolioItem,
+  ExternalTask,
+  ExternalTaskActivity,
+} from "./types";
 
 /**
  * Dados fictícios pro `MockGClickProvider` e pros testes (seção 30 do
@@ -51,4 +58,62 @@ export const MOCK_TASK_COMPLETED: ExternalTask = {
 export const MOCK_TASK_FIXTURES: ExternalTask[] = [
   MOCK_TASK_OPEN,
   MOCK_TASK_COMPLETED,
+];
+
+/**
+ * Fixtures dos endpoints de consulta (2026-09-24). Todos marcados como
+ * fictícios no próprio texto: aparecem na interface em modo mock, e
+ * ninguém deve confundi-los com dado real da WJB.
+ */
+export const MOCK_PERSON_FIXTURES: ExternalPerson[] = [
+  {
+    externalId: "user-mock-1",
+    name: "Responsável Fictício",
+    email: "responsavel.ficticio@example.com",
+    role: "Contador",
+  },
+];
+
+export const MOCK_ACTIVITY_FIXTURES: ExternalTaskActivity[] = [
+  {
+    externalId: "atv-mock-1",
+    name: "Receber documentação do cliente (fictício)",
+    order: 1,
+    type: "CHECK",
+    answered: true,
+    answeredBy: "Responsável Fictício",
+    answeredAt: "2026-09-10 09:00",
+  },
+  {
+    externalId: "atv-mock-2",
+    name: "Transmitir declaração (fictício)",
+    order: 2,
+    type: "CHECK",
+    answered: false,
+    answeredBy: null,
+    answeredAt: null,
+  },
+];
+
+export const MOCK_GROUP_FIXTURES: ExternalCatalogItem[] = [
+  { externalId: "1", name: "Grupo Fictício A", description: null },
+  { externalId: "2", name: "Grupo Fictício B", description: null },
+];
+
+export const MOCK_VISIBILITY_FIXTURES: ExternalCatalogItem[] = [
+  { externalId: "1", name: "Geral (fictício)", description: null },
+];
+
+export const MOCK_FLOW_FIXTURES: ExternalCatalogItem[] = [
+  { externalId: "1", name: "Entrada de Cliente (fictício)", description: "S" },
+];
+
+export const MOCK_PORTFOLIO_FIXTURES: ExternalPortfolioItem[] = [
+  {
+    clientExternalId: MOCK_CLIENT_EXISTING.externalId ?? "cli-mock-1",
+    name: "Cliente Fictício LTDA",
+    document: "12345678000123",
+    responsibleName: "Responsável Fictício",
+    responsibleEmail: "responsavel.ficticio@example.com",
+  },
 ];

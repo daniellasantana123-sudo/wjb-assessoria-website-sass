@@ -497,3 +497,206 @@ describe("GClickHttpProvider - erros e capacidades", () => {
     expect(capabilities.canCreatePreTasks).toBe(false);
   });
 });
+
+/**
+ * Cobertura dos endpoints de consulta adicionados em 2026-09-24. As
+ * respostas usadas aqui são recortes das respostas de exemplo da própria
+ * coleção Postman oficial - não formatos inventados por mim, que é o que
+ * tornaria o teste inútil (passaria contra a minha suposição, não contra
+ * a API).
+ */
+describe("GClickHttpProvider - endpoints de consulta (2026-09-24)", () => {
+  /** Responde o token e depois devolve `body`, guardando a URL chamada. */
+  function mockApi(body: unknown) {
+    const calls: { url: string; init?: RequestInit }[] = [];
+    global.fetch = vi.fn(async (url: unknown, init?: unknown) => {
+      const href = String(url);
+      calls.push({ url: href, init: init as RequestInit });
+      if (href.includes("/oauth/token")) return jsonResponse(TOKEN_BODY);
+      return jsonResponse(body);
+    }) as unknown as typeof fetch;
+    return calls;
+  }
+
+  function provider() {
+    return createGClickHttpProvider(configuredConfig(), {
+      blockedByFeatureFlag: false,
+    });
+  }
+
+  it("busca cliente por texto e devolve lista vazia quando não acha", async () => {
+    const calls = mockApi({ content: [], totalElements: 0 });
+    const result = await provider().clients.search({ text: "12.345.678/0001-90" });
+
+    expect(calls.at(-1)?.url).toContain("/clientes/search?texto=");
+    expect(result.ok && result.data.items).toEqual([]);
+  });
+
+  it("lista responsáveis de um cliente com o formato real da API", async () => {
+    // Recorte da resposta de exemplo de GET /clientes/17/responsaveis.
+    const calls = mockApi([
+      {
+        id: 30385,
+        nome: "Usuário Teste",
+        apelido: "usuario.teste",
+        email: "usuario@teste.com.br",
+        cargo: { id: 1, nome: "administrador" },
+      },
+    ]);
+    const result = await provider().clients.listResponsibles("17");
+
+    expect(calls.at(-1)?.url).toContain("/clientes/17/responsaveis");
+    expect(result.ok && result.data).toEqual([
+      {
+        externalId: "30385",
+        name: "Usuário Teste",
+        email: "usuario@teste.com.br",
+        role: "administrador",
+      },
+    ]);
+  });
+
+  it("envia sócios como lista de ids, no formato que a API espera", async () => {
+    const calls = mockApi({ id: 16488 });
+    await provider().clients.setPartners({
+      clientExternalId: "16488",
+      partnerIds: ["6131", "6193"],
+    });
+
+    const last = calls.at(-1);
+    expect(last?.url).toContain("/clientes/16488/socios");
+    expect(last?.init?.method).toBe("PUT");
+    // `{ sociosIds: [...] }` com números - o erro fácil aqui seria mandar
+    // nome/CPF, que a API recusaria.
+    expect(JSON.parse(String(last?.init?.body))).toEqual({
+      sociosIds: [6131, 6193],
+    });
+  });
+
+  it("remover sócios também manda os ids no corpo, não apaga todos", async () => {
+    const calls = mockApi({ id: 16488 });
+    await provider().clients.removePartners({
+      clientExternalId: "16488",
+      partnerIds: ["6193"],
+    });
+
+    const last = calls.at(-1);
+    expect(last?.init?.method).toBe("DELETE");
+    expect(JSON.parse(String(last?.init?.body))).toEqual({ sociosIds: [6193] });
+  });
+
+  it("lê as atividades de uma tarefa como respondida/quem/quando", async () => {
+    // Recorte de GET /tarefas/:id/atividades - a API não devolve "status".
+    const calls = mockApi([
+      {
+        id: "1.5001",
+        nome: "Enviar documentação ao cliente",
+        ordem: 1,
+        tipo: "CHECK",
+        respondida: true,
+        respondidaPor: "João Silva",
+        respondidaEm: "2025-11-20 14:30",
+      },
+    ]);
+    const result = await provider().tasks.listActivities("1");
+
+    expect(calls.at(-1)?.url).toContain("/tarefas/1/atividades");
+    expect(result.ok && result.data[0]).toEqual({
+      externalId: "1.5001",
+      name: "Enviar documentação ao cliente",
+      order: 1,
+      type: "CHECK",
+      answered: true,
+      answeredBy: "João Silva",
+      answeredAt: "2025-11-20 14:30",
+    });
+  });
+
+  it("lista convidados da tarefa", async () => {
+    const calls = mockApi([{ id: 6211, nome: "Antonella Carvalho" }]);
+    const result = await provider().tasks.listGuests("9");
+
+    expect(calls.at(-1)?.url).toContain("/tarefas/9/convidados");
+    expect(result.ok && result.data[0]?.name).toBe("Antonella Carvalho");
+  });
+
+  it("usa 'termo' na busca de catálogo, não 'texto'", async () => {
+    // Pegadinha real da API: /clientes/search usa `texto`, mas
+    // /grupos/busca e /visibilidades/busca usam `termo`.
+    const calls = mockApi({ content: [] });
+    await provider().catalog.groups("fiscal");
+    expect(calls.at(-1)?.url).toContain("/grupos/busca?termo=fiscal");
+
+    await provider().catalog.visibilities("geral");
+    expect(calls.at(-1)?.url).toContain("/visibilidades/busca?termo=geral");
+  });
+
+  it("lista catálogos sem busca, com paginação explícita", async () => {
+    const calls = mockApi({ content: [{ id: 1, nome: "Geral" }] });
+    const result = await provider().catalog.visibilities();
+
+    expect(calls.at(-1)?.url).toContain("/visibilidades?page=0&size=100");
+    expect(result.ok && result.data).toEqual([
+      { externalId: "1", name: "Geral", description: null },
+    ]);
+  });
+
+  it("lê fluxos do envelope paginado do Spring", async () => {
+    mockApi({
+      content: [
+        { id: 5, nome: "Entrada de Cliente com empresa constituída", tipo: "S", departamento: null },
+      ],
+    });
+    const result = await provider().catalog.flows();
+
+    expect(result.ok && result.data[0]).toEqual({
+      externalId: "5",
+      name: "Entrada de Cliente com empresa constituída",
+      description: "S",
+    });
+  });
+
+  it("achata a carteira em empresa + responsável", async () => {
+    // A carteira aninha `cliente` e `usuario`; é essa dupla que torna o
+    // endpoint mais útil que /clientes sozinho.
+    mockApi({
+      content: [
+        {
+          cliente: { id: 1, nome: "Cliente A", inscricao: "12345678000123" },
+          usuario: { id: 1, nome: "João Silva", email: "joao@example.com" },
+        },
+      ],
+    });
+    const result = await provider().catalog.portfolio();
+
+    expect(result.ok && result.data[0]).toEqual({
+      clientExternalId: "1",
+      name: "Cliente A",
+      document: "12345678000123",
+      responsibleName: "João Silva",
+      responsibleEmail: "joao@example.com",
+    });
+  });
+
+  it("os endpoints novos também respeitam a Proteção 1", async () => {
+    const fetchSpy = vi.fn();
+    global.fetch = fetchSpy as unknown as typeof fetch;
+    const blocked = createGClickHttpProvider(configuredConfig(), {
+      blockedByFeatureFlag: true,
+    });
+
+    await blocked.clients.search({ text: "x" });
+    await blocked.clients.listResponsibles("1");
+    await blocked.clients.setPartners({ clientExternalId: "1", partnerIds: ["2"] });
+    await blocked.clients.removePartners({ clientExternalId: "1", partnerIds: ["2"] });
+    await blocked.tasks.listResponsibles("1");
+    await blocked.tasks.listGuests("1");
+    await blocked.tasks.listActivities("1");
+    await blocked.catalog.groups();
+    await blocked.catalog.visibilities();
+    await blocked.catalog.flows();
+    await blocked.catalog.portfolio();
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});

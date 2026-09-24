@@ -1,11 +1,24 @@
 import "server-only";
 
-import { MOCK_CLIENT_EXISTING, MOCK_TASK_FIXTURES } from "./fixtures";
+import {
+  MOCK_ACTIVITY_FIXTURES,
+  MOCK_CLIENT_EXISTING,
+  MOCK_FLOW_FIXTURES,
+  MOCK_GROUP_FIXTURES,
+  MOCK_PERSON_FIXTURES,
+  MOCK_PORTFOLIO_FIXTURES,
+  MOCK_TASK_FIXTURES,
+  MOCK_VISIBILITY_FIXTURES,
+} from "./fixtures";
 import type {
   CreateExternalClientInput,
   CreateExternalPreTaskInput,
+  ExternalCatalogItem,
   ExternalClient,
+  ExternalPerson,
+  ExternalPortfolioItem,
   ExternalTask,
+  ExternalTaskActivity,
   ListExternalClientsInput,
   ListExternalTasksInput,
   OmieGClickAdapter,
@@ -14,8 +27,19 @@ import type {
   ProviderError,
   ProviderHealth,
   ProviderResult,
+  SearchInput,
   UpdateExternalClientInput,
 } from "./types";
+
+/** Busca por nome nos catálogos do mock - o real filtra no servidor. */
+function filterCatalog(
+  items: ExternalCatalogItem[],
+  search?: string,
+): ExternalCatalogItem[] {
+  if (!search) return items;
+  const needle = search.trim().toLowerCase();
+  return items.filter((item) => item.name.toLowerCase().includes(needle));
+}
 
 /**
  * Cenários simuláveis (seção 8 do prompt da Fase 6.5) - determinísticos
@@ -222,6 +246,52 @@ export function createMockGClickProvider(): MockGClickProvider {
           },
         };
       },
+
+      async search(
+        input: SearchInput,
+      ): Promise<ProviderResult<PaginatedResult<ExternalClient>>> {
+        const early = fail<PaginatedResult<ExternalClient>>();
+        if (early) return early;
+
+        const needle = input.text.trim().toLowerCase();
+        const items = Array.from(clientsByExternalId.values()).filter(
+          (client) =>
+            client.name.toLowerCase().includes(needle) ||
+            (client.document ?? "").toLowerCase().includes(needle),
+        );
+        const page = input.page ?? 1;
+        const pageSize = input.pageSize ?? 20;
+        const start = (page - 1) * pageSize;
+        return {
+          ok: true,
+          data: {
+            items: items.slice(start, start + pageSize),
+            page,
+            pageSize,
+            total: items.length,
+          },
+        };
+      },
+
+      async listResponsibles(): Promise<ProviderResult<ExternalPerson[]>> {
+        const early = fail<ExternalPerson[]>();
+        if (early) return early;
+        return { ok: true, data: MOCK_PERSON_FIXTURES };
+      },
+
+      async setPartners(): Promise<ProviderResult<void>> {
+        const early = fail<void>();
+        if (early) return early;
+        // Mock não guarda sócios: o cadastro deles vive no G-Click, e a
+        // plataforma da WJB não tem tabela de sócios para espelhar.
+        return { ok: true, data: undefined };
+      },
+
+      async removePartners(): Promise<ProviderResult<void>> {
+        const early = fail<void>();
+        if (early) return early;
+        return { ok: true, data: undefined };
+      },
     },
 
     tasks: {
@@ -259,6 +329,57 @@ export function createMockGClickProvider(): MockGClickProvider {
           dueDate: null,
         };
         return { ok: true, data: task };
+      },
+
+      async listResponsibles(): Promise<ProviderResult<ExternalPerson[]>> {
+        const early = fail<ExternalPerson[]>();
+        if (early) return early;
+        return { ok: true, data: MOCK_PERSON_FIXTURES };
+      },
+
+      async listGuests(): Promise<ProviderResult<ExternalPerson[]>> {
+        const early = fail<ExternalPerson[]>();
+        if (early) return early;
+        return { ok: true, data: [] };
+      },
+
+      async listActivities(): Promise<ProviderResult<ExternalTaskActivity[]>> {
+        const early = fail<ExternalTaskActivity[]>();
+        if (early) return early;
+        return { ok: true, data: MOCK_ACTIVITY_FIXTURES };
+      },
+    },
+
+    catalog: {
+      async groups(
+        search?: string,
+      ): Promise<ProviderResult<ExternalCatalogItem[]>> {
+        const early = fail<ExternalCatalogItem[]>();
+        if (early) return early;
+        return { ok: true, data: filterCatalog(MOCK_GROUP_FIXTURES, search) };
+      },
+
+      async visibilities(
+        search?: string,
+      ): Promise<ProviderResult<ExternalCatalogItem[]>> {
+        const early = fail<ExternalCatalogItem[]>();
+        if (early) return early;
+        return {
+          ok: true,
+          data: filterCatalog(MOCK_VISIBILITY_FIXTURES, search),
+        };
+      },
+
+      async flows(): Promise<ProviderResult<ExternalCatalogItem[]>> {
+        const early = fail<ExternalCatalogItem[]>();
+        if (early) return early;
+        return { ok: true, data: MOCK_FLOW_FIXTURES };
+      },
+
+      async portfolio(): Promise<ProviderResult<ExternalPortfolioItem[]>> {
+        const early = fail<ExternalPortfolioItem[]>();
+        if (early) return early;
+        return { ok: true, data: MOCK_PORTFOLIO_FIXTURES };
       },
     },
 

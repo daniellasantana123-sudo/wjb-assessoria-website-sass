@@ -108,6 +108,81 @@ export interface CreateExternalPreTaskInput {
 }
 
 // ---------------------------------------------------------------------
+// Pessoas, atividades e catálogos (2026-09-24 - cobertura do restante dos
+// endpoints públicos da coleção oficial)
+// ---------------------------------------------------------------------
+
+/**
+ * Pessoa ligada a um cliente ou a uma tarefa no G-Click (responsável,
+ * convidado). Um só tipo para os três endpoints porque a API devolve o
+ * mesmo formato de usuário nos três - criar três tipos idênticos só
+ * aumentaria a superfície a manter.
+ */
+export interface ExternalPerson {
+  externalId: string;
+  name: string;
+  email: string | null;
+  /** Papel declarado pela API quando existir (ex.: "responsável"). */
+  role: string | null;
+}
+
+/**
+ * Etapa de uma tarefa - é o que dá o andamento detalhado, além de
+ * pendente/concluída. A API não devolve um "status" textual aqui: devolve
+ * `respondida` (booleano) mais quem respondeu e quando, e é assim que o
+ * tipo reflete a resposta, sem inventar um estado intermediário.
+ */
+export interface ExternalTaskActivity {
+  externalId: string;
+  name: string;
+  order: number | null;
+  type: string | null;
+  answered: boolean;
+  answeredBy: string | null;
+  answeredAt: string | null;
+}
+
+/**
+ * Item de catálogo do G-Click (grupo, visibilidade, fluxo). Mesmo motivo
+ * do `ExternalPerson`: os três endpoints devolvem id + nome, e um tipo só
+ * evita três cópias da mesma forma.
+ */
+export interface ExternalCatalogItem {
+  externalId: string;
+  name: string;
+  description: string | null;
+}
+
+/**
+ * Uma linha da carteira: a empresa e quem a atende. A API devolve os dois
+ * juntos (`cliente` + `usuario`), e é essa dupla que torna o endpoint útil
+ * - a lista de clientes sozinha já vem de `/clientes`.
+ */
+export interface ExternalPortfolioItem {
+  clientExternalId: string;
+  name: string;
+  document: string | null;
+  responsibleName: string | null;
+  responsibleEmail: string | null;
+}
+
+/**
+ * Sócios são referenciados por **id de cadastro já existente** no G-Click
+ * (`{ sociosIds: [...] }`), nunca por nome/CPF - a API espera pessoas que
+ * já existem lá, não cria ninguém a partir destes dados.
+ */
+export interface SetExternalPartnersInput {
+  clientExternalId: string;
+  partnerIds: string[];
+}
+
+export interface SearchInput {
+  text: string;
+  page?: number;
+  pageSize?: number;
+}
+
+// ---------------------------------------------------------------------
 // Erros padronizados (seção 17 do prompt) - independentes de HTTP externo
 // ---------------------------------------------------------------------
 
@@ -175,6 +250,20 @@ export interface OmieGClickAdapter {
     list(
       input?: ListExternalClientsInput,
     ): Promise<ProviderResult<PaginatedResult<ExternalClient>>>;
+    /** `GET /clientes/search` - busca por texto livre (nome, CNPJ). */
+    search(
+      input: SearchInput,
+    ): Promise<ProviderResult<PaginatedResult<ExternalClient>>>;
+    /** `GET /clientes/{id}/responsaveis` - quem na WJB atende aquela empresa. */
+    listResponsibles(
+      clientExternalId: string,
+    ): Promise<ProviderResult<ExternalPerson[]>>;
+    /** `PUT /clientes/{id}/socios` - vincula sócios já cadastrados no G-Click. */
+    setPartners(input: SetExternalPartnersInput): Promise<ProviderResult<void>>;
+    /** `DELETE /clientes/{id}/socios` - desvincula os sócios informados. */
+    removePartners(
+      input: SetExternalPartnersInput,
+    ): Promise<ProviderResult<void>>;
   };
 
   tasks: {
@@ -184,5 +273,27 @@ export interface OmieGClickAdapter {
     createPreTask(
       input: CreateExternalPreTaskInput,
     ): Promise<ProviderResult<ExternalTask>>;
+    /** `GET /tarefas/{id}/responsaveis`. */
+    listResponsibles(taskId: string): Promise<ProviderResult<ExternalPerson[]>>;
+    /** `GET /tarefas/{id}/convidados`. */
+    listGuests(taskId: string): Promise<ProviderResult<ExternalPerson[]>>;
+    /** `GET /tarefas/{id}/atividades` - as etapas, para mostrar andamento. */
+    listActivities(
+      taskId: string,
+    ): Promise<ProviderResult<ExternalTaskActivity[]>>;
+  };
+
+  /**
+   * Catálogos da conta. `groups` e `visibilities` cobrem dois endpoints
+   * cada (listagem e `/busca`): um método com `search` opcional em vez de
+   * dois quase idênticos - quem chama não ganha nada em escolher a URL.
+   */
+  catalog: {
+    groups(search?: string): Promise<ProviderResult<ExternalCatalogItem[]>>;
+    visibilities(
+      search?: string,
+    ): Promise<ProviderResult<ExternalCatalogItem[]>>;
+    flows(): Promise<ProviderResult<ExternalCatalogItem[]>>;
+    portfolio(): Promise<ProviderResult<ExternalPortfolioItem[]>>;
   };
 }
