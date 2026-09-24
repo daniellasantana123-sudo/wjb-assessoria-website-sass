@@ -55,11 +55,25 @@ export default async function AdminIntegracoesPage() {
           <Badge tone={mode === "mock" ? "warning" : "neutral"}>Modo: {MODE_LABELS[mode]}</Badge>
         </div>
 
-        {/* Nunca apresentar como "Conectado" ao G-Click real (Checkpoint 6.5.1, seção 5). */}
+        {/*
+         * Os três campos abaixo eram textos fixos da Fase 6.5, de quando
+         * não existia implementação real: diziam "Bloqueado" e "Validação
+         * pendente" para qualquer modo diferente de mock. Depois que a
+         * integração entrou em produção (2026-09-23) isso virou informação
+         * falsa na cara de quem administra - a tela afirmava bloqueio
+         * enquanto a sincronização lia dados reais. Agora derivam do
+         * estado de verdade.
+         */}
         <dl className="text-muted-foreground mt-3 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
           <div className="flex justify-between gap-2 sm:justify-start">
             <dt className="font-medium">Status:</dt>
-            <dd>{mode === "mock" ? "Ambiente simulado" : "Bloqueado"}</dd>
+            <dd>
+              {mode === "mock"
+                ? "Ambiente simulado"
+                : realIntegrationTrulyAvailable
+                  ? "Ativa"
+                  : "Bloqueada pelo interruptor de emergência"}
+            </dd>
           </div>
           <div className="flex justify-between gap-2 sm:justify-start">
             <dt className="font-medium">Integração real G-Click:</dt>
@@ -72,9 +86,12 @@ export default async function AdminIntegracoesPage() {
             </dd>
           </div>
           <div className="flex justify-between gap-2 sm:justify-start sm:col-span-2">
-            <dt className="font-medium">Validação técnica Omie/G-Click:</dt>
+            <dt className="font-medium">Documentação técnica:</dt>
             <dd>
-              Pendente - ver <code>artifacts/wjb-saas-mvp/fase-6-5/omie-contact-checklist.md</code>
+              Confirmada pela coleção oficial da Omie em 23/09/2026 - ver{" "}
+              <code>docs/integrations/gclick/PENDING_VALIDATION.md</code>. Seguem
+              sem resposta apenas limite de requisições, host de sandbox e SSO do
+              Portal Visão do Cliente.
             </dd>
           </div>
         </dl>
