@@ -378,7 +378,16 @@ export async function syncOmieObligations(
   const adapter = getOmieGClickAdapter();
   let truncated = false;
 
-  for (let page = 1; page <= MAX_PAGES; page++) {
+  /*
+   * **A paginação do G-Click começa em ZERO** (é Spring). Este laço
+   * começava em 1 e lia a *segunda* página - que, numa conta com poucas
+   * tarefas, vem vazia. O resultado era a sincronização terminar sem erro
+   * nenhum dizendo que não havia tarefa alguma, enquanto a conta tinha 5.
+   * Custou várias rodadas de diagnóstico porque nada falhava: a resposta
+   * era um 200 legítimo, só que da página errada. Confirmado na API em
+   * 2026-09-24: `page=0` devolve 5 itens, `page=1` devolve 0.
+   */
+  for (let page = 0; page < MAX_PAGES; page++) {
     const result = await adapter.tasks.list({ page, pageSize: PAGE_SIZE });
 
     if (!result.ok) {
@@ -399,7 +408,8 @@ export async function syncOmieObligations(
     tasks.push(...result.data.items);
 
     if (result.data.items.length < PAGE_SIZE) break;
-    if (page === MAX_PAGES) truncated = true;
+    // `MAX_PAGES - 1` porque o índice começa em 0: esta é a última volta.
+    if (page === MAX_PAGES - 1) truncated = true;
   }
 
   const plan = planObligationSync(tasks, {
