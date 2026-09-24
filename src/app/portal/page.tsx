@@ -8,6 +8,7 @@ import { ObligationsMonthlyChart } from "@/components/portal/obligations-monthly
 import { PortalStatCard } from "@/components/portal/portal-stat-card";
 import { OmiePortalCta } from "@/components/portal/omie-portal-cta";
 import { SupportCard } from "@/components/portal/support-card";
+import { AccountManagersCard } from "@/components/portal/account-managers-card";
 import { requireSession } from "@/lib/auth/dal";
 import {
   getActiveTenant,
@@ -16,7 +17,7 @@ import {
   getTenantDashboardStats,
   getUpcomingObligations,
 } from "@/lib/tenant";
-import { getOmieMapping } from "@/lib/omie-gclick";
+import { getOmieMapping, getTenantAccountManagers } from "@/lib/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export const metadata: Metadata = {
@@ -54,14 +55,16 @@ export default async function PortalPage() {
     );
   }
 
-  const [stats, months, upcoming, categories, omieMapping, omieEnabled] = await Promise.all([
-    getTenantDashboardStats(tenant.id),
-    getObligationsMonthlyBreakdown(tenant.id),
-    getUpcomingObligations(tenant.id, 5),
-    getDocumentsCategorySummary(tenant.id),
-    getOmieMapping(tenant.id),
-    isFeatureEnabled("omie_gclick"),
-  ]);
+  const [stats, months, upcoming, categories, omieMapping, omieEnabled, managers] =
+    await Promise.all([
+      getTenantDashboardStats(tenant.id),
+      getObligationsMonthlyBreakdown(tenant.id),
+      getUpcomingObligations(tenant.id, 5),
+      getDocumentsCategorySummary(tenant.id),
+      getOmieMapping(tenant.id),
+      isFeatureEnabled("omie_gclick"),
+      getTenantAccountManagers(tenant.id),
+    ]);
 
   const now = new Date();
   const currentMonth = months.find((m) => m.isCurrent);
@@ -242,7 +245,16 @@ export default async function PortalPage() {
         </div>
       </div>
 
-      <SupportCard />
+      {managers && managers.length > 0 ? (
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <SupportCard />
+          </div>
+          <AccountManagersCard people={managers} />
+        </div>
+      ) : (
+        <SupportCard />
+      )}
     </Container>
   );
 }

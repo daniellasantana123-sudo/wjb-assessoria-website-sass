@@ -33,7 +33,10 @@ export default async function PortalObrigacoesPage() {
           </p>
         </div>
       ) : (
-        <ObligationsList tenantId={tenant.id} />
+        <ObligationsList
+          tenantId={tenant.id}
+          detailHref={(id) => `/portal/obrigacoes/${id}`}
+        />
       )}
     </Container>
   );

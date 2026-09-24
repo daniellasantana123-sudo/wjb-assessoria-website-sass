@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { OmieStatusBadge } from "@/components/integrations/omie-status-badge";
 import { OmieConnectionTest } from "@/components/integrations/omie-connection-test";
+import { GClickCatalog } from "@/components/integrations/gclick-catalog";
 import { FeatureFlagsPanel } from "@/components/admin/feature-flags-panel";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
@@ -34,8 +35,10 @@ export default async function AdminIntegracoesPage() {
 
   const [mappings, flags] = await Promise.all([listOmieMappings(), listFeatureFlags()]);
   const { mode, realIntegrationEnabled } = getGClickConfig();
-  // Duas proteções independentes (Checkpoint 6.5.1) - as duas precisam estar "abertas"
-  // pra integração real existir de verdade; hoje a segunda é hardcoded false.
+  // Duas proteções independentes (Checkpoint 6.5.1) - as duas precisam estar
+  // "abertas" pra integração real existir. A segunda passou a ser `true` em
+  // 2026-09-23, quando a implementação real foi escrita; a primeira segue
+  // como interruptor de emergência (GCLICK_REAL_INTEGRATION_ENABLED).
   const realIntegrationTrulyAvailable = realIntegrationEnabled && isRealProviderImplemented();
 
   return (
@@ -95,6 +98,8 @@ export default async function AdminIntegracoesPage() {
             </dd>
           </div>
         </dl>
+
+        <GClickCatalog />
 
         <div className="mt-4">
           <OmieConnectionTest />
