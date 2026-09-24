@@ -7,11 +7,28 @@ test("Área do Cliente mostra o status real da Contabilidade Digital", async ({
   await expect(
     page.getByRole("heading", { level: 1, name: "Área do Cliente" }),
   ).toBeVisible();
-  await expect(page.getByText("Disponível")).toBeVisible();
+  // Vários itens estão "Disponível" desde que a Plataforma SaaS entrou no ar
+  // (2026-09-23) — `.first()` evita o strict mode do Playwright, que falha
+  // quando o seletor casa com mais de um elemento.
+  await expect(page.getByText("Disponível").first()).toBeVisible();
+  // "Relatórios e indicadores" continua sem rota no Portal — a página tem que
+  // seguir dizendo isso, senão vira promessa falsa.
+  await expect(page.getByText("Planejado").first()).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Falar pelo WhatsApp" }),
+    page.getByRole("link", { name: "Solicitar meu acesso" }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Enviar e-mail" })).toBeVisible();
+});
+
+test("Área do Cliente leva ao login quando a plataforma está aberta", async ({
+  page,
+}) => {
+  test.skip(
+    process.env.NEXT_PUBLIC_SAAS_PUBLIC_ENABLED !== "true",
+    "área SaaS ainda fechada ao público (NEXT_PUBLIC_SAAS_PUBLIC_ENABLED != true)",
+  );
+  await page.goto("/area-do-cliente");
+  await page.getByRole("link", { name: "Entrar na plataforma" }).click();
+  await expect(page).toHaveURL("/login");
 });
 
 test("/login mostra o formulário real de acesso à Plataforma SaaS", async ({

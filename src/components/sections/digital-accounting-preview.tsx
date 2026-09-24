@@ -38,7 +38,7 @@ export function DigitalAccountingPreview() {
               align="left"
               eyebrow="Contabilidade Digital"
               title="Organização digital, com gente de verdade por trás"
-              description="A WJB está digitalizando a relação com o cliente aos poucos - sem prometer o que ainda não existe."
+              description="A plataforma do cliente já está no ar: documentos, obrigações, calendário e atendimento num só lugar. O que ainda não existe continua marcado como planejado."
             />
             <Link
               href="/contabilidade-digital"

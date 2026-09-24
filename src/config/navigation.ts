@@ -42,9 +42,11 @@ export const mainNavLinks: NavItem[] = [
 ];
 
 /**
- * SAAS V2 (Portal/Admin/Login) ainda não publicado no domínio real — ver
- * `src/middleware.ts`. Mesma env var esconde o link "Entrar na Plataforma"
- * daqui, pra nunca ter um item de menu apontando pra uma rota bloqueada.
+ * SAAS V2 (Portal/Admin/Login) publicado em 2026-09-23. A env var do gate
+ * continua existindo como interruptor (ver `src/proxy.ts`, que devolve 404
+ * nessas rotas quando desligada) - e é ela que esconde o link "Entrar na
+ * Plataforma" daqui, pra nunca ter item de menu apontando pra rota
+ * bloqueada.
  */
 /**
  * Função, não constante (2026-09-23): o item "Entrar na Plataforma"
@@ -64,9 +66,17 @@ export function getClientAreaNav(): NavItem & { children: NavItem[] } {
       ...(isSaasPublicEnabled()
         ? [{ label: "Entrar na Plataforma", href: "/login" }]
         : []),
-      { label: "Acompanhar abertura", href: "/area-do-cliente" },
-      { label: "Central de documentos", href: "/area-do-cliente" },
-      { label: "Suporte", href: "/area-do-cliente" },
+      /*
+       * 2026-09-23: os 3 itens anteriores ("Acompanhar abertura", "Central
+       * de documentos", "Suporte") apontavam todos pro mesmo
+       * `/area-do-cliente` - três rótulos diferentes pro mesmo destino, o
+       * que promete navegação que não existe. Trocados por um item só, com
+       * destino real. Deliberadamente NÃO aponto pras rotas internas do
+       * Portal (`/portal/documentos` etc.): quem vê este menu é, na maior
+       * parte, visitante deslogado, que seria jogado direto numa tela de
+       * login sem contexto nenhum.
+       */
+      { label: "Conhecer a plataforma", href: "/area-do-cliente" },
     ],
   };
 }
