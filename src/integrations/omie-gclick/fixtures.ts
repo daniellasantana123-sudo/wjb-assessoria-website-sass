@@ -42,6 +42,7 @@ export const MOCK_CLIENT_EXISTING: ExternalClient = {
 export const MOCK_TASK_OPEN: ExternalTask = {
   externalId: "task-mock-0001",
   clientExternalId: MOCK_CLIENT_EXISTING.externalId,
+  clientDocument: MOCK_CLIENT_EXISTING.document,
   title: "Enviar guia de recolhimento (fictício)",
   status: "open",
   dueDate: "2026-10-01",
@@ -50,6 +51,7 @@ export const MOCK_TASK_OPEN: ExternalTask = {
 export const MOCK_TASK_COMPLETED: ExternalTask = {
   externalId: "task-mock-0002",
   clientExternalId: MOCK_CLIENT_EXISTING.externalId,
+  clientDocument: MOCK_CLIENT_EXISTING.document,
   title: "Conferir documentação societária (fictício)",
   status: "completed",
   dueDate: "2026-08-15",

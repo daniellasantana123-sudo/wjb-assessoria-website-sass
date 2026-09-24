@@ -91,6 +91,12 @@ export interface PaginatedResult<T> {
 export interface ExternalTask {
   externalId: string;
   clientExternalId: string | null;
+  /**
+   * CNPJ/CPF do cliente na própria tarefa (`clienteInscricao`). Segunda
+   * chave de correlação, ao lado do id: se o id vinculado estiver
+   * desatualizado, o documento ainda identifica a empresa.
+   */
+  clientDocument: string | null;
   title: string;
   status: string;
   dueDate: string | null;

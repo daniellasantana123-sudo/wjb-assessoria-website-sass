@@ -74,6 +74,17 @@ export interface TaskPlan {
   removals: string[];
   /** Quantas tarefas foram ignoradas por não terem dado suficiente. */
   skipped: number;
+  /** Quantas tarefas vieram do G-Click no total, de todos os clientes. */
+  examined: number;
+  /** Quantas dessas eram desta empresa. */
+  matched: number;
+}
+
+/** Como identificar as tarefas desta empresa entre as da conta inteira. */
+export interface TenantMatch {
+  clientExternalId: string;
+  /** CNPJ da empresa na plataforma, quando houver. */
+  document?: string | null;
 }
 
 /**
@@ -91,14 +102,16 @@ export interface TaskPlan {
  */
 export function planObligationSync(
   tasks: ExternalTask[],
-  clientExternalId: string,
+  tenant: TenantMatch,
 ): TaskPlan {
   const upserts: ObligationFromTask[] = [];
   const removals: string[] = [];
   let skipped = 0;
+  let matched = 0;
 
   for (const task of tasks) {
-    if (task.clientExternalId !== clientExternalId) continue;
+    if (!belongsToTenant(task, tenant)) continue;
+    matched++;
     if (!task.externalId) {
       skipped++;
       continue;
@@ -123,15 +136,48 @@ export function planObligationSync(
     });
   }
 
-  return { upserts, removals, skipped };
+  return { upserts, removals, skipped, examined: tasks.length, matched };
 }
 
-/** Resumo em português do que a sincronização fez, para a tela e o log. */
+/**
+ * A tarefa é desta empresa?
+ *
+ * Aceita duas chaves, e basta uma bater: o **id** do cliente no G-Click
+ * (o que foi vinculado no painel) ou a **inscrição** que a própria tarefa
+ * carrega. Duas chaves porque cada uma falha de um jeito diferente - um id
+ * vinculado errado deixaria de fora tarefas que são da empresa, e um
+ * cadastro sem CNPJ no G-Click deixaria o documento em branco. Nenhuma das
+ * duas é frouxa: id e CNPJ identificam uma empresa só.
+ */
+function belongsToTenant(task: ExternalTask, tenant: TenantMatch): boolean {
+  if (task.clientExternalId === tenant.clientExternalId) return true;
+  return documentsMatch(task.clientDocument, tenant.document ?? null);
+}
+
+/** Mesmo CNPJ, mesmo escrito de formas diferentes entre os dois sistemas. */
+function documentsMatch(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+  const left = a.replace(/\D/g, "");
+  const right = b.replace(/\D/g, "");
+  return left.length > 0 && left === right;
+}
+
+/**
+ * Resumo em português do que a sincronização fez, para a tela e o log.
+ *
+ * Distingue os dois casos de "nada aconteceu", que antes caíam na mesma
+ * frase genérica e não ajudavam ninguém a entender o motivo: **não havia
+ * tarefa nenhuma** no período, ou **havia tarefas, mas de outras
+ * empresas**. São problemas diferentes - o primeiro se resolve no
+ * G-Click, o segundo é sinal de vínculo errado.
+ */
 export function describeSyncResult(result: {
   created: number;
   updated: number;
   removed: number;
   skipped: number;
+  examined: number;
+  matched: number;
 }): string {
   const parts: string[] = [];
   if (result.created > 0) parts.push(`${result.created} criada${result.created === 1 ? "" : "s"}`);
@@ -140,6 +186,15 @@ export function describeSyncResult(result: {
   if (result.skipped > 0)
     parts.push(`${result.skipped} ignorada${result.skipped === 1 ? "" : "s"} por falta de vencimento`);
 
-  if (parts.length === 0) return "Nenhuma obrigação para sincronizar.";
-  return `Obrigações sincronizadas: ${parts.join(", ")}.`;
+  if (parts.length > 0) return `Obrigações sincronizadas: ${parts.join(", ")}.`;
+
+  if (result.examined === 0) {
+    return "O G-Click não retornou nenhuma tarefa no período consultado (últimos 12 meses, categoria Obrigação).";
+  }
+
+  if (result.matched === 0) {
+    return `Foram lidas ${result.examined} tarefa${result.examined === 1 ? "" : "s"} no G-Click, mas nenhuma está vinculada a esta empresa. Confira se o cliente selecionado é o correto.`;
+  }
+
+  return `${result.matched} tarefa${result.matched === 1 ? "" : "s"} desta empresa já estava${result.matched === 1 ? "" : "m"} em dia - nada a alterar.`;
 }

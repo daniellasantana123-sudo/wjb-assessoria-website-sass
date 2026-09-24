@@ -60,6 +60,7 @@ export function fromExternalPayload(payload: unknown): ExternalTask {
       raw.clienteId !== undefined && raw.clienteId !== null
         ? String(raw.clienteId)
         : null,
+    clientDocument: asString(raw.clienteInscricao),
     title: asString(raw.nome) ?? asString(raw.assunto) ?? "",
     status: asString(raw.status) ?? "",
     dueDate: asString(raw.dataVencimento) ?? asString(raw.dataMeta),

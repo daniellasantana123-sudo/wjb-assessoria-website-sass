@@ -324,6 +324,7 @@ export function createMockGClickProvider(): MockGClickProvider {
         const task: ExternalTask = {
           externalId: `task-mock-${nextId++}`,
           clientExternalId: input.clientExternalId,
+          clientDocument: null,
           title: input.title,
           status: "open",
           dueDate: null,

@@ -345,11 +345,14 @@ export async function syncOmieObligations(
 
   const supabase = await createClient();
 
-  const { data: mapping } = await supabase
-    .from("omie_client_mappings")
-    .select("external_client_id, status")
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
+  const [{ data: mapping }, { data: tenant }] = await Promise.all([
+    supabase
+      .from("omie_client_mappings")
+      .select("external_client_id, status")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
+    supabase.from("tenants").select("cnpj").eq("id", tenantId).maybeSingle(),
+  ]);
 
   if (!mapping?.external_client_id) {
     return {
@@ -399,7 +402,10 @@ export async function syncOmieObligations(
     if (page === MAX_PAGES) truncated = true;
   }
 
-  const plan = planObligationSync(tasks, mapping.external_client_id);
+  const plan = planObligationSync(tasks, {
+    clientExternalId: mapping.external_client_id,
+    document: tenant?.cnpj ?? null,
+  });
 
   const { data: existing } = await supabase
     .from("obligations")
@@ -486,7 +492,15 @@ export async function syncOmieObligations(
     tenant_id: tenantId,
     action: "integration.omie_obligations_synced",
     entity: "obligation",
-    metadata: { created, updated, removed, skipped: plan.skipped, truncated },
+    metadata: {
+      created,
+      updated,
+      removed,
+      skipped: plan.skipped,
+      examined: plan.examined,
+      matched: plan.matched,
+      truncated,
+    },
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);
@@ -497,6 +511,8 @@ export async function syncOmieObligations(
     updated,
     removed,
     skipped: plan.skipped,
+    examined: plan.examined,
+    matched: plan.matched,
   });
   const { mode } = getGClickConfig();
 
