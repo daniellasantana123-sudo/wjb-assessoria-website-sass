@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/db/supabase/server";
-import { getTenantRole, requireStaffSession, requireTenantAccess } from "@/lib/auth/dal";
+import {
+  getTenantRole,
+  requireStaffSession,
+  requireTenantAccess,
+} from "@/lib/auth/dal";
 import { getAntivirusAdapter } from "@/integrations/antivirus";
 import { isAllowedMimeType, sanitizeFileName } from "@/lib/documents";
 import { hasPermission } from "@/lib/permissions/permissions";
@@ -40,7 +44,9 @@ export async function uploadDocument(
 
   // Kill switch global (Fase 5 do wjb-saas-mvp) - leitura/download continuam ativos, só o envio é bloqueado.
   if (!(await isFeatureEnabled("documents"))) {
-    return { error: "O envio de documentos está temporariamente desativado pela WJB." };
+    return {
+      error: "O envio de documentos está temporariamente desativado pela WJB.",
+    };
   }
 
   const file = formData.get("file");
@@ -51,16 +57,26 @@ export async function uploadDocument(
     return { error: "Arquivo maior que 20MB. Envie um arquivo menor." };
   }
   if (file.type && !isAllowedMimeType(file.type)) {
-    return { error: "Tipo de arquivo não permitido. Envie PDF, imagem, planilha ou documento." };
+    return {
+      error:
+        "Tipo de arquivo não permitido. Envie PDF, imagem, planilha ou documento.",
+    };
   }
 
   const scan = await getAntivirusAdapter().scan(file);
   if (!scan.clean) {
-    console.error("[documents] upload bloqueado pela verificação de antimalware:", scan.reason);
-    return { error: "Não foi possível enviar este arquivo. Verifique o conteúdo e tente de novo." };
+    console.error(
+      "[documents] upload bloqueado pela verificação de antimalware:",
+      scan.reason,
+    );
+    return {
+      error:
+        "Não foi possível enviar este arquivo. Verifique o conteúdo e tente de novo.",
+    };
   }
 
-  const category: DocumentCategory = formData.get("category") === "guia" ? "guia" : "documento";
+  const category: DocumentCategory =
+    formData.get("category") === "guia" ? "guia" : "documento";
   const safeName = sanitizeFileName(file.name);
 
   const storagePath = `${tenantId}/${Date.now()}-${safeName}`;

@@ -44,7 +44,11 @@ export async function createTicket(
   const supabase = await createClient();
   const { data: ticket, error } = await supabase
     .from("tickets")
-    .insert({ tenant_id: tenantId, subject: validated.data.subject, created_by: session.userId })
+    .insert({
+      tenant_id: tenantId,
+      subject: validated.data.subject,
+      created_by: session.userId,
+    })
     .select()
     .single();
 
@@ -53,16 +57,21 @@ export async function createTicket(
     return { error: "Não foi possível abrir o chamado." };
   }
 
-  const { error: messageError } = await supabase.from("ticket_messages").insert({
-    ticket_id: ticket.id,
-    tenant_id: tenantId,
-    author_id: session.userId,
-    body: validated.data.body,
-  });
+  const { error: messageError } = await supabase
+    .from("ticket_messages")
+    .insert({
+      ticket_id: ticket.id,
+      tenant_id: tenantId,
+      author_id: session.userId,
+      body: validated.data.body,
+    });
 
   if (messageError) {
     console.error("[tickets] falha ao criar mensagem inicial:", messageError);
-    return { error: "Chamado criado, mas a mensagem não foi salva. Tente responder de novo." };
+    return {
+      error:
+        "Chamado criado, mas a mensagem não foi salva. Tente responder de novo.",
+    };
   }
 
   await supabase.from("audit_log").insert({
@@ -86,7 +95,11 @@ export async function createTicket(
 
   revalidatePath("/portal/suporte");
   revalidatePath("/admin/tickets");
-  redirect(session.isWjbStaff ? `/admin/tickets/${ticket.id}` : `/portal/suporte/${ticket.id}`);
+  redirect(
+    session.isWjbStaff
+      ? `/admin/tickets/${ticket.id}`
+      : `/portal/suporte/${ticket.id}`,
+  );
 }
 
 /**
@@ -115,7 +128,9 @@ export async function replyTicket(
 ): Promise<TicketActionState> {
   const session = await requireTenantAccess(tenantId);
 
-  const validated = replyTicketSchema.safeParse({ body: String(formData.get("body") ?? "") });
+  const validated = replyTicketSchema.safeParse({
+    body: String(formData.get("body") ?? ""),
+  });
   if (!validated.success) {
     return { error: validated.error.issues[0]?.message ?? "Dados inválidos." };
   }
@@ -174,7 +189,10 @@ export async function replyTicket(
  * `replyTicket` acima: nunca confiar num id de tenant vindo do cliente
  * pra rotular a ação de um recurso que já existe).
  */
-export async function updateTicketStatus(ticketId: string, status: TicketStatus) {
+export async function updateTicketStatus(
+  ticketId: string,
+  status: TicketStatus,
+) {
   const session = await requireStaffSession();
   if (!canHandleSupport(session)) return;
 

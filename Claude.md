@@ -287,6 +287,13 @@ Antes de qualquer tarefa, seguir sempre esta ordem (seção 46 de `Wjb-Website.m
   - Sem redirect de compatibilidade a partir de `/daniella` (mesma decisão de `/bia`): a rota tinha 1 dia, nunca foi divulgada fora do código, e o único link interno muda junto.
   - Verificação: lint/typecheck/test (212)/build limpos; `/dani` responde 307 pro destino certo e `/daniella` volta a ser 404; 57 testes E2E do assistente passando nos 2 projetos contra build de produção.
 
+- **Bug crítico achado logo após abrir a plataforma: links de e-mail de convite/recuperação saíam quebrados** (2026-09-23). Encontrado numa varredura por leituras literais de `process.env.NEXT_PUBLIC_*`, feita ao investigar outra dúvida - não por relato de usuário.
+  - **5 pontos** (`actions/auth.ts`, `actions/staff.ts` ×2, `actions/tenants.ts` ×2) montavam o `redirectTo` do Supabase Auth com `` `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` ``. Nesta hospedagem isso vira **`undefined/auth/callback`** - ou seja, **todo convite de usuário e todo "esqueci minha senha" sairia com link quebrado**, justamente o caminho de recuperação de acesso da conta recém-criada da CEO.
+  - Fix: `getSiteUrl()` passou a ler em runtime e ganhou `getAuthCallbackUrl()`, usado nos 5 lugares. Centralizar evita que o próximo ponto que precise do link repita o erro.
+  - Também corrigido `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (mesma leitura literal; chave nem está configurada, mas nunca funcionaria).
+  - **`db/supabase/client.ts` é código morto e não funcionaria aqui**: nada o importa, e as duas variáveis que ele lê são substituídas no build. Mantido com aviso em destaque em vez de removido - se alguém ligar um Client Component nele sem resolver o transporte dos valores pro navegador, o sintoma seria um `undefined` silencioso. **O login funciona porque usa Server Action** (`actions/auth.ts` → `server.ts`, que lê em runtime), não o cliente de navegador - confirmado antes de alarmar o usuário à toa.
+  - **Padrão que ficou claro nesta hospedagem**: `NEXT_PUBLIC_*` só é confiável em código que roda no servidor **e** lê por acesso dinâmico. Toda vez que algo "configurado corretamente no painel" não funcionar, esta é a primeira hipótese a testar.
+
 ---
 
 ## Regras inegociáveis

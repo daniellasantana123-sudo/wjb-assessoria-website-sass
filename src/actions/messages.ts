@@ -17,7 +17,9 @@ export async function sendMessage(
 ): Promise<MessageActionState> {
   const session = await requireTenantAccess(tenantId);
 
-  const validated = sendMessageSchema.safeParse({ body: String(formData.get("body") ?? "") });
+  const validated = sendMessageSchema.safeParse({
+    body: String(formData.get("body") ?? ""),
+  });
   if (!validated.success) {
     return { error: validated.error.issues[0]?.message ?? "Dados inválidos." };
   }

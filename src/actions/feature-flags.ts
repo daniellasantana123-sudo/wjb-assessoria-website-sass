@@ -13,9 +13,12 @@ export async function setFeatureFlag(key: FeatureFlagKey, enabled: boolean) {
   if (!hasPermission(session, "feature_flags.manage")) return;
 
   const supabase = await createClient();
-  await supabase
-    .from("feature_flags")
-    .upsert({ key, enabled, updated_by: session.userId, updated_at: new Date().toISOString() });
+  await supabase.from("feature_flags").upsert({
+    key,
+    enabled,
+    updated_by: session.userId,
+    updated_at: new Date().toISOString(),
+  });
 
   await supabase.from("audit_log").insert({
     actor_id: session.userId,

@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
-import { createObligationSchema, type CreateObligationValues } from "@/lib/validation/obligation";
+import {
+  createObligationSchema,
+  type CreateObligationValues,
+} from "@/lib/validation/obligation";
 
 export type ObligationActionState = { error: string } | undefined;
 
@@ -65,7 +68,10 @@ export async function createObligation(
  * valor vindo do cliente, mesmo sendo ação exclusiva de staff (evita
  * audit_log/revalidatePath incorretos se o parâmetro for adulterado).
  */
-export async function toggleObligationStatus(obligationId: string, nextStatus: "pending" | "done") {
+export async function toggleObligationStatus(
+  obligationId: string,
+  nextStatus: "pending" | "done",
+) {
   const session = await requireStaffSession();
   const supabase = await createClient();
 

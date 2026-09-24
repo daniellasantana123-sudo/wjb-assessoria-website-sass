@@ -82,7 +82,9 @@ export function getAddressMapUrl() {
  * quem renderiza deve tratar esse caso (ver /contato).
  */
 export function getAddressEmbedMapUrl() {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  // Leitura em runtime (2026-09-23): literal `process.env.NEXT_PUBLIC_*` é
+  // substituído no build, e esta hospedagem não passa as variáveis pro build.
+  const apiKey = process.env["NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"];
   if (!apiKey) return null;
   return `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${encodeURIComponent(siteConfig.address.full)}`;
 }

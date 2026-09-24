@@ -43,10 +43,15 @@ export type MfaEnrollState =
 export async function enrollTotpFactor(): Promise<MfaEnrollState> {
   await requireSession();
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: "totp",
+  });
 
   if (error || !data) {
-    return { status: "error", error: "Não foi possível iniciar a configuração. Tente novamente." };
+    return {
+      status: "error",
+      error: "Não foi possível iniciar a configuração. Tente novamente.",
+    };
   }
 
   return {
@@ -69,11 +74,16 @@ export async function verifyTotpEnrollment(
   const code = String(formData.get("code") ?? "").trim();
 
   if (!/^\d{6}$/.test(code)) {
-    return { error: "Digite o código de 6 dígitos do aplicativo autenticador." };
+    return {
+      error: "Digite o código de 6 dígitos do aplicativo autenticador.",
+    };
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
+  const { error } = await supabase.auth.mfa.challengeAndVerify({
+    factorId,
+    code,
+  });
 
   if (error) {
     return { error: "Código inválido ou expirado. Tente de novo." };

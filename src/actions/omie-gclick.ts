@@ -5,12 +5,16 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
-import { getGClickConfig, getOmieGClickAdapter } from "@/integrations/omie-gclick";
+import {
+  getGClickConfig,
+  getOmieGClickAdapter,
+} from "@/integrations/omie-gclick";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { notifyIntegrationStatus } from "@/lib/notifications";
 
-export type OmieActionState = { error: string } | { success: string } | undefined;
+export type OmieActionState =
+  { error: string } | { success: string } | undefined;
 
 /**
  * Fase 4 do wjb-saas-mvp — mapeamento por organization, nunca direto ao
@@ -41,7 +45,11 @@ export async function saveOmieMapping(
 
   const externalClientId = validated.data.externalClientId || null;
   const externalPortalUrl = validated.data.externalPortalUrl || null;
-  const status = externalClientId ? "connected" : externalPortalUrl ? "pending" : "not_connected";
+  const status = externalClientId
+    ? "connected"
+    : externalPortalUrl
+      ? "pending"
+      : "not_connected";
 
   const supabase = await createClient();
   const { error } = await supabase.from("omie_client_mappings").upsert(
@@ -66,7 +74,11 @@ export async function saveOmieMapping(
     action: "integration.omie_mapping_updated",
     entity: "omie_client_mapping",
     entity_id: tenantId,
-    metadata: { external_client_id: externalClientId, external_portal_url: externalPortalUrl, status },
+    metadata: {
+      external_client_id: externalClientId,
+      external_portal_url: externalPortalUrl,
+      status,
+    },
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);
@@ -85,7 +97,9 @@ function externalReferenceFor(tenantId: string): string {
  * existe `external_client_id` salvo, atualiza; senão, cria - nunca duas
  * criações pro mesmo tenant.
  */
-export async function syncOmieClient(tenantId: string): Promise<OmieActionState> {
+export async function syncOmieClient(
+  tenantId: string,
+): Promise<OmieActionState> {
   const session = await requireStaffSession();
   if (!hasPermission(session, "integrations.manage")) {
     return { error: "Você não tem permissão para gerenciar integrações." };
@@ -99,7 +113,9 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
    * a flag só precisa cortar o caminho de escrita.
    */
   if (!(await isFeatureEnabled("omie_gclick"))) {
-    return { error: "A integração Omie.G-Click está desativada pela WJB no momento." };
+    return {
+      error: "A integração Omie.G-Click está desativada pela WJB no momento.",
+    };
   }
 
   const supabase = await createClient();
@@ -120,10 +136,12 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
-  await supabase.from("omie_client_mappings").upsert(
-    { tenant_id: tenantId, status: "syncing", updated_by: session.userId },
-    { onConflict: "tenant_id" },
-  );
+  await supabase
+    .from("omie_client_mappings")
+    .upsert(
+      { tenant_id: tenantId, status: "syncing", updated_by: session.userId },
+      { onConflict: "tenant_id" },
+    );
 
   const adapter = getOmieGClickAdapter();
   const result = mapping?.external_client_id
@@ -142,7 +160,9 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
   await supabase.from("omie_client_mappings").upsert(
     {
       tenant_id: tenantId,
-      external_client_id: result.ok ? result.data.externalId : (mapping?.external_client_id ?? null),
+      external_client_id: result.ok
+        ? result.data.externalId
+        : (mapping?.external_client_id ?? null),
       status: result.ok ? "synced" : "error",
       last_synced_at: result.ok ? new Date().toISOString() : undefined,
       last_error: result.ok ? null : result.error.code,
@@ -158,7 +178,10 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
     action: "integration.omie_sync_attempted",
     entity: "omie_client_mapping",
     entity_id: tenantId,
-    metadata: { ok: result.ok, error: result.ok ? undefined : result.error.code },
+    metadata: {
+      ok: result.ok,
+      error: result.ok ? undefined : result.error.code,
+    },
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);
@@ -170,7 +193,9 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
       link: `/admin/empresas/${tenantId}`,
       excludeActorId: session.userId,
     });
-    return { error: `Falha ao sincronizar com o Omie.G-Click (${result.error.message}).` };
+    return {
+      error: `Falha ao sincronizar com o Omie.G-Click (${result.error.message}).`,
+    };
   }
 
   /**
@@ -189,7 +214,10 @@ export async function syncOmieClient(tenantId: string): Promise<OmieActionState>
 }
 
 /** Desativa/reativa a integração para um tenant específico, sem apagar o mapeamento salvo. */
-export async function setOmieMappingDisabled(tenantId: string, disabled: boolean) {
+export async function setOmieMappingDisabled(
+  tenantId: string,
+  disabled: boolean,
+) {
   const session = await requireStaffSession();
   if (!hasPermission(session, "integrations.manage")) return;
 
@@ -200,7 +228,9 @@ export async function setOmieMappingDisabled(tenantId: string, disabled: boolean
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
-  const reactivatedStatus = mapping?.external_client_id ? "connected" : "pending";
+  const reactivatedStatus = mapping?.external_client_id
+    ? "connected"
+    : "pending";
 
   await supabase.from("omie_client_mappings").upsert(
     {
@@ -214,7 +244,9 @@ export async function setOmieMappingDisabled(tenantId: string, disabled: boolean
   await supabase.from("audit_log").insert({
     actor_id: session.userId,
     tenant_id: tenantId,
-    action: disabled ? "integration.omie_disabled" : "integration.omie_reactivated",
+    action: disabled
+      ? "integration.omie_disabled"
+      : "integration.omie_reactivated",
     entity: "omie_client_mapping",
     entity_id: tenantId,
   });

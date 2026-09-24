@@ -4,8 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/db/supabase/server";
+import { getAuthCallbackUrl } from "@/lib/seo/site-url";
 import { createAdminClient } from "@/lib/db/supabase/admin";
-import { requireStaffSession, requireTenantAccess, getTenantRole } from "@/lib/auth/dal";
+import {
+  requireStaffSession,
+  requireTenantAccess,
+  getTenantRole,
+} from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
 import { notifyAccountSecurity, notifyInvitation } from "@/lib/notifications";
 import type { TenantMemberRole } from "@/types/database";
@@ -16,7 +21,8 @@ import {
   type InviteMemberValues,
 } from "@/lib/validation/tenant";
 
-export type TenantActionState = { error: string } | { success: string } | undefined;
+export type TenantActionState =
+  { error: string } | { success: string } | undefined;
 
 /** Admin WJB > Empresas (SAAS FASE 4) — só staff cria empresa cliente. */
 export async function createTenant(
@@ -131,7 +137,10 @@ export async function suspendTenant(tenantId: string) {
   if (!hasPermission(session, "tenants.suspend")) return;
 
   const supabase = await createClient();
-  await supabase.from("tenants").update({ status: "suspended" }).eq("id", tenantId);
+  await supabase
+    .from("tenants")
+    .update({ status: "suspended" })
+    .eq("id", tenantId);
 
   await supabase.from("audit_log").insert({
     actor_id: session.userId,
@@ -150,7 +159,10 @@ export async function reactivateTenant(tenantId: string) {
   if (!hasPermission(session, "tenants.suspend")) return;
 
   const supabase = await createClient();
-  await supabase.from("tenants").update({ status: "active" }).eq("id", tenantId);
+  await supabase
+    .from("tenants")
+    .update({ status: "active" })
+    .eq("id", tenantId);
 
   await supabase.from("audit_log").insert({
     actor_id: session.userId,
@@ -182,7 +194,9 @@ export async function inviteMember(
   const session = await requireTenantAccess(tenantId);
   const role = await getTenantRole(tenantId);
   if (role !== "owner") {
-    return { error: "Só o responsável pela empresa pode convidar novas pessoas." };
+    return {
+      error: "Só o responsável pela empresa pode convidar novas pessoas.",
+    };
   }
 
   const raw: InviteMemberValues = {
@@ -208,13 +222,11 @@ export async function inviteMember(
   let profileId = existingProfile?.id;
 
   if (!profileId) {
-    const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-      validated.data.email,
-      {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    const { data: invited, error: inviteError } =
+      await admin.auth.admin.inviteUserByEmail(validated.data.email, {
+        redirectTo: getAuthCallbackUrl(),
         data: { full_name: validated.data.fullName },
-      },
-    );
+      });
 
     if (inviteError || !invited.user) {
       console.error("[tenants] falha ao convidar usuário:", inviteError);
@@ -433,13 +445,16 @@ export async function resendMemberInvite(
 
   const admin = createAdminClient();
   const { error } = await admin.auth.admin.inviteUserByEmail(profile.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    redirectTo: getAuthCallbackUrl(),
     data: { full_name: profile.full_name },
   });
 
   if (error) {
     console.error("[tenants] falha ao reenviar convite:", error);
-    return { error: "Não foi possível reenviar o convite - a pessoa pode já ter aceitado." };
+    return {
+      error:
+        "Não foi possível reenviar o convite - a pessoa pode já ter aceitado.",
+    };
   }
 
   await supabase.from("audit_log").insert({

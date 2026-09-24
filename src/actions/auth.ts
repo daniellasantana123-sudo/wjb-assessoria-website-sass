@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/db/supabase/server";
+import { getAuthCallbackUrl } from "@/lib/seo/site-url";
 import { getSession } from "@/lib/auth/dal";
 import {
   loginFormSchema,
@@ -55,9 +56,7 @@ export async function logout() {
 }
 
 export type PasswordResetActionState =
-  | { status: "error"; error: string }
-  | { status: "success" }
-  | undefined;
+  { status: "error"; error: string } | { status: "success" } | undefined;
 
 export async function requestPasswordReset(
   _prevState: PasswordResetActionState,
@@ -76,7 +75,7 @@ export async function requestPasswordReset(
   // Não revela se o e-mail existe ou não — sempre a mesma mensagem de sucesso
   // no formulário, evitando enumeração de contas cadastradas.
   await supabase.auth.resetPasswordForEmail(validated.data.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    redirectTo: getAuthCallbackUrl(),
   });
 
   return { status: "success" };
@@ -97,10 +96,15 @@ export async function setPassword(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.updateUser({ password: validated.data.password });
+  const { error } = await supabase.auth.updateUser({
+    password: validated.data.password,
+  });
 
   if (error) {
-    return { error: "Não foi possível definir a senha. Peça um novo link e tente de novo." };
+    return {
+      error:
+        "Não foi possível definir a senha. Peça um novo link e tente de novo.",
+    };
   }
 
   const session = await getSession();

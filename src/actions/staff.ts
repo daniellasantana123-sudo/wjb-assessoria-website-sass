@@ -7,10 +7,15 @@ import { createAdminClient } from "@/lib/db/supabase/admin";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { isSuperAdmin } from "@/lib/permissions/roles";
 import { notifyAccountSecurity, notifyInvitation } from "@/lib/notifications";
-import { inviteStaffSchema, type InviteStaffValues } from "@/lib/validation/staff";
+import {
+  inviteStaffSchema,
+  type InviteStaffValues,
+} from "@/lib/validation/staff";
 import type { StaffRole } from "@/types/database";
+import { getAuthCallbackUrl } from "@/lib/seo/site-url";
 
-export type StaffActionState = { error: string } | { success: string } | undefined;
+export type StaffActionState =
+  { error: string } | { success: string } | undefined;
 
 /**
  * Conceder acesso interno (Admin WJB) é ação exclusiva de `super_admin` —
@@ -26,7 +31,9 @@ export async function inviteStaffMember(
 ): Promise<StaffActionState> {
   const session = await requireStaffSession();
   if (!isSuperAdmin(session)) {
-    return { error: "Só super_admin pode adicionar novas pessoas à equipe da WJB." };
+    return {
+      error: "Só super_admin pode adicionar novas pessoas à equipe da WJB.",
+    };
   }
 
   const raw: InviteStaffValues = {
@@ -51,13 +58,11 @@ export async function inviteStaffMember(
   let profileId = existingProfile?.id;
 
   if (!profileId) {
-    const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-      validated.data.email,
-      {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    const { data: invited, error: inviteError } =
+      await admin.auth.admin.inviteUserByEmail(validated.data.email, {
+        redirectTo: getAuthCallbackUrl(),
         data: { full_name: validated.data.fullName },
-      },
-    );
+      });
 
     if (inviteError || !invited.user) {
       console.error("[staff] falha ao convidar:", inviteError);
@@ -87,7 +92,10 @@ export async function inviteStaffMember(
     action: "staff.invited",
     entity: "profile",
     entity_id: profileId,
-    metadata: { email: validated.data.email, staff_role: validated.data.staffRole },
+    metadata: {
+      email: validated.data.email,
+      staff_role: validated.data.staffRole,
+    },
   });
 
   // Notificação de convite (Fase 6) - só no convite inicial, ver decisions.md D3.
@@ -107,10 +115,14 @@ export async function inviteStaffMember(
  * `inviteUserByEmail`, não testado nesta sessão contra o caso "já aceito"
  * (sem projeto Supabase real conectado).
  */
-export async function resendStaffInvite(profileId: string): Promise<StaffActionState> {
+export async function resendStaffInvite(
+  profileId: string,
+): Promise<StaffActionState> {
   const session = await requireStaffSession();
   if (!isSuperAdmin(session)) {
-    return { error: "Só super_admin pode reenviar convites de acesso interno." };
+    return {
+      error: "Só super_admin pode reenviar convites de acesso interno.",
+    };
   }
 
   const supabase = await createClient();
@@ -126,13 +138,16 @@ export async function resendStaffInvite(profileId: string): Promise<StaffActionS
 
   const admin = createAdminClient();
   const { error } = await admin.auth.admin.inviteUserByEmail(profile.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+    redirectTo: getAuthCallbackUrl(),
     data: { full_name: profile.full_name },
   });
 
   if (error) {
     console.error("[staff] falha ao reenviar convite:", error);
-    return { error: "Não foi possível reenviar o convite - a pessoa pode já ter aceitado." };
+    return {
+      error:
+        "Não foi possível reenviar o convite - a pessoa pode já ter aceitado.",
+    };
   }
 
   await supabase.from("audit_log").insert({
@@ -150,7 +165,10 @@ export async function updateStaffRole(profileId: string, staffRole: StaffRole) {
   if (!isSuperAdmin(session)) return;
 
   const supabase = await createClient();
-  await supabase.from("profiles").update({ staff_role: staffRole }).eq("id", profileId);
+  await supabase
+    .from("profiles")
+    .update({ staff_role: staffRole })
+    .eq("id", profileId);
 
   await supabase.from("audit_log").insert({
     actor_id: session.userId,
@@ -201,14 +219,20 @@ export async function suspendAccount(profileId: string) {
   if (profileId === session.userId) return; // não se auto-suspende por engano.
 
   const supabase = await createClient();
-  await supabase.from("profiles").update({ status: "suspended" }).eq("id", profileId);
+  await supabase
+    .from("profiles")
+    .update({ status: "suspended" })
+    .eq("id", profileId);
 
   const admin = createAdminClient();
   const { error: banError } = await admin.auth.admin.updateUserById(profileId, {
     ban_duration: "876000h", // ~100 anos — efetivamente indefinido, até reativar.
   });
   if (banError) {
-    console.error("[staff] falha ao bloquear login no Supabase Auth (best-effort):", banError);
+    console.error(
+      "[staff] falha ao bloquear login no Supabase Auth (best-effort):",
+      banError,
+    );
   }
 
   await supabase.from("audit_log").insert({
@@ -228,14 +252,20 @@ export async function reactivateAccount(profileId: string) {
   if (!isSuperAdmin(session)) return;
 
   const supabase = await createClient();
-  await supabase.from("profiles").update({ status: "active" }).eq("id", profileId);
+  await supabase
+    .from("profiles")
+    .update({ status: "active" })
+    .eq("id", profileId);
 
   const admin = createAdminClient();
   const { error: banError } = await admin.auth.admin.updateUserById(profileId, {
     ban_duration: "none",
   });
   if (banError) {
-    console.error("[staff] falha ao remover bloqueio no Supabase Auth (best-effort):", banError);
+    console.error(
+      "[staff] falha ao remover bloqueio no Supabase Auth (best-effort):",
+      banError,
+    );
   }
 
   await supabase.from("audit_log").insert({
