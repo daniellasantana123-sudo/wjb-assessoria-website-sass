@@ -630,10 +630,14 @@ async function findClientByDocument(
 ): Promise<ProviderResult<ExternalClient[]>> {
   const MAX_PAGES = 15;
   const PAGE_SIZE = 100;
+  let listFailed = false;
 
   for (let page = 0; page < MAX_PAGES; page++) {
     const result = await adapter.clients.list({ page, pageSize: PAGE_SIZE });
-    if (!result.ok) return result;
+    if (!result.ok) {
+      listFailed = true;
+      break;
+    }
 
     const hit = result.data.items.find((client) =>
       documentsMatch(client.document, document),
@@ -643,5 +647,40 @@ async function findClientByDocument(
     if (result.data.items.length < PAGE_SIZE) break;
   }
 
-  return { ok: true, data: [] };
+  if (!listFailed) return { ok: true, data: [] };
+
+  /*
+   * `GET /clientes` pode estar quebrado por dado inválido de UM cadastro e
+   * derrubar a listagem inteira - foi o que aconteceu na conta da WJB em
+   * 2026-09-24 ("Status complementar 'Em Carteria' não encontrado", um
+   * status com erro de digitação que a API não resolve). Nesse caso a
+   * carteira ainda responde, e ela também traz a inscrição de cada
+   * cliente, então serve para o mesmo fim.
+   */
+  const portfolio = await adapter.catalog.portfolio();
+  if (!portfolio.ok) return portfolio;
+
+  const hit = portfolio.data.find((item) =>
+    documentsMatch(item.document, document),
+  );
+  if (!hit) return { ok: true, data: [] };
+
+  // A carteira traz menos campos que um cliente completo; o que importa
+  // para vincular é o id, e o resto a tela não usa.
+  return {
+    ok: true,
+    data: [
+      {
+        internalId: "",
+        externalId: hit.clientExternalId,
+        externalReference: "",
+        name: hit.name,
+        document: hit.document,
+        status: null,
+        metadata: null,
+        createdAt: null,
+        updatedAt: null,
+      },
+    ],
+  };
 }
