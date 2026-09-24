@@ -10,7 +10,7 @@
  */
 
 /** Um texto é tratado como documento quando é quase só dígito. */
-function looksLikeDocument(text: string): boolean {
+export function looksLikeDocument(text: string): boolean {
   const digits = text.replace(/\D/g, "");
   if (digits.length < 11) return false;
   // Nome de empresa raramente tem 11+ dígitos; pontuação de CNPJ/CPF, sim.
@@ -35,4 +35,17 @@ export const MIN_SEARCH_LENGTH = 3;
 
 export function isSearchable(raw: string): boolean {
   return normalizeClientSearch(raw).length >= MIN_SEARCH_LENGTH;
+}
+
+/**
+ * Dois documentos são o mesmo se os dígitos baterem.
+ *
+ * Comparar as strings cruas falharia entre sistemas: o mesmo CNPJ aparece
+ * como `35.673.259/0001-88` num lugar e `35673259000188` no outro.
+ */
+export function documentsMatch(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+  const left = a.replace(/\D/g, "");
+  const right = b.replace(/\D/g, "");
+  return left.length > 0 && left === right;
 }

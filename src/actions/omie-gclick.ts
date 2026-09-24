@@ -8,7 +8,9 @@ import { hasPermission } from "@/lib/permissions/permissions";
 import {
   getGClickConfig,
   getOmieGClickAdapter,
+  type ExternalClient,
   type ExternalTask,
+  type ProviderResult,
 } from "@/integrations/omie-gclick";
 import {
   describeSyncResult,
@@ -16,7 +18,9 @@ import {
   planObligationSync,
 } from "@/lib/obligations/external-sync";
 import {
+  documentsMatch,
   isSearchable,
+  looksLikeDocument,
   MIN_SEARCH_LENGTH,
   normalizeClientSearch,
 } from "@/lib/integrations/client-search";
@@ -542,8 +546,11 @@ export async function searchGClickClients(
     };
   }
 
-  const result = await getOmieGClickAdapter().clients.search({
-    text: normalizeClientSearch(text),
+  const adapter = getOmieGClickAdapter();
+  const normalized = normalizeClientSearch(text);
+
+  const result = await adapter.clients.search({
+    text: normalized,
     pageSize: 20,
   });
 
@@ -551,8 +558,32 @@ export async function searchGClickClients(
     return { error: `Não foi possível buscar no G-Click (${result.error.message}).` };
   }
 
+  let items = result.data.items;
+
+  /*
+   * Confirmado em produção (2026-09-24, com a ARMEL X TECNOLOGIA): o
+   * `/clientes/search?texto=` do G-Click procura **só pelo nome** - o
+   * mesmo CNPJ que não devolvia nada apareceu ao buscar pelo nome. E o
+   * nome costuma divergir entre os dois sistemas (lá "ARMEL GUEZEM
+   * TITIO", aqui "ARMEL X TECNOLOGIA"), enquanto o CNPJ é o mesmo.
+   *
+   * Por isso, quando a busca textual de um documento vem vazia, varremos
+   * a lista de clientes comparando a inscrição. É mais caro, mas só
+   * acontece nesse caso específico - e é o que faz o CNPJ, que é a chave
+   * confiável, funcionar de verdade.
+   */
+  if (items.length === 0 && looksLikeDocument(text)) {
+    const byDocument = await findClientByDocument(adapter, normalized);
+    if (!byDocument.ok) {
+      return {
+        error: `Não foi possível buscar no G-Click (${byDocument.error.message}).`,
+      };
+    }
+    items = byDocument.data;
+  }
+
   return {
-    results: result.data.items
+    results: items
       // Cliente sem id não serve para vincular - só ocuparia a lista.
       .filter((client): client is typeof client & { externalId: string } =>
         Boolean(client.externalId),
@@ -563,4 +594,38 @@ export async function searchGClickClients(
         document: client.document,
       })),
   };
+}
+
+/**
+ * Procura um cliente pela inscrição varrendo a lista paginada.
+ *
+ * Existe porque o endpoint de busca do G-Click ignora o CNPJ (ver o
+ * comentário em `searchGClickClients`). Para na primeira coincidência: um
+ * CNPJ identifica uma empresa só, então continuar lendo páginas depois de
+ * achar seria desperdício.
+ *
+ * O teto de páginas evita varrer uma carteira enorme indefinidamente -
+ * ao ser atingido sem achar, devolve vazio, que a tela já apresenta como
+ * "nenhum cliente encontrado".
+ */
+async function findClientByDocument(
+  adapter: ReturnType<typeof getOmieGClickAdapter>,
+  document: string,
+): Promise<ProviderResult<ExternalClient[]>> {
+  const MAX_PAGES = 15;
+  const PAGE_SIZE = 100;
+
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const result = await adapter.clients.list({ page, pageSize: PAGE_SIZE });
+    if (!result.ok) return result;
+
+    const hit = result.data.items.find((client) =>
+      documentsMatch(client.document, document),
+    );
+    if (hit) return { ok: true, data: [hit] };
+
+    if (result.data.items.length < PAGE_SIZE) break;
+  }
+
+  return { ok: true, data: [] };
 }

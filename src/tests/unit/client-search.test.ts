@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  documentsMatch,
   isSearchable,
+  looksLikeDocument,
   normalizeClientSearch,
 } from "@/lib/integrations/client-search";
 
@@ -44,5 +46,39 @@ describe("isSearchable", () => {
   it("aceita a partir de três caracteres", () => {
     expect(isSearchable("abc")).toBe(true);
     expect(isSearchable("12.345.678/0001-23")).toBe(true);
+  });
+});
+
+describe("documentsMatch", () => {
+  it("reconhece o mesmo CNPJ escrito de formas diferentes", () => {
+    // Caso real: o G-Click devolve sem pontuação, a plataforma guarda com.
+    expect(documentsMatch("35.673.259/0001-88", "35673259000188")).toBe(true);
+  });
+
+  it("recusa documentos diferentes", () => {
+    expect(documentsMatch("35673259000188", "35673259000189")).toBe(false);
+  });
+
+  it("recusa quando falta um dos lados", () => {
+    // Cliente sem CNPJ no G-Click não pode casar com ninguém por omissão.
+    expect(documentsMatch(null, "35673259000188")).toBe(false);
+    expect(documentsMatch("35673259000188", null)).toBe(false);
+    expect(documentsMatch("", "")).toBe(false);
+  });
+
+  it("não casa duas strings sem nenhum dígito", () => {
+    expect(documentsMatch("sem cnpj", "sem cnpj")).toBe(false);
+  });
+});
+
+describe("looksLikeDocument", () => {
+  it("reconhece CNPJ com e sem pontuação", () => {
+    expect(looksLikeDocument("35.673.259/0001-88")).toBe(true);
+    expect(looksLikeDocument("35673259000188")).toBe(true);
+  });
+
+  it("não confunde nome com documento", () => {
+    expect(looksLikeDocument("ARMEL X TECNOLOGIA")).toBe(false);
+    expect(looksLikeDocument("Loja 24h")).toBe(false);
   });
 });
