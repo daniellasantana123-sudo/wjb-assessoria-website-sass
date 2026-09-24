@@ -26,6 +26,32 @@ const formatDate = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("pt-BR");
 
 /**
+ * O G-Click devolve a conclusão da etapa como `"2026-09-23 11:29"` - ISO
+ * cru, que nenhum cliente brasileiro lê. Converte sem `new Date()`, que
+ * interpretaria a string como UTC em alguns motores e mostraria a hora
+ * errada. Se o formato vier diferente do esperado, devolve o original em
+ * vez de arriscar uma data inventada.
+ */
+function formatActivityMoment(raw: string): string {
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if (!match) return raw;
+  const [, year, month, day, hour, minute] = match;
+  return `${day}/${month}/${year} às ${hour}:${minute}`;
+}
+
+/**
+ * `respondidaPor` às vezes traz o nome da pessoa ("João Silva") e às vezes
+ * o login ("admin.7348", "daniella.wjbassessoriacontabil"). Mostrar um
+ * login para o cliente não informa nada e ainda expõe nome de usuário
+ * interno, então só exibimos quando parece um nome de gente.
+ */
+function looksLikePersonName(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed.includes(" ")) return false;
+  return !/[._@]|\d/.test(trimmed);
+}
+
+/**
  * Detalhe de uma obrigação do Portal (2026-09-24).
  *
  * O prazo e o status vêm do nosso banco; as **etapas** e o **responsável**
@@ -141,8 +167,10 @@ export default async function PortalObrigacaoPage({
                         </p>
                         {activity.answered && activity.answeredAt && (
                           <p className="text-muted-foreground text-xs">
-                            Concluída em {activity.answeredAt}
-                            {activity.answeredBy ? ` por ${activity.answeredBy}` : ""}
+                            Concluída em {formatActivityMoment(activity.answeredAt)}
+                            {activity.answeredBy && looksLikePersonName(activity.answeredBy)
+                              ? ` por ${activity.answeredBy}`
+                              : ""}
                           </p>
                         )}
                         {!activity.answered && (

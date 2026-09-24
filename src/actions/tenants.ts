@@ -220,6 +220,7 @@ export async function inviteMember(
     .maybeSingle();
 
   let profileId = existingProfile?.id;
+  const alreadyHadAccount = Boolean(profileId);
 
   if (!profileId) {
     const { data: invited, error: inviteError } =
@@ -272,7 +273,19 @@ export async function inviteMember(
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);
-  return { success: "Convite enviado." };
+  /*
+   * A mensagem repete o e-mail de propósito (2026-09-24). Antes dizia só
+   * "Convite enviado." - e um erro de digitação passou despercebido: o
+   * sistema criou uma conta nova para o endereço errado, vinculou à
+   * empresa e respondeu sucesso em verde. Quem convidou só descobriu
+   * quando a pessoa certa não conseguiu ver nada. Mostrar o destinatário
+   * é o que torna o engano visível no mesmo segundo.
+   */
+  return {
+    success: alreadyHadAccount
+      ? `${validated.data.email} já tinha conta e foi vinculada à empresa - nenhum convite novo foi enviado.`
+      : `Convite enviado para ${validated.data.email}.`,
+  };
 }
 
 /**
