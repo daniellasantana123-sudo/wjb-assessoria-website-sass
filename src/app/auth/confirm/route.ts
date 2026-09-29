@@ -36,7 +36,10 @@ export async function GET(request: NextRequest) {
     return invalidLink();
   }
 
-  if (type === "invite" || type === "recovery") {
+  if (type === "invite") {
+    return NextResponse.redirect(new URL("/definir-senha?boas-vindas=1", getSiteUrl()));
+  }
+  if (type === "recovery") {
     return NextResponse.redirect(new URL("/definir-senha", getSiteUrl()));
   }
 

@@ -270,6 +270,7 @@ export async function inviteMember(
     recipientEmail: validated.data.email,
     tenantId,
     link: "/portal",
+    alreadyHadAccount,
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);

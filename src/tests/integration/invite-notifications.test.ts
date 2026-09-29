@@ -83,6 +83,7 @@ describe("inviteMember - notificação de convite (Fase 6)", () => {
       recipientEmail: "novo@empresa.com.br",
       tenantId: "tenant-1",
       link: "/portal",
+      alreadyHadAccount: false,
     });
   });
 });
@@ -99,6 +100,7 @@ describe("inviteStaffMember - notificação de convite (Fase 6)", () => {
       recipientId: "new-profile-1",
       recipientEmail: "novo@wjb.com.br",
       link: "/admin",
+      alreadyHadAccount: false,
     });
   });
 });

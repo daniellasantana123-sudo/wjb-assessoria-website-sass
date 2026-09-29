@@ -73,8 +73,17 @@ beforeEach(() => {
 });
 
 describe("notifyInvitation", () => {
-  it("insere in-app com título/tipo/link corretos e envia e-mail com assunto genérico", async () => {
-    await notifyInvitation({ recipientId: "profile-2", recipientEmail: "novo@empresa.com.br", tenantId: "tenant-1", link: "/portal" });
+  it("conta nova: só in-app - o único e-mail é o convite do Supabase", async () => {
+    await notifyInvitation({ recipientId: "profile-2", recipientEmail: "novo@empresa.com.br", tenantId: "tenant-1", link: "/portal", alreadyHadAccount: false });
+
+    expect(notificationsInsertMock).toHaveBeenCalledWith([
+      expect.objectContaining({ recipient_id: "profile-2", type: "invitation", link: "/portal" }),
+    ]);
+    expect(sendEmailMock).not.toHaveBeenCalled();
+  });
+
+  it("conta existente: insere in-app com título/tipo/link corretos e envia e-mail com assunto genérico", async () => {
+    await notifyInvitation({ recipientId: "profile-2", recipientEmail: "novo@empresa.com.br", tenantId: "tenant-1", link: "/portal", alreadyHadAccount: true });
 
     expect(notificationsInsertMock).toHaveBeenCalledWith([
       expect.objectContaining({
@@ -94,7 +103,7 @@ describe("notifyInvitation", () => {
   });
 
   it("sem e-mail cadastrado, insere in-app mas não tenta enviar e-mail", async () => {
-    await notifyInvitation({ recipientId: "profile-2", recipientEmail: null, link: "/portal" });
+    await notifyInvitation({ recipientId: "profile-2", recipientEmail: null, link: "/portal", alreadyHadAccount: true });
 
     expect(notificationsInsertMock).toHaveBeenCalled();
     expect(sendEmailMock).not.toHaveBeenCalled();
@@ -103,7 +112,7 @@ describe("notifyInvitation", () => {
   it("kill switch 'notifications' desligado - nem insere nem envia e-mail", async () => {
     isFeatureEnabledMock.mockResolvedValue(false);
 
-    await notifyInvitation({ recipientId: "profile-2", recipientEmail: "novo@empresa.com.br", link: "/portal" });
+    await notifyInvitation({ recipientId: "profile-2", recipientEmail: "novo@empresa.com.br", link: "/portal", alreadyHadAccount: true });
 
     expect(notificationsInsertMock).not.toHaveBeenCalled();
     expect(sendEmailMock).not.toHaveBeenCalled();

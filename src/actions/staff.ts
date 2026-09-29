@@ -56,6 +56,7 @@ export async function inviteStaffMember(
     .maybeSingle();
 
   let profileId = existingProfile?.id;
+  const alreadyHadAccount = Boolean(profileId);
 
   if (!profileId) {
     const { data: invited, error: inviteError } =
@@ -103,6 +104,7 @@ export async function inviteStaffMember(
     recipientId: profileId,
     recipientEmail: validated.data.email,
     link: "/admin",
+    alreadyHadAccount,
   });
 
   revalidatePath("/admin/usuarios");

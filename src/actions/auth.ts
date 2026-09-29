@@ -9,6 +9,7 @@ import {
   loginFormSchema,
   passwordResetRequestSchema,
   setPasswordSchema,
+  firstAccessSchema,
   type LoginFormValues,
   type PasswordResetRequestValues,
   type SetPasswordValues,
@@ -109,4 +110,56 @@ export async function setPassword(
 
   const session = await getSession();
   redirect(session?.isWjbStaff ? "/admin" : "/portal");
+}
+
+/**
+ * Primeiro acesso de quem chegou por convite (`/definir-senha?boas-vindas=1`):
+ * nome + senha num formulário só, e a pessoa já entra na plataforma. O nome
+ * vem pré-preenchido do convite, mas quem convidou pode ter digitado errado -
+ * por isso é editável. Gravado com o client do próprio usuário: a policy
+ * `profiles_update_own` permite, e o trigger da migration 0022 impede que
+ * esse caminho mexa em qualquer campo de acesso.
+ */
+export async function completeFirstAccess(
+  _prevState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const validated = firstAccessSchema.safeParse({
+    fullName: String(formData.get("fullName") ?? ""),
+    password: String(formData.get("password") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
+  });
+  if (!validated.success) {
+    return { error: validated.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+
+  const session = await getSession();
+  if (!session) {
+    return {
+      error: "Seu link de acesso expirou. Peça à WJB para reenviar o convite.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({
+    password: validated.data.password,
+    data: { full_name: validated.data.fullName },
+  });
+  if (error) {
+    return {
+      error:
+        "Não foi possível concluir seu cadastro. Peça à WJB para reenviar o convite.",
+    };
+  }
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({ full_name: validated.data.fullName })
+    .eq("id", session.userId);
+  if (profileError) {
+    // A senha já foi criada - não bloqueia a entrada por causa do nome.
+    console.error("[auth] falha ao salvar nome no primeiro acesso:", profileError);
+  }
+
+  redirect(session.isWjbStaff ? "/admin" : "/portal");
 }

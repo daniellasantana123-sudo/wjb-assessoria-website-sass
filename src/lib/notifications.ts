@@ -301,19 +301,31 @@ export async function notifyInvitation({
   recipientEmail,
   tenantId,
   link,
+  alreadyHadAccount,
 }: {
   recipientId: string;
   recipientEmail: string | null;
   tenantId?: string | null;
   link: string;
+  /**
+   * Quem ainda não tinha conta recebe o convite do Supabase Auth ("Crie sua
+   * senha de acesso"), que já leva à tela de primeiro acesso - mandar este
+   * aviso por e-mail junto virava 2 e-mails pro mesmo convite (2026-09-29).
+   * Nesse caso fica só a notificação in-app. Quem já tinha conta não recebe
+   * nada do Supabase, então este e-mail é o único aviso e continua saindo.
+   */
+  alreadyHadAccount: boolean;
 }) {
   await dispatchNotification({
     recipients: [{ id: recipientId, email: recipientEmail }],
     tenantId: tenantId ?? null,
     type: "invitation",
-    body:
-      "Você foi convidado(a) para acessar a Plataforma WJB. Para criar sua senha, use o link do e-mail \"Crie sua senha de acesso\", enviado separadamente.",
+    body: alreadyHadAccount
+      ? "Você recebeu acesso a mais uma área da Plataforma WJB. Entre com o e-mail e a senha que você já usa."
+      : "Boas-vindas à Plataforma WJB!",
     link,
+    ctaLabel: "Acessar a plataforma",
+    sendEmail: alreadyHadAccount,
   });
 }
 
