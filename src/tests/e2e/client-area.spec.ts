@@ -55,7 +55,7 @@ test("/login mostra o formulário real de acesso à Plataforma SaaS", async ({
     page.getByRole("heading", { level: 1, name: "Entrar" }),
   ).toBeVisible();
   await expect(page.getByLabel("E-mail")).toBeVisible();
-  await expect(page.getByLabel("Senha")).toBeVisible();
+  await expect(page.getByLabel("Senha", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Esqueci minha senha" }),

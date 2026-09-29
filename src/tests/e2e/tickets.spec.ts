@@ -40,7 +40,7 @@ test("cliente abre chamado, staff responde e resolve, cliente confirma", async (
   const clientPage = await newPageWithoutCookieBanner(clientContext);
   await clientPage.goto("/login");
   await clientPage.getByLabel("E-mail").fill(clientEmail!);
-  await clientPage.getByLabel("Senha").fill(password!);
+  await clientPage.getByLabel("Senha", { exact: true }).fill(password!);
   await clientPage.getByRole("button", { name: "Entrar" }).click();
   await expect(clientPage).toHaveURL("/portal");
 
@@ -55,7 +55,7 @@ test("cliente abre chamado, staff responde e resolve, cliente confirma", async (
   const staffPage = await newPageWithoutCookieBanner(staffContext);
   await staffPage.goto("/login");
   await staffPage.getByLabel("E-mail").fill(staffEmail!);
-  await staffPage.getByLabel("Senha").fill(password!);
+  await staffPage.getByLabel("Senha", { exact: true }).fill(password!);
   await staffPage.getByRole("button", { name: "Entrar" }).click();
   await expect(staffPage).toHaveURL("/admin");
 

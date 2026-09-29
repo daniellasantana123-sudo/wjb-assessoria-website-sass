@@ -39,7 +39,7 @@ test.describe("Autenticação do Portal/Admin", () => {
   test("cliente loga e cai no Portal, com a sidebar real", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("E-mail").fill(clientEmail!);
-    await page.getByLabel("Senha").fill(password!);
+    await page.getByLabel("Senha", { exact: true }).fill(password!);
     await page.getByRole("button", { name: "Entrar" }).click();
 
     await expect(page).toHaveURL("/portal");
@@ -53,7 +53,7 @@ test.describe("Autenticação do Portal/Admin", () => {
   test("staff loga e cai no Admin, com os cards de navegação reais", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("E-mail").fill(staffEmail!);
-    await page.getByLabel("Senha").fill(password!);
+    await page.getByLabel("Senha", { exact: true }).fill(password!);
     await page.getByRole("button", { name: "Entrar" }).click();
 
     await expect(page).toHaveURL("/admin");
