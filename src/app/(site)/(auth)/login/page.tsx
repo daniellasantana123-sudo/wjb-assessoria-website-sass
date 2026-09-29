@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   description: "Acesse o Portal do Cliente ou a área interna da WJB Assessoria Contábil.",
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ erro?: string }>;
+}) {
+  const { erro } = await searchParams;
+
   return (
     <Container className="flex flex-1 items-center justify-center py-16">
       <div className="border-border bg-background w-full max-w-md rounded-md border p-8 shadow-sm">
@@ -17,6 +23,17 @@ export default function LoginPage() {
         <p className="text-muted-foreground mt-1 text-sm">
           Acesse com o e-mail e senha cadastrados pela WJB.
         </p>
+
+        {erro === "link-invalido" ? (
+          <p
+            role="alert"
+            className="border-danger/30 bg-danger/5 text-danger mt-6 rounded-md border p-3 text-sm"
+          >
+            Esse link de acesso expirou ou já foi usado. Use &quot;Esqueci minha
+            senha&quot; abaixo para receber um novo, ou peça à WJB para reenviar o
+            convite.
+          </p>
+        ) : null}
 
         <div className="mt-6">
           <LoginForm />

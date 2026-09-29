@@ -311,7 +311,8 @@ export async function notifyInvitation({
     recipients: [{ id: recipientId, email: recipientEmail }],
     tenantId: tenantId ?? null,
     type: "invitation",
-    body: "Você foi convidado(a) para acessar a Plataforma WJB.",
+    body:
+      "Você foi convidado(a) para acessar a Plataforma WJB. Para criar sua senha, use o link do e-mail \"Crie sua senha de acesso\", enviado separadamente.",
     link,
   });
 }

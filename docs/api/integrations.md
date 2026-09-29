@@ -22,6 +22,21 @@ Resiliência: nenhum caminho crítico (login, documentos, Dashboard) chama o ada
 
 Pendente do lado do usuário: contato direto com a Omie pra confirmar o modelo de credenciais/token da G-Click e acesso à documentação técnica completa (Postman) - ver `artifacts/wjb-saas-mvp/fase-6-5/omie-contact-checklist.md`.
 
+## Supabase Auth - templates de e-mail (configuração no painel, 2026-09-29)
+
+Os links de convite e de recuperação de senha precisam apontar para
+`/auth/confirm` com `token_hash`, não para o `{{ .ConfirmationURL }}` padrão.
+O padrão devolve a sessão depois do `#` da URL, que o servidor não enxerga, e o
+convidado caía no login sem conseguir criar senha. Em **Authentication → Emails**:
+
+- **Invite user**, assunto `Crie sua senha de acesso - WJB Assessoria Contábil`, link:
+  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite`
+- **Reset password**, assunto `Redefina sua senha - WJB Assessoria Contábil`, link:
+  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`
+
+Em **Authentication → URL Configuration**, o **Site URL** precisa ser
+`https://wjbassessoriacontabil.com.br`.
+
 ## E-mail (Resend) — implementado em 2026-09-17
 
 Estrutura seguida à risca (ver seção abaixo): `src/integrations/email/{types.ts,provider.ts,resend.adapter.ts,templates.ts,index.ts}`. `getEmailAdapter()` cai num adapter no-op (só loga) sem `RESEND_API_KEY`/`EMAIL_FROM` configuradas — nunca quebra quem chamou.
