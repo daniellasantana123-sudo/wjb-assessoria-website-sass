@@ -47,6 +47,6 @@ describe("GET /api/notifications/[id]/read", () => {
 
     expect(markNotificationAsReadAndGetLinkMock).toHaveBeenCalledWith("n1");
     expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("http://x/portal/suporte/1");
+    expect(response.headers.get("location")).toBe("http://localhost:3000/portal/suporte/1");
   });
 });

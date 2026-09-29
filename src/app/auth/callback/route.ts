@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createClient } from "@/lib/db/supabase/server";
 import { getSession } from "@/lib/auth/dal";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 /**
  * Callback do Supabase Auth (fluxo PKCE) — todo link de e-mail (convite de
@@ -16,24 +17,24 @@ export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type");
 
   if (!code) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login", getSiteUrl()));
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL("/login", getSiteUrl());
     loginUrl.searchParams.set("erro", "link-invalido");
     return NextResponse.redirect(loginUrl);
   }
 
   if (type === "invite" || type === "recovery") {
-    return NextResponse.redirect(new URL("/definir-senha", request.url));
+    return NextResponse.redirect(new URL("/definir-senha", getSiteUrl()));
   }
 
   const session = await getSession();
   return NextResponse.redirect(
-    new URL(session?.isWjbStaff ? "/admin" : "/portal", request.url),
+    new URL(session?.isWjbStaff ? "/admin" : "/portal", getSiteUrl()),
   );
 }

@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createClient } from "@/lib/db/supabase/server";
 import { getSession } from "@/lib/auth/dal";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 const ACCEPTED_TYPES: EmailOtpType[] = ["invite", "recovery", "magiclink", "email"];
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type") as EmailOtpType | null;
 
   if (!tokenHash || !type || !ACCEPTED_TYPES.includes(type)) {
-    return invalidLink(request);
+    return invalidLink();
   }
 
   const supabase = await createClient();
@@ -32,21 +33,21 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error("[auth/confirm] link rejeitado:", error.message);
-    return invalidLink(request);
+    return invalidLink();
   }
 
   if (type === "invite" || type === "recovery") {
-    return NextResponse.redirect(new URL("/definir-senha", request.url));
+    return NextResponse.redirect(new URL("/definir-senha", getSiteUrl()));
   }
 
   const session = await getSession();
   return NextResponse.redirect(
-    new URL(session?.isWjbStaff ? "/admin" : "/portal", request.url),
+    new URL(session?.isWjbStaff ? "/admin" : "/portal", getSiteUrl()),
   );
 }
 
-function invalidLink(request: NextRequest) {
-  const loginUrl = new URL("/login", request.url);
+function invalidLink() {
+  const loginUrl = new URL("/login", getSiteUrl());
   loginUrl.searchParams.set("erro", "link-invalido");
   return NextResponse.redirect(loginUrl);
 }

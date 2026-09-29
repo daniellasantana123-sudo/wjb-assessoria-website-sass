@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requireSession } from "@/lib/auth/dal";
 import { buildReportCsv, resolvePeriod } from "@/lib/reports/period";
 import { getActiveTenant, getTenantPeriodReport } from "@/lib/tenant";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 /**
  * Exportação do relatório do período em CSV (2026-09-24).
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   const tenant = await getActiveTenant(session.userId);
 
   if (!tenant) {
-    return NextResponse.redirect(new URL("/portal/relatorios", request.url));
+    return NextResponse.redirect(new URL("/portal/relatorios", getSiteUrl()));
   }
 
   const period = resolvePeriod(

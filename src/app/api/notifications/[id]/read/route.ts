@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getSession } from "@/lib/auth/dal";
 import { markNotificationAsReadAndGetLink } from "@/lib/notifications";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 /**
  * Clicar numa notificação marca ela como lida e redireciona pro destino
@@ -24,5 +25,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Notificação não encontrada." }, { status: 404 });
   }
 
-  return NextResponse.redirect(new URL(link, request.url), 307);
+  return NextResponse.redirect(new URL(link, getSiteUrl()), 307);
 }
