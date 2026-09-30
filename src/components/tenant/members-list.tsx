@@ -68,6 +68,11 @@ export async function MembersList({
                 <>
                   <ActionButton
                     label={member.role === "owner" ? "Tornar membro" : "Tornar responsável"}
+                    confirmMessage={
+                      member.role === "owner"
+                        ? `Tornar ${personLabel} membro? A pessoa deixa de poder convidar colegas.`
+                        : `Tornar ${personLabel} responsável? A pessoa passa a poder convidar colegas desta empresa.`
+                    }
                     action={async () => {
                       "use server";
                       await updateMemberRole(

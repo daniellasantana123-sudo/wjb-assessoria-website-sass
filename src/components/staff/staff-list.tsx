@@ -44,7 +44,7 @@ export async function StaffList({
             */}
             {canManage && person.staff_role && !isSelf ? (
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <StaffRoleSelect profileId={person.id} role={person.staff_role} />
+                <StaffRoleSelect profileId={person.id} role={person.staff_role} personLabel={personLabel} />
                 <ActionButton
                   label={person.status === "suspended" ? "Reativar" : "Suspender"}
                   confirmMessage={

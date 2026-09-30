@@ -89,13 +89,21 @@ export function MfaSettings({ factors }: { factors: MfaFactorSummary[] }) {
 
       {verified.length > 0 ? (
         <div className="mt-5 flex items-center justify-between gap-3 rounded-md border border-success bg-success-bg/40 p-4">
-          <p className="text-success text-sm font-medium">Verificação em duas etapas ativada.</p>
+          <p className="text-success-text text-sm font-medium">Verificação em duas etapas ativada.</p>
           <Button
             type="button"
             variant="outline"
             size="sm"
             disabled={isPending}
-            onClick={() => handleUnenroll(verified[0].id)}
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Desativar a verificação em duas etapas? Sua conta volta a ser protegida só pela senha.",
+                )
+              ) {
+                handleUnenroll(verified[0].id);
+              }
+            }}
           >
             Desativar
           </Button>

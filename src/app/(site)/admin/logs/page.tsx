@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { buttonVariants } from "@/components/ui/button";
 import { listAuditLog, listTenantOptions } from "@/lib/audit-log";
+import { auditActionLabels as actionLabels } from "@/lib/audit-labels";
 import { requireStaffSession } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
@@ -14,37 +15,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const actionLabels: Record<string, string> = {
-  "tenant.created": "Empresa criada",
-  "tenant.updated": "Empresa editada",
-  "tenant.suspended": "Empresa suspensa",
-  "tenant.reactivated": "Empresa reativada",
-  "tenant_member.invited": "Pessoa convidada",
-  "tenant_member.invite_resent": "Convite reenviado",
-  "tenant_member.role_changed": "Papel alterado",
-  "tenant_member.suspended": "Vínculo suspenso",
-  "tenant_member.reactivated": "Vínculo reativado",
-  "tenant_member.access_revoked": "Acesso revogado",
-  "staff.invited": "Acesso interno concedido",
-  "staff.invite_resent": "Convite interno reenviado",
-  "staff.role_changed": "Papel interno alterado",
-  "staff.access_revoked": "Acesso interno revogado",
-  "account.suspended": "Conta suspensa",
-  "account.reactivated": "Conta reativada",
-  "document.uploaded": "Documento enviado",
-  "document.deleted": "Documento apagado",
-  "document.downloaded": "Documento baixado",
-  "obligation.created": "Obrigação criada",
-  "obligation.status_changed": "Status da obrigação alterado",
-  "obligation.deleted": "Obrigação apagada",
-  "lead.status_changed": "Status do lead alterado",
-  "integration.omie_mapping_updated": "Mapeamento Omie atualizado",
-  "integration.omie_sync_attempted": "Sincronização Omie",
-  "integration.omie_disabled": "Integração Omie desativada",
-  "integration.omie_reactivated": "Integração Omie reativada",
-  "integration.omie_connection_tested": "Conexão Omie testada",
-  "feature_flag.updated": "Feature flag alterada",
-};
 
 function describeMetadata(metadata: Record<string, unknown> | null): string | null {
   if (!metadata) return null;

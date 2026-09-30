@@ -95,6 +95,14 @@ export function OmieMappingPanel({
   }
 
   function handleToggleDisabled() {
+    if (
+      !isDisabled &&
+      !window.confirm(
+        "Desativar a integração desta empresa? As obrigações param de ser sincronizadas e o cliente deixa de ver quem cuida da empresa e o link do Portal Contábil. O vínculo fica guardado para reativar depois.",
+      )
+    ) {
+      return;
+    }
     startDisableTransition(async () => {
       await setOmieMappingDisabled(tenantId, !isDisabled);
     });
