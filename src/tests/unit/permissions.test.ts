@@ -31,14 +31,25 @@ describe("hasPermission - staff", () => {
     expect(hasPermission(session, "audit.read")).toBe(true);
   });
 
-  it("contador e atendimento não têm staff.manage, mas têm o resto", () => {
-    for (const role of ["contador", "atendimento"] as const) {
-      const session = staffSession(role);
-      expect(hasPermission(session, "staff.manage")).toBe(false);
-      expect(hasPermission(session, "obligations.manage")).toBe(true);
-      expect(hasPermission(session, "documents.upload")).toBe(true);
-      expect(hasPermission(session, "tickets.manage")).toBe(true);
-    }
+  it("contador não tem staff.manage, mas gerencia documentos, obrigações e integração", () => {
+    const session = staffSession("contador");
+    expect(hasPermission(session, "staff.manage")).toBe(false);
+    expect(hasPermission(session, "obligations.manage")).toBe(true);
+    expect(hasPermission(session, "documents.delete")).toBe(true);
+    expect(hasPermission(session, "integrations.manage")).toBe(true);
+    expect(hasPermission(session, "tickets.manage")).toBe(true);
+  });
+
+  it("atendimento cuida do relacionamento, mas não apaga documento nem mexe em obrigação ou G-Click", () => {
+    const session = staffSession("atendimento");
+    expect(hasPermission(session, "tickets.manage")).toBe(true);
+    expect(hasPermission(session, "messages.send")).toBe(true);
+    expect(hasPermission(session, "members.invite")).toBe(true);
+    expect(hasPermission(session, "documents.upload")).toBe(true);
+    expect(hasPermission(session, "documents.delete")).toBe(false);
+    expect(hasPermission(session, "obligations.manage")).toBe(false);
+    expect(hasPermission(session, "integrations.manage")).toBe(false);
+    expect(hasPermission(session, "staff.manage")).toBe(false);
   });
 
   it("staff sem staffRole não tem nenhuma permissão", () => {

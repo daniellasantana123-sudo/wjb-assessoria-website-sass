@@ -52,6 +52,10 @@ export default async function EmpresaDetailPage({
   const omieMapping = await getOmieMapping(tenant.id);
   const { mode: omieMode } = getGClickConfig();
   const canSuspendTenant = hasPermission(session, "tenants.suspend");
+  // Atendimento não apaga documentos, não mexe em obrigações nem no G-Click.
+  const canDeleteDocuments = hasPermission(session, "documents.delete");
+  const canManageObligations = hasPermission(session, "obligations.manage");
+  const canManageIntegration = hasPermission(session, "integrations.manage");
   const isSuspended = tenant.status === "suspended";
 
   return (
@@ -112,7 +116,7 @@ export default async function EmpresaDetailPage({
         <div className="border-border mb-4 rounded-md border p-6">
           <UploadDocumentForm tenantId={tenant.id} defaultCategory="documento" />
         </div>
-        <DocumentsList tenantId={tenant.id} category="documento" canDelete />
+        <DocumentsList tenantId={tenant.id} category="documento" canDelete={canDeleteDocuments} />
       </div>
 
       <div>
@@ -123,17 +127,23 @@ export default async function EmpresaDetailPage({
         <DocumentsList
           tenantId={tenant.id}
           category="guia"
-          canDelete
+          canDelete={canDeleteDocuments}
           emptyMessage="Nenhuma guia enviada ainda."
         />
       </div>
 
       <div>
         <h2 className="text-foreground mb-4 text-sm font-semibold">Obrigações</h2>
-        <div className="border-border mb-4 rounded-md border p-6">
-          <CreateObligationForm tenantId={tenant.id} />
-        </div>
-        <ObligationsList tenantId={tenant.id} canManage />
+        {canManageObligations ? (
+          <div className="border-border mb-4 rounded-md border p-6">
+            <CreateObligationForm tenantId={tenant.id} />
+          </div>
+        ) : (
+          <p className="text-muted-foreground mb-4 text-sm">
+            Lançar, concluir e apagar obrigações fica com Contador e Super admin.
+          </p>
+        )}
+        <ObligationsList tenantId={tenant.id} canManage={canManageObligations} />
       </div>
 
       <div>
@@ -143,12 +153,18 @@ export default async function EmpresaDetailPage({
 
       <div className="border-border rounded-md border p-6">
         <h2 className="text-foreground mb-4 text-sm font-semibold">Integração Omie.G-Click</h2>
-        <OmieMappingPanel
-          tenantId={tenant.id}
-          tenantDocument={tenant.cnpj}
-          mapping={omieMapping}
-          mode={omieMode}
-        />
+        {canManageIntegration ? (
+          <OmieMappingPanel
+            tenantId={tenant.id}
+            tenantDocument={tenant.cnpj}
+            mapping={omieMapping}
+            mode={omieMode}
+          />
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            A integração com o G-Click é gerenciada por Contador e Super admin.
+          </p>
+        )}
       </div>
     </Container>
   );

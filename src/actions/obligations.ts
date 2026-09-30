@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
+import { hasPermission } from "@/lib/permissions/permissions";
 import {
   createObligationSchema,
   type CreateObligationValues,
@@ -18,6 +19,9 @@ export async function createObligation(
   formData: FormData,
 ): Promise<ObligationActionState> {
   const session = await requireStaffSession();
+  if (!hasPermission(session, "obligations.manage")) {
+    return { error: "Seu papel não permite lançar obrigações. Peça a um Contador." };
+  }
 
   const raw: CreateObligationValues = {
     title: String(formData.get("title") ?? ""),
@@ -73,6 +77,7 @@ export async function toggleObligationStatus(
   nextStatus: "pending" | "done",
 ) {
   const session = await requireStaffSession();
+  if (!hasPermission(session, "obligations.manage")) return;
   const supabase = await createClient();
 
   const { data: obligation } = await supabase
@@ -99,6 +104,7 @@ export async function toggleObligationStatus(
 
 export async function deleteObligation(obligationId: string) {
   const session = await requireStaffSession();
+  if (!hasPermission(session, "obligations.manage")) return;
   const supabase = await createClient();
 
   const { data: obligation } = await supabase

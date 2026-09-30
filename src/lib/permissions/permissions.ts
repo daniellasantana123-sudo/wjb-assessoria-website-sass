@@ -11,14 +11,9 @@ import type { StaffRole, TenantMemberRole } from "@/types/database";
  * específica (`documents.upload`) em vez de reimplementar lógica de papel
  * toda vez — hoje usada em `/api/me` (ver route.ts).
  *
- * Os mapas abaixo refletem o que a aplicação REALMENTE aplica hoje, não uma
- * distribuição aspiracional: `contador` e `atendimento` têm as mesmas
- * permissões porque nenhum código atual diferencia os dois além de
- * `staff.manage` (exclusivo de `super_admin`) — `canManageObligations()` em
- * `roles.ts`, por exemplo, existe mas não é chamada em nenhuma Server Action
- * (obrigações/documentos usam `requireStaffSession()`, sem distinção de
- * staffRole). Se essa distinção passar a ser aplicada de verdade no futuro,
- * atualizar os mapas aqui é o único lugar a mudar.
+ * Os mapas abaixo refletem o que a aplicação REALMENTE aplica: as Server
+ * Actions de documentos, obrigações e integração checam estas permissões
+ * no servidor (não só escondem botões).
  */
 
 export type Permission =
@@ -69,10 +64,24 @@ const BASE_STAFF_PERMISSIONS: Permission[] = [
   "integrations.manage",
 ];
 
+/**
+ * Atendimento (2026-09-30, decisão do usuário): cuida do relacionamento -
+ * chamados, mensagens, leads, convites e envio de arquivos - mas não apaga
+ * documentos, não lança/conclui/apaga obrigações e não mexe na integração
+ * G-Click. Essas ficam com Contador e Super admin. Antes os dois papéis
+ * eram idênticos.
+ */
+const ATENDIMENTO_BLOCKED: Permission[] = [
+  "documents.delete",
+  "documents.manage",
+  "obligations.manage",
+  "integrations.manage",
+];
+
 const STAFF_PERMISSIONS: Record<StaffRole, Permission[]> = {
   super_admin: [...BASE_STAFF_PERMISSIONS, "staff.manage", "feature_flags.manage", "tenants.suspend"],
   contador: BASE_STAFF_PERMISSIONS,
-  atendimento: BASE_STAFF_PERMISSIONS,
+  atendimento: BASE_STAFF_PERMISSIONS.filter((p) => !ATENDIMENTO_BLOCKED.includes(p)),
 };
 
 const TENANT_PERMISSIONS: Record<TenantMemberRole, Permission[]> = {
