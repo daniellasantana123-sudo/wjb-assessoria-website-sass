@@ -7,7 +7,8 @@ import { usePathname } from "next/navigation";
 import { CircleHelp, Menu, X } from "lucide-react";
 
 import { Logo } from "@/components/navigation/logo";
-import { isPortalNavItemActive, portalNavItems } from "@/config/portal-nav";
+import { appAreas, type AppArea } from "@/components/app-shell/app-areas";
+import { isNavItemActive } from "@/config/portal-nav";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,10 +16,12 @@ import { cn } from "@/lib/utils";
  * Escape do menu mobile de marketing (`mobile-nav.tsx`), simplificado (sem
  * disclosures aninhadas, a navegação do Portal é uma lista plana de 5 itens).
  */
-export function PortalMobileNav({
+export function AppMobileNav({
+  area,
   unreadCount = 0,
   organizationSwitcher,
 }: {
+  area: AppArea;
   unreadCount?: number;
   /**
    * Seletor de empresa - antes só existia na sidebar de desktop, então
@@ -29,6 +32,7 @@ export function PortalMobileNav({
   // Rota lida no cliente: o layout que renderiza este componente não é
   // refeito ao navegar, então uma prop vinda dele ficaria desatualizada.
   const activeHref = usePathname();
+  const config = appAreas[area];
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -83,11 +87,11 @@ export function PortalMobileNav({
         type="button"
         onClick={() => setOpen(true)}
         aria-expanded={open}
-        aria-controls="portal-mobile-menu"
+        aria-controls="app-mobile-menu"
         aria-label={
           unreadCount > 0
-            ? `Abrir menu do Portal (${unreadCount} notificações não lidas)`
-            : "Abrir menu do Portal"
+            ? `${config.openMenuLabel} (${unreadCount} notificações não lidas)`
+            : config.openMenuLabel
         }
         className="text-foreground hover:bg-muted focus-visible:ring-primary relative flex h-10 w-10 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
@@ -103,15 +107,15 @@ export function PortalMobileNav({
       {open
         ? createPortal(
             <div
-              id="portal-mobile-menu"
+              id="app-mobile-menu"
               ref={panelRef}
               role="dialog"
               aria-modal="true"
-              aria-label="Menu do Portal"
+              aria-label={config.menuLabel}
               className="animate-enter bg-background fixed inset-0 z-50 flex flex-col overflow-y-auto"
             >
               <div className="border-border flex items-center justify-between border-b px-4 py-3">
-                <Logo href="/portal" className="h-9 w-auto" />
+                <Logo href={config.rootHref} className="h-9 w-auto" />
                 <button
                   ref={closeButtonRef}
                   type="button"
@@ -123,9 +127,9 @@ export function PortalMobileNav({
                 </button>
               </div>
 
-              <nav aria-label="Navegação do Portal" className="flex flex-1 flex-col gap-1 px-3 py-4">
-                {portalNavItems.map((item) => {
-                  const active = isPortalNavItemActive(activeHref, item.href);
+              <nav aria-label={config.navLabel} className="flex flex-1 flex-col gap-1 px-3 py-4">
+                {config.items.map((item) => {
+                  const active = isNavItemActive(activeHref, item.href, config.rootHref);
                   return (
                     <Link
                       key={item.href}
@@ -141,7 +145,7 @@ export function PortalMobileNav({
                     >
                       <item.icon aria-hidden="true" className="h-5 w-5 shrink-0" />
                       {item.label}
-                      {item.href === "/portal/notificacoes" && unreadCount > 0 && (
+                      {item.href === config.notificationsHref && unreadCount > 0 && (
                         <span className="bg-primary text-primary-foreground ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-semibold tabular-nums">
                           {unreadCount}
                         </span>
@@ -153,14 +157,14 @@ export function PortalMobileNav({
 
               <div className="px-3 pb-2">
                 <a
-                  href="/ajuda"
+                  href={config.help.href}
                   target="_blank"
                   rel="noopener"
                   onClick={handleClose}
                   className="text-foreground hover:bg-muted focus-visible:ring-primary flex min-h-11 items-center gap-3 rounded-md px-3 text-base font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   <CircleHelp aria-hidden="true" className="h-5 w-5 shrink-0" />
-                  Ajuda: guia do Portal
+                  {config.help.label}
                 </a>
               </div>
 

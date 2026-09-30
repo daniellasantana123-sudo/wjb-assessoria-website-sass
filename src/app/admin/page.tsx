@@ -15,7 +15,6 @@ import {
 
 import { Container } from "@/components/layout/container";
 import { buttonVariants } from "@/components/ui/button";
-import { LogoutButton } from "@/components/auth/logout-button";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 
@@ -103,7 +102,6 @@ export default async function AdminPage() {
             {session.staffRole ? ` · ${session.staffRole}` : ""}
           </p>
         </div>
-        <LogoutButton />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,0 +1,32 @@
+# Lembrete diário de vencimento de obrigações (Portal do Cliente).
+# Chama a rota protegida do site uma vez por dia; a rota decide quem avisar
+# (obrigações pendentes que vencem hoje ou em 3 dias) e não repete aviso se
+# rodar duas vezes no mesmo dia. Ver src/app/api/cron/lembretes-obrigacoes.
+#
+# Precisa do segredo CRON_SECRET em Settings > Secrets and variables > Actions,
+# com o MESMO valor configurado na Hostinger.
+name: Lembretes de obrigações
+
+on:
+  schedule:
+    # 11:00 UTC = 08:00 em Brasília (o GitHub pode atrasar alguns minutos).
+    - cron: "0 11 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  lembretes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Disparar lembretes
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Segredo CRON_SECRET não configurado no GitHub."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            https://wjbassessoriacontabil.com.br/api/cron/lembretes-obrigacoes

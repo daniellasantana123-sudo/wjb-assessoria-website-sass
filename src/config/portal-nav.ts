@@ -34,12 +34,9 @@ export const portalNavItems: PortalNavItem[] = [
   { href: "/portal/seguranca", label: "Segurança", icon: ShieldCheck },
 ];
 
-/**
- * "Visão geral" só ativa na rota exata; os demais também ativam em
- * sub-rotas (ex.: "Suporte" continua destacado dentro de um chamado
- * específico, `/portal/suporte/[id]`).
- */
-export function isPortalNavItemActive(pathname: string, href: string): boolean {
-  if (href === "/portal") return pathname === "/portal";
+
+/** Mesma regra para qualquer área: a raiz só ativa na rota exata. */
+export function isNavItemActive(pathname: string, href: string, rootHref: string): boolean {
+  if (href === rootHref) return pathname === rootHref;
   return pathname === href || pathname.startsWith(`${href}/`);
 }

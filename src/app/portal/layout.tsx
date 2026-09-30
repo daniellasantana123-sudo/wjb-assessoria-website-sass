@@ -4,8 +4,8 @@ import { CircleHelp } from "lucide-react";
 import { Logo } from "@/components/navigation/logo";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { OrganizationSwitcher } from "@/components/portal/organization-switcher";
-import { PortalMobileNav } from "@/components/portal/portal-mobile-nav";
-import { PortalSidebarNav } from "@/components/portal/portal-sidebar-nav";
+import { AppMobileNav } from "@/components/app-shell/app-mobile-nav";
+import { AppSidebarNav } from "@/components/app-shell/app-sidebar-nav";
 import { requireSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import { getActiveTenant, getMyOrganizations } from "@/lib/tenant";
@@ -40,7 +40,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
           <Logo href="/portal" className="h-9 w-auto" />
         </div>
 
-        <PortalSidebarNav unreadCount={unreadCount} />
+        <AppSidebarNav area="portal" unreadCount={unreadCount} />
 
         <div className="border-border flex flex-col gap-3 border-t p-4">
           {switcher}
@@ -67,7 +67,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
 
       <header className="border-border bg-background sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 lg:hidden">
         <div className="flex items-center gap-2">
-          <PortalMobileNav unreadCount={unreadCount} organizationSwitcher={switcher} />
+          <AppMobileNav area="portal" unreadCount={unreadCount} organizationSwitcher={switcher} />
           <Logo href="/portal" className="h-8 w-auto" />
         </div>
         <LogoutButton />

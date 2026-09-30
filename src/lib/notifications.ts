@@ -6,6 +6,11 @@ import { getEmailAdapter } from "@/integrations/email";
 import { renderNotificationEmail } from "@/integrations/email/templates";
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import {
+  buildObligationNotice,
+  type ObligationNoticeKind,
+  type ObligationRef,
+} from "@/lib/obligations/notices";
 
 /**
  * Fase 6 do wjb-saas-mvp - os 4 tipos de baixo já existiam (SAAS FASE 3,
@@ -29,7 +34,10 @@ export type NotificationType =
   | "ticket.created"
   | "ticket.replied"
   | "ticket.status_changed"
-  | "message.sent";
+  | "message.sent"
+  | "obligation.created"
+  | "obligation.completed"
+  | "obligation.due_soon";
 
 const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   invitation: "Você foi convidado(a)",
@@ -42,6 +50,9 @@ const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   "ticket.replied": "Nova resposta no chamado",
   "ticket.status_changed": "Status do chamado alterado",
   "message.sent": "Nova mensagem",
+  "obligation.created": "Nova obrigação",
+  "obligation.completed": "Obrigação concluída",
+  "obligation.due_soon": "Obrigação perto do vencimento",
 };
 
 interface NotificationRecipient {
@@ -339,6 +350,49 @@ export async function notifyInvitation({
     link,
     ctaLabel: "Acessar a plataforma",
     sendEmail: alreadyHadAccount,
+  });
+}
+
+/**
+ * Avisos de obrigação para os membros ativos da empresa (2026-09-30,
+ * decisão do usuário). Disparados por: lançamento manual no Admin
+ * ("created"), conclusão manual ou pela sincronização com o G-Click
+ * ("completed") e o lembrete diário (`/api/cron/lembretes-obrigacoes`,
+ * "due_soon"/"due_today"). `actorId` nulo = disparo automático, sem autor
+ * a excluir. Vários itens viram um aviso só (ver `buildObligationNotice`).
+ */
+export async function notifyObligationEvent({
+  tenantId,
+  actorId,
+  kind,
+  obligations,
+  metadata,
+}: {
+  tenantId: string;
+  actorId: string | null;
+  kind: ObligationNoticeKind;
+  obligations: ObligationRef[];
+  metadata?: Record<string, unknown>;
+}) {
+  if (obligations.length === 0) return;
+  const admin = createAdminClient();
+  const recipients = await resolveCounterpartRecipients(admin, tenantId, actorId ?? "", true);
+  const { body, link } = buildObligationNotice(kind, obligations);
+  const type: NotificationType =
+    kind === "created"
+      ? "obligation.created"
+      : kind === "completed"
+        ? "obligation.completed"
+        : "obligation.due_soon";
+
+  await dispatchNotification({
+    recipients,
+    tenantId,
+    type,
+    body,
+    link,
+    metadataSanitized: { count: obligations.length, ...metadata },
+    ctaLabel: "Ver no Portal",
   });
 }
 

@@ -3,22 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { isPortalNavItemActive, portalNavItems } from "@/config/portal-nav";
+import { appAreas, type AppArea } from "@/components/app-shell/app-areas";
+import { isNavItemActive } from "@/config/portal-nav";
 import { cn } from "@/lib/utils";
 
 /**
- * Navegação da sidebar do Portal (desktop). É client component para ler a
+ * Navegação da barra lateral (desktop) do Portal e do Admin. É client component para ler a
  * rota com `usePathname()`: o layout do App Router não é renderizado de
  * novo ao navegar, então o item ativo calculado lá (via header
  * `x-pathname`) ficava preso na primeira página aberta (revisão 2026-09-30).
  */
-export function PortalSidebarNav({ unreadCount }: { unreadCount: number }) {
+export function AppSidebarNav({ area, unreadCount }: { area: AppArea; unreadCount: number }) {
   const pathname = usePathname();
+  const config = appAreas[area];
 
   return (
-    <nav aria-label="Navegação do Portal" className="flex flex-1 flex-col gap-1 px-3 py-4">
-      {portalNavItems.map((item) => {
-        const active = isPortalNavItemActive(pathname, item.href);
+    <nav aria-label={config.navLabel} className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
+      {config.items.map((item) => {
+        const active = isNavItemActive(pathname, item.href, config.rootHref);
         return (
           <Link
             key={item.href}
@@ -31,7 +33,7 @@ export function PortalSidebarNav({ unreadCount }: { unreadCount: number }) {
           >
             <item.icon aria-hidden="true" className="h-4.5 w-4.5 shrink-0" />
             {item.label}
-            {item.href === "/portal/notificacoes" && unreadCount > 0 && (
+            {item.href === config.notificationsHref && unreadCount > 0 && (
               <span className="bg-primary text-primary-foreground ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-semibold tabular-nums">
                 {unreadCount}
                 <span className="sr-only"> não lidas</span>

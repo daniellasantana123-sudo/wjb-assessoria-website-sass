@@ -433,7 +433,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
           </ul></div>
           <div class="block"><h4>Sair</h4><ul class="list">
             <li>Portal: <span class="ui">Sair</span> no rodapé da barra lateral (ou no topo, no celular).</li>
-            <li>Admin: <span class="ui">Sair</span> no topo da página inicial do Admin.</li>
+            <li>Admin: <span class="ui">Sair</span> no rodapé da barra lateral (ou no topo, no celular).</li>
           </ul></div>
         </div>
       </div>
@@ -607,7 +607,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
       <div class="chapter-head">
         <p class="eyebrow">Admin WJB</p>
         <h2>O Admin, tela por tela</h2>
-        <p>O Admin usa o cabeçalho do site e não tem menu lateral: tudo parte da página inicial <span class="path">/admin</span>, que mostra um card para cada área.</p>
+        <p>O Admin tem uma barra lateral com todas as áreas, igual à do Portal: Início, Empresas, Tickets, Mensagens, Notificações, Leads, Usuários, Integrações, Logs e Segurança. No rodapé dela ficam o <strong>Manual da plataforma</strong>, seu nome e papel e o botão <span class="ui">Sair</span>. No celular, o menu abre pelo botão no topo. A página inicial <span class="path">/admin</span> mostra um card para cada área.</p>
       </div>
 
       <div class="mock" aria-hidden="true">
@@ -655,11 +655,11 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
               <tr><td>Editar empresa</td><td>Corrigir nome e CNPJ. <span class="ui">Salvar alterações</span>.</td><td>Toda a equipe</td></tr>
               <tr><td>Membros</td><td>Tornar responsável/membro, suspender, reenviar convite, revogar acesso (as ações que removem pedem confirmação).</td><td>Toda a equipe</td></tr>
               <tr><td>Convidar pessoa</td><td>Nome, e-mail e papel. A pessoa recebe o e-mail "Crie sua senha de acesso".</td><td>Toda a equipe</td></tr>
-              <tr><td>Documentos</td><td>Enviar arquivos ao cliente e apagar (com confirmação).</td><td>Toda a equipe</td></tr>
-              <tr><td>Guias</td><td>Enviar guias de pagamento ao cliente.</td><td>Toda a equipe</td></tr>
-              <tr><td>Obrigações</td><td>Lançar à mão (título, vencimento, observação), concluir, reabrir ou apagar.</td><td>Toda a equipe</td></tr>
+              <tr><td>Documentos</td><td>Enviar arquivos ao cliente e apagar (com confirmação).</td><td>Enviar: toda a equipe. Apagar: Contador e Super admin</td></tr>
+              <tr><td>Guias</td><td>Enviar guias de pagamento ao cliente.</td><td>Enviar: toda a equipe. Apagar: Contador e Super admin</td></tr>
+              <tr><td>Obrigações</td><td>Lançar à mão (título, vencimento, observação), concluir, reabrir ou apagar. Lançar e concluir avisam o cliente.</td><td>Contador e Super admin</td></tr>
               <tr><td>Calendário</td><td>As obrigações do mês em grade, igual ao do cliente.</td><td>Toda a equipe</td></tr>
-              <tr><td>Integração Omie.G-Click</td><td>Vincular ao G-Click e trazer as obrigações. Detalhes abaixo.</td><td>Toda a equipe</td></tr>
+              <tr><td>Integração Omie.G-Click</td><td>Vincular ao G-Click e trazer as obrigações. Detalhes abaixo.</td><td>Contador e Super admin</td></tr>
             </tbody>
           </table></div>
           <div class="note warn"><span class="ic">Atenção</span><p><strong>Suspender</strong> (pessoa ou empresa) é reversível. <strong>Revogar acesso</strong> remove o vínculo de vez: para voltar, é preciso convidar de novo. Na dúvida, suspenda.</p></div>
@@ -830,23 +830,24 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
       <div class="chapter-head">
         <p class="eyebrow">Referência</p>
         <h2>Papéis e permissões</h2>
-        <p>Hoje <strong>Contador</strong> e <strong>Atendimento</strong> têm exatamente as mesmas permissões. A diferença está só no Super admin.</p>
+        <p><strong>Atendimento</strong> cuida do relacionamento: chamados, mensagens, leads, convites e envio de arquivos. <strong>Contador</strong> faz tudo isso e também apaga documentos, cuida das obrigações e do G-Click. <strong>Super admin</strong> faz tudo e ainda gerencia a equipe, as feature flags e a suspensão de empresas.</p>
       </div>
       <div class="table-wrap"><table class="matrix">
-        <thead><tr><th>O que a pessoa pode fazer</th><th>Membro</th><th>Responsável</th><th>Atendimento / Contador</th><th>Super admin</th></tr></thead>
+        <thead><tr><th>O que a pessoa pode fazer</th><th>Membro</th><th>Responsável</th><th>Atendimento</th><th>Contador</th><th>Super admin</th></tr></thead>
         <tbody>
-          <tr><td>Usar o Portal: ver tudo, enviar documentos e guias, abrir chamados, mensagens</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Convidar colegas da própria empresa (Portal)</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim, pelo Admin</td><td class="yes">Sim, pelo Admin</td></tr>
-          <tr><td>Criar e editar empresas</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
-          <tr><td>Enviar e apagar documentos e guias no Admin</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
-          <tr><td>Lançar, concluir e apagar obrigações</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
-          <tr><td>Gerenciar membros de uma empresa</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
-          <tr><td>Status de chamados, mensagens, leads, logs</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
-          <tr><td>Painel do G-Click e testar conexão</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
-          <tr><td>Suspender ou reativar uma empresa inteira</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td></tr>
-          <tr><td>Conceder acesso à equipe, trocar papel, suspender e revogar</td><td class="no">Não</td><td class="no">Não</td><td class="no">Só vê</td><td class="yes">Sim</td></tr>
-          <tr><td>Ligar e desligar feature flags</td><td class="no">Não</td><td class="no">Não</td><td class="no">Só vê</td><td class="yes">Sim</td></tr>
-          <tr><td>Verificação em duas etapas da própria conta</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Usar o Portal: ver tudo, enviar documentos e guias, abrir chamados, mensagens</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Convidar colegas da própria empresa (Portal)</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Pelo Admin</td><td class="yes">Pelo Admin</td><td class="yes">Pelo Admin</td></tr>
+          <tr><td>Criar e editar empresas</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Enviar documentos e guias no Admin</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Apagar documentos e guias</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Lançar, concluir e apagar obrigações</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Painel do G-Click e testar conexão</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Gerenciar membros de uma empresa</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Status de chamados, mensagens, leads, logs</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Suspender ou reativar uma empresa inteira</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td></tr>
+          <tr><td>Conceder acesso à equipe, trocar papel, suspender e revogar</td><td class="no">Não</td><td class="no">Não</td><td class="no">Só vê</td><td class="no">Só vê</td><td class="yes">Sim</td></tr>
+          <tr><td>Ligar e desligar feature flags</td><td class="no">Não</td><td class="no">Não</td><td class="no">Só vê</td><td class="no">Só vê</td><td class="yes">Sim</td></tr>
+          <tr><td>Verificação em duas etapas da própria conta</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
         </tbody>
       </table></div>
       <div class="gloss">
@@ -874,10 +875,13 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
           <tr><td>Convite para quem ainda não tem conta</td><td>E-mail "Crie sua senha de acesso"</td><td class="yes">Sim</td><td class="yes">Sim, um único e-mail</td></tr>
           <tr><td>Convite para quem já tem conta</td><td>Você foi convidado(a)</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
           <tr><td>Acesso suspenso ou reativado</td><td>Alteração de segurança na sua conta</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>WJB lança uma obrigação à mão</td><td>Nova obrigação</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>WJB conclui uma obrigação (à mão ou pelo G-Click)</td><td>Obrigação concluída</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Obrigação pendente vence em 3 dias ou hoje</td><td>Obrigação perto do vencimento</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
           <tr><td>Falha ao sincronizar com o G-Click</td><td>Status de integração atualizado (para a equipe)</td><td class="yes">Sim</td><td class="no">Não</td></tr>
         </tbody>
       </table></div>
-      <div class="note tip"><span class="ic">Bom saber</span><p>Obrigações criadas, concluídas ou sincronizadas <strong>não geram aviso</strong> ao cliente. Se algo importante mudar num prazo, avise por Mensagens.</p></div>
+      <div class="note tip"><span class="ic">Bom saber</span><p>Várias obrigações concluídas na mesma sincronização viram <strong>um aviso só</strong>, com a lista. Obrigações que já chegam concluídas na primeira sincronização de uma empresa (o histórico) não geram aviso. O lembrete de vencimento sai uma vez por dia, por volta das 8h, e não se repete no mesmo dia.</p></div>
     </section>
 
     <!-- ================= GLOSSÁRIO ================= -->

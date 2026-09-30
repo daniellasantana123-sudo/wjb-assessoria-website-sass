@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
+import { notifyObligationEvent } from "@/lib/notifications";
 import {
   createObligationSchema,
   type CreateObligationValues,
@@ -61,6 +62,13 @@ export async function createObligation(
     metadata: { title: obligation.title, due_date: obligation.due_date },
   });
 
+  await notifyObligationEvent({
+    tenantId,
+    actorId: session.userId,
+    kind: "created",
+    obligations: [{ id: obligation.id, title: obligation.title, dueDate: obligation.due_date }],
+  });
+
   revalidatePath(`/portal/obrigacoes`);
   revalidatePath(`/admin/empresas/${tenantId}`);
   return undefined;
@@ -84,10 +92,20 @@ export async function toggleObligationStatus(
     .from("obligations")
     .update({ status: nextStatus })
     .eq("id", obligationId)
-    .select("tenant_id")
+    .select("tenant_id, title, due_date")
     .maybeSingle();
 
   if (!obligation) return;
+
+  // Reabrir não avisa ninguém; concluir avisa o cliente.
+  if (nextStatus === "done") {
+    await notifyObligationEvent({
+      tenantId: obligation.tenant_id,
+      actorId: session.userId,
+      kind: "completed",
+      obligations: [{ id: obligationId, title: obligation.title, dueDate: obligation.due_date }],
+    });
+  }
 
   await supabase.from("audit_log").insert({
     actor_id: session.userId,

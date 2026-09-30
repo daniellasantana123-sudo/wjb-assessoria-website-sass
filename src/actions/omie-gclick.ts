@@ -26,7 +26,7 @@ import {
 } from "@/lib/integrations/client-search";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
-import { notifyIntegrationStatus } from "@/lib/notifications";
+import { notifyIntegrationStatus, notifyObligationEvent } from "@/lib/notifications";
 
 export type OmieActionState =
   { error: string } | { success: string } | undefined;
@@ -484,6 +484,9 @@ export async function syncOmieObligations(
   let created = 0;
   let updated = 0;
   let removed = 0;
+  // Só a TRANSIÇÃO pendente -> concluída avisa o cliente. Tarefas que já
+  // chegam concluídas na primeira sincronização são histórico, não notícia.
+  const completedNow: { id: string; title: string; dueDate: string }[] = [];
 
   for (const item of plan.upserts) {
     const current = existingByExternalId.get(item.externalId);
@@ -526,6 +529,9 @@ export async function syncOmieObligations(
       .eq("id", current.id);
 
     if (!error && changed) updated++;
+    if (!error && current.status !== "done" && item.status === "done") {
+      completedNow.push({ id: current.id, title: item.title, dueDate: item.dueDate });
+    }
   }
 
   if (plan.removals.length > 0) {
@@ -563,6 +569,13 @@ export async function syncOmieObligations(
       matched: plan.matched,
       truncated,
     },
+  });
+
+  await notifyObligationEvent({
+    tenantId,
+    actorId: session.userId,
+    kind: "completed",
+    obligations: completedNow,
   });
 
   revalidatePath(`/admin/empresas/${tenantId}`);
