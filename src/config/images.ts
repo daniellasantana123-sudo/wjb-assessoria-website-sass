@@ -328,6 +328,3 @@ export function getServiceOgImage(slug: string): string {
   return `/images/og/servico-${slug}.webp`;
 }
 
-export function getBlogOgImage(slug: string): string {
-  return `/images/og/blog-${slug}.webp`;
-}

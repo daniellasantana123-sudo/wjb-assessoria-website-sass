@@ -11,7 +11,6 @@ import { RevealStagger } from "@/components/shared/reveal-on-scroll";
 import { ShareButtons } from "@/components/shared/share-buttons";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { getBlogOgImage } from "@/config/images";
 import { headerCtas } from "@/config/navigation";
 import { getServicePage } from "@/config/service-pages";
 import {
@@ -40,9 +39,7 @@ export async function generateMetadata({
     title: post.title,
     description: post.description,
     keywords: post.tags,
-    openGraph: {
-      images: [{ url: getBlogOgImage(post.slug), width: 1200, height: 630 }],
-    },
+    // Imagem de compartilhamento: gerada por `opengraph-image.ts` (mesma pasta).
   };
 }
 
