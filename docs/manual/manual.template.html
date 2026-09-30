@@ -1,0 +1,948 @@
+<title>Manual da Plataforma WJB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: caderno de procedimentos - índice fixo à esquerda, fichas de tela à direita, faixa azul-marinho só no topo. */
+:root {
+  --ink: #16202e;
+  --ink-soft: #4a5566;
+  --ink-faint: #6b7686;
+  --paper: #f5f7fb;
+  --sheet: #ffffff;
+  --line: #dde3ec;
+  --line-strong: #c6cfdc;
+  --brand: #194382;
+  --brand-deep: #0e2447;
+  --brand-tint: #eaf0f9;
+  --brand-ink: #194382;
+  --leaf: #f06a00;
+  --leaf-tint: #fff1e6;
+  --ok: #265e3e;
+  --ok-bg: #e6f5ec;
+  --warn: #714f14;
+  --warn-bg: #faf0e1;
+  --bad: #8e2332;
+  --bad-bg: #f8e3e6;
+  --info: #1e5167;
+  --info-bg: #e3f1f7;
+  --shadow: 0 1px 2px rgba(14, 36, 71, 0.06), 0 8px 24px -12px rgba(14, 36, 71, 0.18);
+  --display: "Lexend", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --r: 6px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #e7ecf4; --ink-soft: #b3bdcc; --ink-faint: #8d98a9;
+    --paper: #0b1320; --sheet: #121c2c; --line: #243249; --line-strong: #31415c;
+    --brand: #6f9be0; --brand-deep: #0a1830; --brand-tint: #16284a; --brand-ink: #9dbcf0;
+    --leaf: #ff8a2b; --leaf-tint: #2e1c0d;
+    --ok: #8fd6ab; --ok-bg: #12301f; --warn: #f0c878; --warn-bg: #33260d;
+    --bad: #f3a1ad; --bad-bg: #3a1419; --info: #9fd3ea; --info-bg: #10303e;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #e7ecf4; --ink-soft: #b3bdcc; --ink-faint: #8d98a9;
+  --paper: #0b1320; --sheet: #121c2c; --line: #243249; --line-strong: #31415c;
+  --brand: #6f9be0; --brand-deep: #0a1830; --brand-tint: #16284a; --brand-ink: #9dbcf0;
+  --leaf: #ff8a2b; --leaf-tint: #2e1c0d;
+  --ok: #8fd6ab; --ok-bg: #12301f; --warn: #f0c878; --warn-bg: #33260d;
+  --bad: #f3a1ad; --bad-bg: #3a1419; --info: #9fd3ea; --info-bg: #10303e;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 17px/1.6 var(--body); -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--display); color: var(--ink); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+p { margin: 0; }
+a { color: var(--brand-ink); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; border-radius: 3px; }
+code, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .86em; }
+.logo-light { display: block; }
+.logo-dark { display: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-light { display: none; } :root:not([data-theme="light"]) .logo-dark { display: block; } }
+:root[data-theme="dark"] .logo-light { display: none; }
+:root[data-theme="dark"] .logo-dark { display: block; }
+
+/* ---------- Capa ---------- */
+.cover { background: var(--brand-deep); color: #fff; position: relative; overflow: hidden; }
+.cover::after {
+  content: ""; position: absolute; right: -80px; top: -60px; width: 420px; height: 420px;
+  border: 26px solid rgba(255,255,255,.06); border-radius: 50% 0 50% 50%; transform: rotate(18deg);
+}
+.cover-inner { max-width: 1180px; margin: 0 auto; padding: 36px 20px 44px; position: relative; z-index: 1; display: grid; gap: 28px; }
+.cover-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.cover-top img { height: 58px; width: auto; }
+.cover-meta { font-family: var(--display); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.72); }
+.cover h1 { color: #fff; font-size: clamp(34px, 5.4vw, 58px); line-height: 1.05; font-weight: 700; max-width: 16ch; }
+.cover h1 em { font-style: normal; color: #ffb27a; }
+.cover .lede { color: rgba(255,255,255,.84); font-size: 19px; max-width: 60ch; }
+.audience { display: flex; flex-wrap: wrap; gap: 10px; }
+.audience span { border: 1px solid rgba(255,255,255,.28); border-radius: 999px; padding: 6px 14px; font-size: 14px; color: #fff; }
+.audience b { color: #ffb27a; font-weight: 600; }
+
+/* ---------- Estrutura ---------- */
+.shell { max-width: 1180px; margin: 0 auto; padding: 32px 20px 80px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 44px; }
+@media (max-width: 920px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+.toc { position: sticky; top: 20px; align-self: start; max-height: calc(100vh - 40px); overflow: auto; font-size: 15px; }
+@media (max-width: 920px) { .toc { position: static; max-height: none; } }
+.toc-box { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+.toc summary { font-family: var(--display); font-weight: 600; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+.toc summary::-webkit-details-marker { display: none; }
+.toc summary::after { content: "+"; color: var(--ink-faint); font-weight: 400; }
+.toc details[open] summary::after { content: "–"; }
+.toc ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: block; padding: 6px 8px; border-radius: 4px; text-decoration: none; color: var(--ink-soft); }
+.toc a:hover { background: var(--brand-tint); color: var(--brand-ink); }
+.toc .sub a { padding-left: 20px; font-size: 14px; }
+.toc .part { margin-top: 10px; font-family: var(--display); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); padding: 0 8px; }
+.search { margin-top: 12px; }
+.search input { width: 100%; padding: 9px 11px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--paper); color: var(--ink); font: inherit; font-size: 15px; }
+.search small { display: block; color: var(--ink-faint); font-size: 12.5px; margin-top: 6px; }
+
+main { min-width: 0; display: grid; gap: 64px; }
+section.chapter { display: grid; gap: 24px; scroll-margin-top: 20px; }
+.chapter-head { display: grid; gap: 8px; border-bottom: 2px solid var(--ink); padding-bottom: 14px; }
+.eyebrow { font-family: var(--display); font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--leaf); font-weight: 600; }
+.chapter-head h2 { font-size: clamp(28px, 3.6vw, 38px); font-weight: 700; }
+.chapter-head p { color: var(--ink-soft); max-width: 68ch; }
+h3 { font-size: 22px; font-weight: 600; }
+h4 { font-size: 16px; font-weight: 600; }
+.prose { display: grid; gap: 12px; max-width: 70ch; color: var(--ink-soft); }
+.prose strong { color: var(--ink); }
+
+/* ---------- Ficha de tela ---------- */
+.screen {
+  background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow);
+  display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; scroll-margin-top: 20px;
+}
+.screen-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.screen-head h3 { font-size: 20px; }
+.path { font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: var(--brand-ink); background: var(--brand-tint); padding: 3px 8px; border-radius: 4px; }
+.screen-body { padding: 20px 22px 22px; display: grid; gap: 18px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; }
+.cols > * { min-width: 0; }
+.block h4 { font-family: var(--display); font-size: 12.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-faint); margin-bottom: 8px; }
+ul.list { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+ul.list li { position: relative; padding-left: 18px; color: var(--ink-soft); }
+ul.list li::before { content: ""; position: absolute; left: 2px; top: .68em; width: 7px; height: 7px; border-radius: 2px; background: var(--brand); }
+ul.list li strong { color: var(--ink); }
+.ui { font-family: var(--display); font-size: .88em; font-weight: 500; color: var(--ink); background: var(--paper); border: 1px solid var(--line-strong); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.q { color: var(--ink); font-style: italic; }
+.who { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- Selos ---------- */
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 10px; white-space: nowrap; line-height: 1.6; }
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.c-ok { background: var(--ok-bg); color: var(--ok); }
+.c-warn { background: var(--warn-bg); color: var(--warn); }
+.c-bad { background: var(--bad-bg); color: var(--bad); }
+.c-info { background: var(--info-bg); color: var(--info); }
+.c-neutral { background: var(--paper); color: var(--ink-soft); border: 1px solid var(--line); }
+.c-brand { background: var(--brand-tint); color: var(--brand-ink); }
+
+/* ---------- Avisos ---------- */
+.note { border-radius: var(--r); padding: 14px 16px; display: grid; grid-template-columns: auto minmax(0,1fr); gap: 12px; align-items: start; font-size: 15.5px; }
+.note .ic { font-family: var(--display); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding-top: 2px; }
+.note p { color: var(--ink-soft); }
+.note strong { color: var(--ink); }
+.note.tip { background: var(--brand-tint); }
+.note.tip .ic { color: var(--brand-ink); }
+.note.warn { background: var(--leaf-tint); }
+.note.warn .ic { color: var(--leaf); }
+
+/* ---------- Passo a passo ---------- */
+ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; display: grid; gap: 0; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 38px minmax(0,1fr); gap: 14px; position: relative; padding-bottom: 18px; }
+ol.steps > li::before {
+  content: counter(s); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--brand); color: #fff; font-family: var(--display); font-weight: 600; font-size: 15px; position: relative; z-index: 1;
+}
+ol.steps > li:not(:last-child)::after { content: ""; position: absolute; left: 18px; top: 38px; bottom: 0; width: 2px; background: var(--line-strong); }
+ol.steps > li > div { padding-top: 6px; color: var(--ink-soft); display: grid; gap: 4px; }
+ol.steps > li > div strong:first-child { color: var(--ink); font-family: var(--display); font-weight: 600; font-size: 16.5px; }
+
+/* ---------- Mini telas (ilustração) ---------- */
+.mock { border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--paper); overflow: hidden; font-family: var(--body); font-size: 12.5px; color: var(--ink-soft); }
+.mock-bar { display: flex; align-items: center; gap: 6px; padding: 7px 10px; background: var(--sheet); border-bottom: 1px solid var(--line); }
+.mock-bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); display: block; }
+.mock-bar span { margin-left: 8px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mock-portal { display: grid; grid-template-columns: 150px minmax(0,1fr); min-height: 250px; }
+.mock-side { background: var(--sheet); border-right: 1px solid var(--line); padding: 10px 8px; display: grid; align-content: start; gap: 2px; }
+.mock-side img { height: 20px; width: auto; margin: 2px 6px 10px; }
+.mock-side div { padding: 4px 8px; border-radius: 4px; display: flex; justify-content: space-between; }
+.mock-side .on { background: var(--brand-tint); color: var(--brand-ink); font-weight: 600; }
+.mock-side .n { background: var(--brand); color: #fff; border-radius: 999px; font-size: 10px; padding: 0 6px; }
+.mock-main { padding: 12px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.mock-main b { color: var(--ink); font-family: var(--display); font-size: 14px; }
+.mock-cards { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+.mock-card { background: var(--sheet); border: 1px solid var(--line); border-radius: 4px; padding: 7px; display: grid; gap: 2px; min-width: 0; }
+.mock-card strong { color: var(--ink); font-family: var(--display); font-size: 17px; font-variant-numeric: tabular-nums; }
+.mock-card small { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mock-bars { display: flex; align-items: flex-end; gap: 8px; height: 62px; background: var(--sheet); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+.mock-bars div { flex: 1; display: grid; align-content: end; gap: 0; }
+.mock-bars div::before { content: ""; height: var(--p, 20px); background: var(--line-strong); border-radius: 2px 2px 0 0; }
+.mock-bars div::after { content: ""; height: var(--d, 20px); background: var(--brand); }
+@media (max-width: 560px) { .mock-portal { grid-template-columns: minmax(0,1fr); } .mock-side { display: none; } .mock-cards { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.mock-admin { padding: 12px; display: grid; gap: 10px; }
+.mock-admin .grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+@media (max-width: 560px) { .mock-admin .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+.mock-admin .grid div { background: var(--sheet); border: 1px solid var(--line); border-radius: 4px; padding: 8px; min-width: 0; }
+.mock-admin .grid b { display: block; color: var(--ink); font-family: var(--display); font-size: 12.5px; }
+.mock-admin .grid small { font-size: 10px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mock-form { padding: 16px; display: grid; gap: 8px; max-width: 320px; margin: 0 auto; }
+.mock-form b { color: var(--ink); font-family: var(--display); font-size: 14px; }
+.mock-field { display: grid; gap: 3px; }
+.mock-field span { font-size: 11px; color: var(--ink); font-weight: 600; }
+.mock-field div { height: 26px; background: var(--sheet); border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+.mock-field div.ro { background: var(--line); color: var(--ink-faint); }
+.mock-btn { background: var(--brand); color: #fff; border-radius: 4px; text-align: center; padding: 6px; font-weight: 600; font-size: 11.5px; }
+.mock-btn.alt { background: var(--sheet); color: var(--ink); border: 1px solid var(--line-strong); }
+
+/* ---------- Visão geral ---------- */
+.duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px; }
+.panel { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; gap: 12px; align-content: start; }
+.panel .tag { font-family: var(--display); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+.panel.portal .tag { color: var(--brand-ink); }
+.panel.admin .tag { color: var(--leaf); }
+.panel h3 { font-size: 24px; }
+.panel p { color: var(--ink-soft); }
+.flow { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: stretch; }
+.flow .node { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 4px; min-width: 0; }
+.flow .node b { font-family: var(--display); color: var(--ink); }
+.flow .node small { color: var(--ink-soft); font-size: 14px; }
+.flow .node.hub { border: 2px solid var(--brand); }
+.flow .arrow { align-self: center; color: var(--ink-faint); font-size: 13px; text-align: center; font-family: var(--display); }
+.flow .arrow span { display: block; font-size: 22px; line-height: 1; color: var(--brand); }
+@media (max-width: 760px) { .flow { grid-template-columns: minmax(0,1fr); } .flow .arrow span { transform: rotate(90deg); } }
+
+/* ---------- Tabelas ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-family: var(--display); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--paper); position: sticky; top: 0; }
+tbody tr:last-child td { border-bottom: 0; }
+td { color: var(--ink-soft); }
+td:first-child { color: var(--ink); }
+.matrix td:not(:first-child), .matrix th:not(:first-child) { text-align: center; white-space: nowrap; }
+.yes { color: var(--ok); font-weight: 700; }
+.no { color: var(--ink-faint); }
+.part-note { font-size: 13px; color: var(--ink-faint); }
+
+/* ---------- Glossário ---------- */
+.gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.gloss .panel { gap: 10px; }
+.gloss dl { margin: 0; display: grid; gap: 10px; }
+.gloss dt { display: flex; }
+.gloss dd { margin: -4px 0 0; color: var(--ink-soft); font-size: 15px; }
+
+/* ---------- FAQ ---------- */
+.faq { display: grid; gap: 10px; }
+.faq details { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r); }
+.faq summary { cursor: pointer; padding: 14px 18px; font-family: var(--display); font-weight: 500; color: var(--ink); list-style: none; display: flex; gap: 12px; justify-content: space-between; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--brand); font-weight: 600; }
+.faq details[open] summary::after { content: "–"; }
+.faq .ans { padding: 0 18px 16px; color: var(--ink-soft); display: grid; gap: 8px; }
+
+.foot { border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; color: var(--ink-faint); font-size: 14px; }
+.foot img { height: 34px; width: auto; }
+.hidden-by-search { display: none !important; }
+mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padding: 0 1px; }
+
+@media print {
+  body { background: #fff; font-size: 11pt; }
+  .toc, .search { display: none; }
+  .shell { display: block; padding-top: 0; }
+  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .screen, .panel, ol.steps > li, .note, tr { break-inside: avoid; }
+  section.chapter { break-before: page; }
+  .faq details { border: 0; }
+  .faq .ans { display: grid !important; }
+  a { color: inherit; text-decoration: none; }
+}
+</style>
+
+<header class="cover">
+  <div class="cover-inner">
+    <div class="cover-top">
+      <img src="{{LOGO_WHITE}}" alt="WJB Assessoria Contábil">
+      <p class="cover-meta">Manual interno · Versão de 30/09/2026</p>
+    </div>
+    <h1>Manual da <em>Plataforma</em> WJB</h1>
+    <p class="lede">Como usar o Portal do Cliente e o Admin WJB no dia a dia: cada tela, cada botão e as rotinas mais comuns, do primeiro acesso de um cliente até a sincronização com o G-Click.</p>
+    <div class="audience">
+      <span><b>Para</b> a equipe da WJB</span>
+      <span>Portal do Cliente</span>
+      <span>Admin WJB</span>
+      <span>wjbassessoriacontabil.com.br/login</span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="toc" aria-label="Índice do manual">
+    <div class="toc-box">
+      <details id="toc-details" open>
+        <summary>Índice</summary>
+        <ol>
+          <li class="part">Começo</li>
+          <li><a href="#visao">Visão geral</a></li>
+          <li><a href="#acesso">Acesso e senha</a></li>
+          <li class="part">Portal do Cliente</li>
+          <li><a href="#portal">O Portal</a></li>
+          <li class="sub"><a href="#p-visao">Visão geral</a></li>
+          <li class="sub"><a href="#p-docs">Documentos e Guias</a></li>
+          <li class="sub"><a href="#p-obrig">Obrigações e Calendário</a></li>
+          <li class="sub"><a href="#p-rel">Relatórios</a></li>
+          <li class="sub"><a href="#p-conversa">Mensagens e Suporte</a></li>
+          <li class="sub"><a href="#p-usuarios">Usuários</a></li>
+          <li class="sub"><a href="#p-seg">Notificações e Segurança</a></li>
+          <li class="part">Admin WJB</li>
+          <li><a href="#admin">O Admin</a></li>
+          <li class="sub"><a href="#a-empresas">Empresas</a></li>
+          <li class="sub"><a href="#a-ficha">Ficha da empresa</a></li>
+          <li class="sub"><a href="#a-gclick">Painel do G-Click</a></li>
+          <li class="sub"><a href="#a-atendimento">Tickets e Mensagens</a></li>
+          <li class="sub"><a href="#a-usuarios">Usuários (equipe)</a></li>
+          <li class="sub"><a href="#a-outros">Leads, Integrações e Logs</a></li>
+          <li class="part">Referência</li>
+          <li><a href="#rotinas">Rotinas passo a passo</a></li>
+          <li><a href="#papeis">Papéis e permissões</a></li>
+          <li><a href="#notificacoes">Notificações e e-mails</a></li>
+          <li><a href="#glossario">Glossário de status</a></li>
+          <li><a href="#problemas">Problemas comuns</a></li>
+        </ol>
+      </details>
+      <div class="search">
+        <label for="busca" class="part" style="padding:0">Buscar no manual</label>
+        <input id="busca" type="search" placeholder="Ex.: convite, guia, G-Click" autocomplete="off">
+        <small id="busca-info" aria-live="polite">Filtra as fichas que citam o termo.</small>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ================= VISÃO GERAL ================= -->
+    <section class="chapter" id="visao">
+      <div class="chapter-head">
+        <p class="eyebrow">Começo</p>
+        <h2>Visão geral</h2>
+        <p>A plataforma tem duas áreas, com o mesmo endereço de login. Quem entra cai na área certa automaticamente: a equipe WJB vai para o Admin e os clientes vão para o Portal.</p>
+      </div>
+
+      <div class="duo">
+        <article class="panel portal">
+          <p class="tag">Para o cliente</p>
+          <h3>Portal do Cliente</h3>
+          <p>Onde a empresa cliente acompanha a própria contabilidade: prazos, documentos, guias, relatórios e conversa com a WJB. O cliente só vê a empresa (ou as empresas) a que foi vinculado.</p>
+          <div class="who"><span class="chip c-brand">Responsável</span><span class="chip c-neutral">Membro</span></div>
+        </article>
+        <article class="panel admin">
+          <p class="tag">Para a equipe WJB</p>
+          <h3>Admin WJB</h3>
+          <p>Onde a equipe cadastra empresas, convida pessoas, envia documentos e guias, lança obrigações, responde chamados e liga cada cliente ao G-Click.</p>
+          <div class="who"><span class="chip c-brand">Super admin</span><span class="chip c-neutral">Contador</span><span class="chip c-neutral">Atendimento</span></div>
+        </article>
+      </div>
+
+      <h3>Onde o G-Click entra</h3>
+      <div class="flow" role="img" aria-label="O G-Click envia obrigações e andamento para a plataforma WJB, que mostra tudo ao cliente no Portal.">
+        <div class="node"><b>G-Click</b><small>Onde a equipe já controla as tarefas do escritório. Continua sendo a ferramenta de produção.</small></div>
+        <div class="arrow"><span>→</span>obrigações e andamento</div>
+        <div class="node hub"><b>Plataforma WJB</b><small>Recebe as obrigações e guarda documentos, guias, chamados e mensagens.</small></div>
+        <div class="arrow"><span>→</span>o que o cliente vê</div>
+        <div class="node"><b>Portal do Cliente</b><small>Prazos, andamento e quem da WJB cuida da empresa.</small></div>
+      </div>
+      <div class="note tip"><span class="ic">Importante</span><p>A sincronização de obrigações é <strong>só de leitura</strong>: a plataforma lê o G-Click e nunca altera tarefas lá. A plataforma só escreve no G-Click quando alguém clica em <span class="ui">Sincronizar cadastro da empresa</span>: cria o cliente se ele não existe lá, ou atualiza nome e CNPJ de um cliente já vinculado.</p></div>
+    </section>
+
+    <!-- ================= ACESSO ================= -->
+    <section class="chapter" id="acesso">
+      <div class="chapter-head">
+        <p class="eyebrow">Começo</p>
+        <h2>Acesso e senha</h2>
+        <p>Não existe cadastro aberto: toda conta começa com um convite, feito pela WJB no Admin ou pelo Responsável da empresa no Portal.</p>
+      </div>
+
+      <div class="screen">
+        <div class="screen-head"><h3>Primeiro acesso por convite</h3><span class="path">/definir-senha?boas-vindas=1</span></div>
+        <div class="screen-body">
+          <div class="cols">
+            <ol class="steps">
+              <li><div><strong>A pessoa recebe um único e-mail</strong><span>Assunto: <span class="q">Crie sua senha de acesso - WJB Assessoria Contábil</span>.</span></div></li>
+              <li><div><strong>Clica em <span class="ui">Criar minha senha</span></strong><span>O link é de uso único e abre a tela de boas-vindas.</span></div></li>
+              <li><div><strong>Confere os dados</strong><span>O e-mail aparece travado. O nome vem preenchido e pode ser corrigido.</span></div></li>
+              <li><div><strong>Cria a senha</strong><span>Mínimo de 8 caracteres, com pelo menos uma letra e um número. O ícone de olho mostra o que foi digitado.</span></div></li>
+              <li><div><strong><span class="ui">Criar meu acesso e entrar</span></strong><span>Pronto: a pessoa já cai no Portal ou no Admin.</span></div></li>
+            </ol>
+            <div class="mock" aria-hidden="true">
+              <div class="mock-bar"><i></i><i></i><i></i><span>wjbassessoriacontabil.com.br/definir-senha</span></div>
+              <div class="mock-form">
+                <b>Boas-vindas à Plataforma WJB</b>
+                <div class="mock-field"><span>E-mail de acesso</span><div class="ro">maria@empresa.com.br</div></div>
+                <div class="mock-field"><span>Nome completo</span><div>Maria Souza</div></div>
+                <div class="mock-field"><span>Crie uma senha</span><div>••••••••<em>◉</em></div></div>
+                <div class="mock-field"><span>Confirme a senha</span><div>••••••••<em>◉</em></div></div>
+                <div class="mock-btn">Criar meu acesso e entrar</div>
+              </div>
+            </div>
+          </div>
+          <div class="note warn"><span class="ic">Atenção</span><p>Se a pessoa cair no login com o aviso <span class="q">Esse link de acesso expirou ou já foi usado</span>, basta reenviar o convite (Admin, ficha da empresa ou Usuários) ou pedir para ela usar <span class="ui">Esqueci minha senha</span>. O Gmail às vezes "abre" o link sozinho para checar segurança e gasta o uso único.</p></div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-head"><h3>Entrar, recuperar senha e sair</h3><span class="path">/login</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Entrar</h4><ul class="list">
+            <li>E-mail e senha, depois <span class="ui">Entrar</span>.</li>
+            <li>Quem tentou abrir uma página específica (por exemplo, o link de um chamado vindo por e-mail) volta direto para ela depois de entrar.</li>
+            <li>Conta suspensa não entra: a tela responde <span class="q">E-mail ou senha incorretos.</span></li>
+          </ul></div>
+          <div class="block"><h4>Esqueci minha senha</h4><ul class="list">
+            <li>Link <span class="ui">Esqueci minha senha</span> no login.</li>
+            <li>Informar o <strong>e-mail cadastrado</strong> e clicar em <span class="ui">Enviar link de redefinição</span>.</li>
+            <li>Chega o e-mail <span class="q">Redefina sua senha - WJB Assessoria Contábil</span>; o link abre a tela <strong>Definir senha</strong>.</li>
+            <li>A resposta na tela é sempre a mesma, exista o e-mail ou não. Isso é proposital, por segurança.</li>
+          </ul></div>
+          <div class="block"><h4>Sair</h4><ul class="list">
+            <li>Portal: <span class="ui">Sair</span> no rodapé da barra lateral (ou no topo, no celular).</li>
+            <li>Admin: <span class="ui">Sair</span> no topo da página inicial do Admin.</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-head"><h3>Verificação em duas etapas (opcional)</h3><span class="path">/portal/seguranca · /admin/seguranca</span></div>
+        <div class="screen-body">
+          <ol class="steps">
+            <li><div><strong>Abrir Segurança</strong><span>No menu do Portal ou no card <span class="ui">Segurança</span> do Admin.</span></div></li>
+            <li><div><strong><span class="ui">Ativar verificação em duas etapas</span></strong><span>Aparece um QR code. Ler com um aplicativo autenticador (Google Authenticator, Authy, 1Password etc.). Se não conseguir ler, dá para digitar o código mostrado abaixo do QR.</span></div></li>
+            <li><div><strong>Digitar o código de 6 dígitos e <span class="ui">Confirmar</span></strong><span>A partir daí, depois da senha, o login pede o código do aplicativo.</span></div></li>
+          </ol>
+          <div class="note tip"><span class="ic">Recomendação</span><p>Ative para toda a equipe com papel <strong>Super admin</strong>: é a conta com mais poderes na plataforma. O botão <span class="ui">Desativar</span> desliga sem pedir confirmação, então use com cuidado.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PORTAL ================= -->
+    <section class="chapter" id="portal">
+      <div class="chapter-head">
+        <p class="eyebrow">Portal do Cliente</p>
+        <h2>O Portal, tela por tela</h2>
+        <p>Leia este capítulo para saber exatamente o que o cliente vê e conseguir orientá-lo por telefone ou WhatsApp. O menu lateral segue esta ordem: Visão geral, Notificações, Documentos, Guias, Usuários, Obrigações, Calendário, Relatórios, Mensagens, Suporte e Segurança.</p>
+      </div>
+
+      <div class="screen" id="p-visao">
+        <div class="screen-head"><h3>Visão geral</h3><span class="path">/portal</span></div>
+        <div class="screen-body">
+          <div class="mock" aria-hidden="true">
+            <div class="mock-bar"><i></i><i></i><i></i><span>wjbassessoriacontabil.com.br/portal</span></div>
+            <div class="mock-portal">
+              <div class="mock-side">
+                <img src="{{LOGO_COLOR}}" alt="">
+                <div class="on">Visão geral</div><div>Notificações <span class="n">2</span></div><div>Documentos</div><div>Guias</div><div>Usuários</div><div>Obrigações</div><div>Calendário</div><div>Relatórios</div><div>Mensagens</div><div>Suporte</div>
+              </div>
+              <div class="mock-main">
+                <b>Empresa Exemplo Ltda</b>
+                <small>Painel de setembro de 2026 · 3 obrigações pendentes · 12 documentos no total</small>
+                <div class="mock-cards">
+                  <div class="mock-card"><small>Obrigações pendentes</small><strong>3</strong><small style="color:var(--bad)">1 atrasada</small></div>
+                  <div class="mock-card"><small>Documentos</small><strong>12</strong><small>arquivos enviados</small></div>
+                  <div class="mock-card"><small>Guias</small><strong>4</strong><small>guias de pagamento</small></div>
+                  <div class="mock-card"><small>Pessoas</small><strong>2</strong><small>com acesso</small></div>
+                </div>
+                <div class="mock-bars"><div style="--p:14px;--d:26px"></div><div style="--p:8px;--d:32px"></div><div style="--p:20px;--d:18px"></div><div style="--p:30px;--d:4px"></div><div style="--p:22px;--d:0px"></div><div style="--p:18px;--d:0px"></div></div>
+              </div>
+            </div>
+          </div>
+          <p class="part-note">Ilustração com dados de exemplo.</p>
+          <div class="cols">
+            <div class="block"><h4>O que aparece</h4><ul class="list">
+              <li><strong>4 indicadores:</strong> obrigações pendentes (com aviso de atrasadas), documentos, guias e pessoas com acesso.</li>
+              <li><strong>Obrigações por mês:</strong> gráfico com os 2 meses anteriores, o atual e os 3 seguintes.</li>
+              <li><strong>Cumprimento do mês:</strong> quantas obrigações do mês já foram concluídas.</li>
+              <li><strong>Próximas obrigações:</strong> as 5 próximas pendentes.</li>
+              <li><strong>Quem cuida da sua empresa:</strong> os responsáveis vindos do G-Click, quando a empresa está vinculada.</li>
+            </ul></div>
+            <div class="block"><h4>O que o cliente pode fazer</h4><ul class="list">
+              <li><span class="ui">WhatsApp</span>, <span class="ui">E-mail</span> ou <span class="ui">Abrir chamado</span> no quadro "Precisa de ajuda?".</li>
+              <li><span class="ui">Ver no Portal Contábil</span>: abre o portal do G-Click em nova aba, quando a WJB cadastrou o link.</li>
+              <li>Quem tem mais de uma empresa troca de empresa no rodapé do menu (no celular, dentro do menu).</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen" id="p-docs">
+        <div class="screen-head"><h3>Documentos e Guias</h3><span class="path">/portal/documentos · /portal/guias</span></div>
+        <div class="screen-body">
+          <div class="prose"><p>As duas telas funcionam igual. <strong>Documentos</strong> é para arquivos em geral (contratos, extratos, notas); <strong>Guias</strong> é para guias de pagamento (DAS, DARF etc.).</p></div>
+          <div class="cols">
+            <div class="block"><h4>Enviar um arquivo</h4><ul class="list">
+              <li>Escolher o arquivo e clicar em <span class="ui">Enviar</span>.</li>
+              <li><strong>Até 20 MB</strong>. Aceita PDF, PNG, JPEG, WEBP, TXT, CSV, XML, Word e Excel.</li>
+              <li>Acentos e espaços do nome viram "_" (ex.: "Declaração 2026.pdf" fica "Declara__o_2026.pdf").</li>
+              <li>Ao enviar, a outra parte recebe aviso: cliente enviou, a equipe WJB é avisada; a WJB enviou, o cliente é avisado.</li>
+            </ul></div>
+            <div class="block"><h4>Encontrar e baixar</h4><ul class="list">
+              <li>Busca por nome em <span class="ui">Buscar por nome do arquivo</span> (Enter para buscar).</li>
+              <li>Clicar no nome baixa o arquivo. Cada download fica registrado nos Logs.</li>
+              <li><strong>O cliente não apaga arquivos.</strong> Só a equipe WJB, no Admin.</li>
+            </ul></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen" id="p-obrig">
+        <div class="screen-head"><h3>Obrigações e Calendário</h3><span class="path">/portal/obrigacoes · /portal/calendario</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Obrigações</h4><ul class="list">
+            <li>Lista por vencimento, com selo <span class="chip c-neutral">Pendente</span> <span class="chip c-bad">Atrasada</span> ou <span class="chip c-ok">Concluída</span>.</li>
+            <li>Clicar numa obrigação abre o detalhe. Para as que vieram do G-Click aparece o <strong>Andamento</strong>: cada etapa, quando foi concluída e por quem, e <strong>Quem está cuidando</strong>.</li>
+            <li>O andamento é consultado no G-Click na hora. Se o G-Click estiver fora do ar, o prazo e o status continuam aparecendo.</li>
+            <li>Somente leitura para o cliente.</li>
+          </ul></div>
+          <div class="block"><h4>Calendário</h4><ul class="list">
+            <li>Grade do mês com cada obrigação no dia do vencimento, colorida pelo status. O dia de hoje fica destacado.</li>
+            <li><span class="ui">Mês anterior</span> e <span class="ui">Próximo mês</span> para navegar.</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="screen" id="p-rel">
+        <div class="screen-head"><h3>Relatórios e indicadores</h3><span class="path">/portal/relatorios</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Períodos</h4><ul class="list">
+            <li>Últimos 3, 6 (padrão) ou 12 meses, ou <strong>Ano atual</strong> (desde janeiro).</li>
+            <li>Indicadores: obrigações no período, cumprimento (%), documentos e guias recebidos e chamados em aberto.</li>
+            <li>Tabela <strong>Mês a mês</strong> com total.</li>
+          </ul></div>
+          <div class="block"><h4>Exportar CSV</h4><ul class="list">
+            <li><span class="ui">Exportar CSV</span> baixa a mesma tabela, pronta para abrir no Excel com acentos corretos.</li>
+            <li>Obrigações contam pela data de vencimento; documentos e guias, pela data de envio.</li>
+            <li>Indicadores financeiros (faturamento, impostos) <strong>ainda não existem</strong> e a própria tela avisa isso.</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="screen" id="p-conversa">
+        <div class="screen-head"><h3>Mensagens e Suporte</h3><span class="path">/portal/mensagens · /portal/suporte</span></div>
+        <div class="screen-body">
+          <div class="cols">
+            <div class="block"><h4>Mensagens</h4><ul class="list">
+              <li><strong>Uma conversa contínua</strong> por empresa, sem assunto e sem status. Bom para recados rápidos.</li>
+              <li>Mensagens da WJB aparecem à esquerda com "(WJB)".</li>
+              <li>Não aceita anexos: arquivos vão em Documentos.</li>
+            </ul></div>
+            <div class="block"><h4>Suporte (chamados)</h4><ul class="list">
+              <li>Para pedidos que precisam de acompanhamento. O cliente abre em <span class="ui">Abrir chamado</span>, com <strong>Assunto</strong> e <strong>Mensagem</strong>.</li>
+              <li>Cada chamado tem status: <span class="chip c-info">Aberto</span> <span class="chip c-warn">Em andamento</span> <span class="chip c-ok">Resolvido</span>. Só a WJB muda o status.</li>
+              <li>Chamado resolvido não aceita mais respostas; o cliente abre um novo se precisar.</li>
+            </ul></div>
+          </div>
+          <div class="note tip"><span class="ic">Dica</span><p>Oriente o cliente: <strong>dúvida rápida vai em Mensagens; pedido com prazo ou que precisa de resposta formal vai em Suporte.</strong> Assim nada se perde no meio da conversa.</p></div>
+        </div>
+      </div>
+
+      <div class="screen" id="p-usuarios">
+        <div class="screen-head"><h3>Usuários</h3><span class="path">/portal/usuarios</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Quem vê o quê</h4><ul class="list">
+            <li>Todos veem a lista de pessoas da empresa, com o papel de cada uma.</li>
+            <li>Só o <span class="chip c-brand">Responsável</span> vê o quadro <strong>Convidar colega</strong>.</li>
+            <li>O <span class="chip c-neutral">Membro</span> vê o aviso <span class="q">Só o responsável pela empresa pode convidar novas pessoas.</span></li>
+          </ul></div>
+          <div class="block"><h4>Convidar colega</h4><ul class="list">
+            <li>Nome, e-mail e papel (Membro ou Responsável), depois <span class="ui">Convidar</span>.</li>
+            <li>A tela confirma repetindo o e-mail: <span class="q">Convite enviado para …</span>. Confira se está certo.</li>
+            <li>Suspender, trocar papel ou tirar alguém: só a WJB, pelo Admin.</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="screen" id="p-seg">
+        <div class="screen-head"><h3>Notificações e Segurança</h3><span class="path">/portal/notificacoes · /portal/seguranca</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Notificações</h4><ul class="list">
+            <li>As 50 mais recentes. As não lidas têm fundo destacado e o menu mostra a contagem.</li>
+            <li>Clicar numa notificação marca como lida e abre o assunto.</li>
+            <li><span class="ui">Marcar todas como lidas</span> aparece quando há não lidas.</li>
+          </ul></div>
+          <div class="block"><h4>Segurança</h4><ul class="list">
+            <li>Verificação em duas etapas, opcional. Veja o passo a passo em <a href="#acesso">Acesso e senha</a>.</li>
+          </ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ADMIN ================= -->
+    <section class="chapter" id="admin">
+      <div class="chapter-head">
+        <p class="eyebrow">Admin WJB</p>
+        <h2>O Admin, tela por tela</h2>
+        <p>O Admin usa o cabeçalho do site e não tem menu lateral: tudo parte da página inicial <span class="path">/admin</span>, que mostra um card para cada área.</p>
+      </div>
+
+      <div class="mock" aria-hidden="true">
+        <div class="mock-bar"><i></i><i></i><i></i><span>wjbassessoriacontabil.com.br/admin</span></div>
+        <div class="mock-admin">
+          <b style="color:var(--ink);font-family:var(--display);font-size:15px">Olá, Daniella</b>
+          <div class="grid">
+            <div><b>Empresas</b><small>Cadastrar empresas e convidar pessoas</small></div>
+            <div><b>Leads</b><small>Contatos vindos do site</small></div>
+            <div><b>Usuários</b><small>Time interno da WJB</small></div>
+            <div><b>Tickets</b><small>Chamados de todas as empresas</small></div>
+            <div><b>Mensagens</b><small>Conversa com cada empresa</small></div>
+            <div><b>Notificações</b><small>Avisos de tickets e mensagens</small></div>
+            <div><b>Integrações</b><small>Omie.G-Click e feature flags</small></div>
+            <div><b>Logs</b><small>Auditoria de ações sensíveis</small></div>
+            <div><b>Segurança</b><small>Verificação em duas etapas</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen" id="a-empresas">
+        <div class="screen-head"><h3>Empresas</h3><span class="path">/admin/empresas</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Cadastrar</h4><ul class="list">
+            <li>Quadro <strong>Nova empresa</strong>: nome (obrigatório) e CNPJ.</li>
+            <li><span class="ui">Criar empresa</span> abre direto a ficha da empresa.</li>
+            <li>Preencha o <strong>CNPJ</strong> mesmo que pareça opcional: sem ele não dá para vincular ou criar a empresa no G-Click.</li>
+          </ul></div>
+          <div class="block"><h4>Encontrar</h4><ul class="list">
+            <li><span class="ui">Buscar por nome ou CNPJ</span>.</li>
+            <li>A lista mostra nome, CNPJ e o selo <span class="chip c-bad">Suspensa</span> quando for o caso. <span class="ui">Ver empresa →</span> abre a ficha.</li>
+            <li>Empresas não são excluídas, só suspensas.</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="screen" id="a-ficha">
+        <div class="screen-head"><h3>Ficha da empresa</h3><span class="path">/admin/empresas/[empresa]</span></div>
+        <div class="screen-body">
+          <div class="prose"><p>É a tela mais usada do Admin. Tudo o que diz respeito a um cliente fica aqui, nesta ordem, de cima para baixo:</p></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Seção</th><th>Para que serve</th><th>Quem pode</th></tr></thead>
+            <tbody>
+              <tr><td>Suspender / Reativar empresa</td><td>Corta o acesso de todos da empresa ao Portal. Pede confirmação.</td><td>Super admin</td></tr>
+              <tr><td>Editar empresa</td><td>Corrigir nome e CNPJ. <span class="ui">Salvar alterações</span>.</td><td>Toda a equipe</td></tr>
+              <tr><td>Membros</td><td>Tornar responsável/membro, suspender, reenviar convite, revogar acesso (as ações que removem pedem confirmação).</td><td>Toda a equipe</td></tr>
+              <tr><td>Convidar pessoa</td><td>Nome, e-mail e papel. A pessoa recebe o e-mail "Crie sua senha de acesso".</td><td>Toda a equipe</td></tr>
+              <tr><td>Documentos</td><td>Enviar arquivos ao cliente e apagar (com confirmação).</td><td>Toda a equipe</td></tr>
+              <tr><td>Guias</td><td>Enviar guias de pagamento ao cliente.</td><td>Toda a equipe</td></tr>
+              <tr><td>Obrigações</td><td>Lançar à mão (título, vencimento, observação), concluir, reabrir ou apagar.</td><td>Toda a equipe</td></tr>
+              <tr><td>Calendário</td><td>As obrigações do mês em grade, igual ao do cliente.</td><td>Toda a equipe</td></tr>
+              <tr><td>Integração Omie.G-Click</td><td>Vincular ao G-Click e trazer as obrigações. Detalhes abaixo.</td><td>Toda a equipe</td></tr>
+            </tbody>
+          </table></div>
+          <div class="note warn"><span class="ic">Atenção</span><p><strong>Suspender</strong> (pessoa ou empresa) é reversível. <strong>Revogar acesso</strong> remove o vínculo de vez: para voltar, é preciso convidar de novo. Na dúvida, suspenda.</p></div>
+        </div>
+      </div>
+
+      <div class="screen" id="a-gclick">
+        <div class="screen-head"><h3>Painel do G-Click (na ficha da empresa)</h3><span class="path">Integração Omie.G-Click</span></div>
+        <div class="screen-body">
+          <div class="cols">
+            <ol class="steps">
+              <li><div><strong>Procurar a empresa no G-Click</strong><span>O campo já vem com o CNPJ. Pode digitar com ponto e barra. <span class="ui">Procurar</span>, depois <span class="ui">Selecionar</span> no cliente certo.</span></div></li>
+              <li><div><strong><span class="ui">Salvar mapeamento</span></strong><span>Grava o id do cliente no G-Click. O link do Portal Contábil é opcional e precisa começar com https://.</span></div></li>
+              <li><div><strong><span class="ui">Sincronizar obrigações</span></strong><span>Traz as tarefas da categoria Obrigação dos últimos 12 meses. Pode repetir quando quiser: nada é duplicado.</span></div></li>
+            </ol>
+            <div class="mock" aria-hidden="true">
+              <div class="mock-bar"><i></i><i></i><i></i><span>Integração Omie.G-Click</span></div>
+              <div class="mock-form" style="max-width:none">
+                <b>Integração Omie.G-Click <span class="chip c-ok" style="font-size:10px">Sincronizado</span></b>
+                <div class="mock-field"><span>Procurar a empresa no G-Click</span><div>35.673.259/0001-88 <em>Procurar</em></div></div>
+                <div class="mock-field"><span>ID do cliente no G-Click</span><div>19</div></div>
+                <div class="mock-btn">Salvar mapeamento</div>
+                <div class="mock-btn alt">Sincronizar cadastro da empresa</div>
+                <div class="mock-btn alt">Sincronizar obrigações</div>
+              </div>
+            </div>
+          </div>
+          <div class="cols">
+            <div class="block"><h4>Cliente que ainda não está no G-Click</h4><ul class="list">
+              <li>Use <span class="ui">Sincronizar cadastro da empresa</span>. A plataforma procura o CNPJ primeiro.</li>
+              <li><strong>Se já existir</strong>, só vincula ao cadastro existente e não cria outro.</li>
+              <li><strong>Se não existir</strong>, cria o cliente no G-Click com nome e CNPJ, na visibilidade "Geral".</li>
+              <li>Se não der para consultar o G-Click, nada é criado, para não duplicar.</li>
+              <li><strong>Empresa já vinculada:</strong> o mesmo botão sobrescreve nome e CNPJ no G-Click com os da plataforma. Confira os dados em Editar empresa antes de clicar.</li>
+            </ul></div>
+            <div class="block"><h4>Como os status são traduzidos</h4><ul class="list">
+              <li>Tarefa concluída no G-Click vira <span class="chip c-ok">Concluída</span>.</li>
+              <li>Tarefa cancelada ou dispensada é <strong>removida</strong> do Portal.</li>
+              <li>Qualquer outro status vira <span class="chip c-neutral">Pendente</span>.</li>
+              <li>Tarefa sem vencimento é ignorada, e o resumo informa quantas.</li>
+              <li>Obrigações lançadas à mão pela WJB <strong>nunca</strong> são alteradas pela sincronização.</li>
+            </ul></div>
+          </div>
+          <div class="note tip"><span class="ic">Se aparecer</span><p><span class="q">Foram lidas N tarefas no G-Click, mas nenhuma está vinculada a esta empresa.</span> O cliente selecionado provavelmente é o errado. Refaça a busca pelo CNPJ e selecione de novo. <span class="ui">Desativar integração</span> desliga o vínculo sem apagá-lo e esconde do cliente o card de responsáveis e o botão do Portal Contábil.</p></div>
+        </div>
+      </div>
+
+      <div class="screen" id="a-atendimento">
+        <div class="screen-head"><h3>Tickets, Mensagens e Notificações</h3><span class="path">/admin/tickets · /admin/mensagens · /admin/notificacoes</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Tickets</h4><ul class="list">
+            <li>Todos os chamados de todas as empresas, com o nome da empresa.</li>
+            <li>Dentro do chamado: <strong>Status do chamado</strong> (Aberto, Em andamento, Resolvido) e <span class="ui">Responder</span>.</li>
+            <li>Mudar o status avisa a empresa. Para reabrir um resolvido, basta mudar o status.</li>
+            <li>A equipe não abre chamado pelo Admin: quem abre é o cliente.</li>
+          </ul></div>
+          <div class="block"><h4>Mensagens</h4><ul class="list">
+            <li>Uma linha por empresa, com o total e a data da última mensagem.</li>
+            <li>Abrir a empresa mostra a conversa e o campo para <span class="ui">Enviar</span>.</li>
+          </ul></div>
+          <div class="block"><h4>Notificações</h4><ul class="list">
+            <li>Os avisos de tickets, mensagens e documentos enviados pelos clientes. O card do Admin mostra a contagem de não lidas.</li>
+          </ul></div>
+        </div>
+      </div>
+
+      <div class="screen" id="a-usuarios">
+        <div class="screen-head"><h3>Usuários (equipe WJB)</h3><span class="path">/admin/usuarios</span></div>
+        <div class="screen-body">
+          <div class="cols">
+            <div class="block"><h4>Conceder acesso (só Super admin)</h4><ul class="list">
+              <li>Nome, e-mail e papel: <strong>Atendimento</strong> (padrão), <strong>Contador</strong> ou <strong>Super admin</strong>.</li>
+              <li><span class="ui">Conceder acesso</span> envia o convite "Crie sua senha de acesso".</li>
+            </ul></div>
+            <div class="block"><h4>Gerenciar a equipe (só Super admin)</h4><ul class="list">
+              <li>Trocar o papel de alguém (salva na hora).</li>
+              <li><span class="ui">Suspender</span>: a pessoa deixa de entrar até ser reativada.</li>
+              <li><span class="ui">Reenviar convite</span>, com resposta na própria linha.</li>
+              <li><span class="ui">Revogar</span>: tira o acesso à área interna, sem apagar a conta.</li>
+              <li>Ninguém consegue mudar o próprio papel nem se suspender, para não perder o acesso por engano.</li>
+            </ul></div>
+          </div>
+          <div class="note warn"><span class="ic">Confira o e-mail</span><p>A confirmação <span class="q">Acesso concedido.</span> não repete o endereço. Se o e-mail tiver erro de digitação, a conta é criada para o endereço errado. Leia duas vezes antes de enviar.</p></div>
+        </div>
+      </div>
+
+      <div class="screen" id="a-outros">
+        <div class="screen-head"><h3>Leads, Integrações e Logs</h3><span class="path">/admin/leads · /admin/integracoes · /admin/logs</span></div>
+        <div class="screen-body cols">
+          <div class="block"><h4>Leads</h4><ul class="list">
+            <li>Os 100 contatos mais recentes dos formulários do site e do assistente virtual: nome, telefone, interesse, mensagem e página de origem.</li>
+            <li>Status do lead: Novo, Contatado, Convertido, Perdido.</li>
+          </ul></div>
+          <div class="block"><h4>Integrações</h4><ul class="list">
+            <li><span class="ui">Testar conexão</span> com o G-Click.</li>
+            <li>Lista de empresas vinculadas.</li>
+            <li><strong>Feature flags</strong> (só Super admin): desligam para a plataforma inteira a integração G-Click, o envio de documentos ou as notificações. É o botão de emergência: use só se algo estiver dando errado.</li>
+          </ul></div>
+          <div class="block"><h4>Logs</h4><ul class="list">
+            <li>Registro de ações sensíveis: empresas, membros, documentos (inclusive downloads), obrigações, leads e integração.</li>
+            <li>Filtros por empresa, pessoa, ação e período. Não é possível editar nem apagar registros.</li>
+          </ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ROTINAS ================= -->
+    <section class="chapter" id="rotinas">
+      <div class="chapter-head">
+        <p class="eyebrow">Referência</p>
+        <h2>Rotinas passo a passo</h2>
+        <p>As tarefas mais comuns da equipe, na ordem certa.</p>
+      </div>
+
+      <div class="screen">
+        <div class="screen-head"><h3>Colocar um cliente novo na plataforma</h3><span class="chip c-brand">Rotina completa</span></div>
+        <div class="screen-body">
+          <ol class="steps">
+            <li><div><strong>Criar a empresa</strong><span>Admin, card Empresas, quadro Nova empresa. Nome e CNPJ.</span></div></li>
+            <li><div><strong>Vincular ao G-Click</strong><span>Na ficha, painel do G-Click: procurar pelo CNPJ, selecionar e <span class="ui">Salvar mapeamento</span>. Se o cliente ainda não existe no G-Click, use <span class="ui">Sincronizar cadastro da empresa</span>.</span></div></li>
+            <li><div><strong>Trazer as obrigações</strong><span><span class="ui">Sincronizar obrigações</span>. Confira o resumo que aparece na tela.</span></div></li>
+            <li><div><strong>Convidar o responsável do cliente</strong><span>Quadro Convidar pessoa, papel <strong>Responsável</strong>. A partir daí ele mesmo pode convidar colegas.</span></div></li>
+            <li><div><strong>Enviar os primeiros arquivos</strong><span>Documentos e guias na própria ficha. O cliente é avisado por e-mail.</span></div></li>
+            <li><div><strong>Avisar o cliente</strong><span>Explique que vai chegar o e-mail "Crie sua senha de acesso" e que o link vale uma vez só.</span></div></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="duo">
+        <div class="screen">
+          <div class="screen-head"><h3>Responder um chamado</h3></div>
+          <div class="screen-body"><ol class="steps">
+            <li><div><strong>Abrir Tickets</strong><span>Ou clicar na notificação do chamado.</span></div></li>
+            <li><div><strong>Mudar para Em andamento</strong><span>O cliente é avisado de que alguém está cuidando.</span></div></li>
+            <li><div><strong>Responder</strong><span>Quantas vezes for preciso.</span></div></li>
+            <li><div><strong>Marcar como Resolvido</strong><span>O cliente é avisado e o chamado fecha para respostas.</span></div></li>
+          </ol></div>
+        </div>
+        <div class="screen">
+          <div class="screen-head"><h3>Enviar uma guia ao cliente</h3></div>
+          <div class="screen-body"><ol class="steps">
+            <li><div><strong>Abrir a ficha da empresa</strong><span>Admin, Empresas, Ver empresa.</span></div></li>
+            <li><div><strong>Seção Guias</strong><span>Escolher o arquivo (até 20 MB) e clicar em <span class="ui">Enviar</span>.</span></div></li>
+            <li><div><strong>Pronto</strong><span>A tela confirma o envio e o cliente recebe o aviso por e-mail e no Portal.</span></div></li>
+          </ol></div>
+        </div>
+        <div class="screen">
+          <div class="screen-head"><h3>Tirar o acesso de alguém do cliente</h3></div>
+          <div class="screen-body"><ol class="steps">
+            <li><div><strong>Ficha da empresa, seção Membros</strong><span>Encontrar a pessoa.</span></div></li>
+            <li><div><strong><span class="ui">Suspender</span> (reversível)</strong><span>Ou <span class="ui">Revogar acesso</span> para remover de vez. Os dois pedem confirmação.</span></div></li>
+            <li><div><strong>Efeito imediato</strong><span>A pessoa perde o acesso só a esta empresa e para de receber avisos dela.</span></div></li>
+          </ol></div>
+        </div>
+        <div class="screen">
+          <div class="screen-head"><h3>Cliente não recebeu o convite</h3></div>
+          <div class="screen-body"><ol class="steps">
+            <li><div><strong>Pedir para olhar o spam</strong><span>Remetente: nao-responda@wjbassessoriacontabil.com.br.</span></div></li>
+            <li><div><strong>Conferir o e-mail em Membros</strong><span>Um erro de digitação cria a conta no endereço errado.</span></div></li>
+            <li><div><strong><span class="ui">Reenviar convite</span></strong><span>A resposta aparece ao lado do botão.</span></div></li>
+          </ol></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PAPÉIS ================= -->
+    <section class="chapter" id="papeis">
+      <div class="chapter-head">
+        <p class="eyebrow">Referência</p>
+        <h2>Papéis e permissões</h2>
+        <p>Hoje <strong>Contador</strong> e <strong>Atendimento</strong> têm exatamente as mesmas permissões. A diferença está só no Super admin.</p>
+      </div>
+      <div class="table-wrap"><table class="matrix">
+        <thead><tr><th>O que a pessoa pode fazer</th><th>Membro</th><th>Responsável</th><th>Atendimento / Contador</th><th>Super admin</th></tr></thead>
+        <tbody>
+          <tr><td>Usar o Portal: ver tudo, enviar documentos e guias, abrir chamados, mensagens</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Convidar colegas da própria empresa (Portal)</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim, pelo Admin</td><td class="yes">Sim, pelo Admin</td></tr>
+          <tr><td>Criar e editar empresas</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Enviar e apagar documentos e guias no Admin</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Lançar, concluir e apagar obrigações</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Gerenciar membros de uma empresa</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Status de chamados, mensagens, leads, logs</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Painel do G-Click e testar conexão</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Suspender ou reativar uma empresa inteira</td><td class="no">Não</td><td class="no">Não</td><td class="no">Não</td><td class="yes">Sim</td></tr>
+          <tr><td>Conceder acesso à equipe, trocar papel, suspender e revogar</td><td class="no">Não</td><td class="no">Não</td><td class="no">Só vê</td><td class="yes">Sim</td></tr>
+          <tr><td>Ligar e desligar feature flags</td><td class="no">Não</td><td class="no">Não</td><td class="no">Só vê</td><td class="yes">Sim</td></tr>
+          <tr><td>Verificação em duas etapas da própria conta</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+        </tbody>
+      </table></div>
+      <div class="gloss">
+        <div class="panel"><h4>Suspender uma pessoa da empresa</h4><p>Qualquer pessoa da equipe. A pessoa perde só aquela empresa.</p></div>
+        <div class="panel"><h4>Suspender uma empresa</h4><p>Só Super admin. Todos os membros perdem o acesso até a reativação.</p></div>
+        <div class="panel"><h4>Suspender alguém da equipe</h4><p>Só Super admin. A conta inteira deixa de entrar.</p></div>
+      </div>
+    </section>
+
+    <!-- ================= NOTIFICAÇÕES ================= -->
+    <section class="chapter" id="notificacoes">
+      <div class="chapter-head">
+        <p class="eyebrow">Referência</p>
+        <h2>Notificações e e-mails</h2>
+        <p>A regra é simples: <strong>quando o cliente age, a equipe WJB é avisada; quando a WJB age, os membros da empresa são avisados.</strong> Quem fez a ação nunca é avisado, e pessoas suspensas não recebem nada.</p>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Quando acontece</th><th>Aviso</th><th>No sininho</th><th>Por e-mail</th></tr></thead>
+        <tbody>
+          <tr><td>Chamado aberto</td><td>Novo chamado aberto</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Resposta em chamado</td><td>Nova resposta no chamado</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>WJB muda o status do chamado</td><td>Status do chamado alterado</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Nova mensagem</td><td>Nova mensagem</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Documento ou guia enviado</td><td>Novo documento disponível</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Convite para quem ainda não tem conta</td><td>E-mail "Crie sua senha de acesso"</td><td class="yes">Sim</td><td class="yes">Sim, um único e-mail</td></tr>
+          <tr><td>Convite para quem já tem conta</td><td>Você foi convidado(a)</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Acesso suspenso ou reativado</td><td>Alteração de segurança na sua conta</td><td class="yes">Sim</td><td class="yes">Sim</td></tr>
+          <tr><td>Falha ao sincronizar com o G-Click</td><td>Status de integração atualizado (para a equipe)</td><td class="yes">Sim</td><td class="no">Não</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note tip"><span class="ic">Bom saber</span><p>Obrigações criadas, concluídas ou sincronizadas <strong>não geram aviso</strong> ao cliente. Se algo importante mudar num prazo, avise por Mensagens.</p></div>
+    </section>
+
+    <!-- ================= GLOSSÁRIO ================= -->
+    <section class="chapter" id="glossario">
+      <div class="chapter-head">
+        <p class="eyebrow">Referência</p>
+        <h2>Glossário de status</h2>
+        <p>Os selos coloridos que aparecem nas telas e o que cada um significa.</p>
+      </div>
+      <div class="gloss">
+        <div class="panel"><h4>Obrigação</h4><dl>
+          <dt><span class="chip c-neutral">Pendente</span></dt><dd>Ainda não cumprida, dentro do prazo.</dd>
+          <dt><span class="chip c-bad">Atrasada</span></dt><dd>Pendente com vencimento já passado (horário de Brasília).</dd>
+          <dt><span class="chip c-ok">Concluída</span></dt><dd>Cumprida.</dd>
+        </dl></div>
+        <div class="panel"><h4>Chamado</h4><dl>
+          <dt><span class="chip c-info">Aberto</span></dt><dd>Recebido, ainda sem ninguém cuidando.</dd>
+          <dt><span class="chip c-warn">Em andamento</span></dt><dd>A WJB está cuidando.</dd>
+          <dt><span class="chip c-ok">Resolvido</span></dt><dd>Encerrado; não aceita novas respostas.</dd>
+        </dl></div>
+        <div class="panel"><h4>Integração G-Click</h4><dl>
+          <dt><span class="chip c-neutral">Não conectado</span></dt><dd>Sem id do cliente salvo.</dd>
+          <dt><span class="chip c-info">Conectado</span></dt><dd>Id salvo, ainda sem sincronizar.</dd>
+          <dt><span class="chip c-ok">Sincronizado</span></dt><dd>Última sincronização deu certo.</dd>
+          <dt><span class="chip c-bad">Erro</span></dt><dd>A última tentativa falhou; veja "Último erro".</dd>
+          <dt><span class="chip c-neutral">Desativado</span></dt><dd>Vínculo guardado, mas desligado.</dd>
+        </dl></div>
+        <div class="panel"><h4>Pessoas e empresas</h4><dl>
+          <dt><span class="chip c-brand">Responsável</span></dt><dd>Pode convidar colegas no Portal.</dd>
+          <dt><span class="chip c-neutral">Membro</span></dt><dd>Usa o Portal, sem convidar.</dd>
+          <dt><span class="chip c-bad">Suspenso / Suspensa</span></dt><dd>Acesso bloqueado até reativar.</dd>
+          <dt><span class="chip c-neutral">Novo · Contatado · Convertido · Perdido</span></dt><dd>Status de um lead.</dd>
+        </dl></div>
+      </div>
+    </section>
+
+    <!-- ================= PROBLEMAS ================= -->
+    <section class="chapter" id="problemas">
+      <div class="chapter-head">
+        <p class="eyebrow">Referência</p>
+        <h2>Problemas comuns</h2>
+        <p>O que fazer quando algo não sai como esperado.</p>
+      </div>
+      <div class="faq">
+        <details><summary>O link do convite diz que expirou ou já foi usado</summary><div class="ans"><p>O link vale uma vez só, e o Gmail às vezes o "abre" sozinho para checar segurança. Reenvie o convite (ficha da empresa, Membros, ou Admin, Usuários) ou peça para a pessoa usar <span class="ui">Esqueci minha senha</span> no login.</p></div></details>
+        <details><summary>O e-mail de convite ou de senha não chegou</summary><div class="ans"><p>Peça para olhar o spam e as abas Promoções/Atualizações. O remetente é <span class="mono">nao-responda@wjbassessoriacontabil.com.br</span>. Depois confira se o e-mail foi digitado certo em Membros.</p></div></details>
+        <details><summary>"E-mail ou senha incorretos", mas a senha está certa</summary><div class="ans"><p>Três causas possíveis: a conta foi suspensa, a pessoa digitou o e-mail de outra forma, ou o banco de dados da plataforma está fora do ar. Se <strong>ninguém</strong> estiver conseguindo entrar, é o último caso: avise o responsável técnico.</p></div></details>
+        <details><summary>O arquivo não sobe</summary><div class="ans"><p>Confira o tamanho (até 20 MB) e o tipo (PDF, imagem, Word, Excel, CSV, TXT ou XML). Se aparecer <span class="q">O envio de documentos está temporariamente desativado pela WJB</span>, alguém desligou a feature flag de documentos em Integrações.</p></div></details>
+        <details><summary>O cliente diz que não vê a empresa dele</summary><div class="ans"><p>Na ficha da empresa, veja se a pessoa está em Membros e sem o selo Suspenso, e se a própria empresa não está Suspensa. Quem tem mais de uma empresa troca no rodapé do menu do Portal.</p></div></details>
+        <details><summary>Sincronizei as obrigações e nada apareceu</summary><div class="ans"><p>Leia o resumo que aparece na tela. "Nenhuma tarefa no período" indica que o cliente não tem obrigações no G-Click nos últimos 12 meses. "Nenhuma vinculada a esta empresa" indica que o cliente selecionado está errado: refaça a busca pelo CNPJ.</p></div></details>
+        <details><summary>Uma obrigação aparece como Atrasada mas já foi paga</summary><div class="ans"><p>Se ela veio do G-Click, conclua a tarefa lá e clique de novo em <span class="ui">Sincronizar obrigações</span>. Se foi lançada à mão, use <span class="ui">Concluir</span> na seção Obrigações da ficha.</p></div></details>
+      </div>
+
+      <footer class="foot">
+        <img class="logo-light" src="{{LOGO_COLOR}}" alt="WJB Assessoria Contábil">
+        <img class="logo-dark" src="{{LOGO_WHITE}}" alt="WJB Assessoria Contábil">
+        <p>Manual da Plataforma WJB · versão de 30/09/2026 · wjbassessoriacontabil.com.br</p>
+      </footer>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  var input = document.getElementById("busca");
+  var info = document.getElementById("busca-info");
+  var items = Array.prototype.slice.call(document.querySelectorAll("main .screen, main .faq details, main .table-wrap tbody tr"));
+  var original = "Filtra as fichas que citam o termo.";
+  function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+  input.addEventListener("input", function () {
+    var q = norm(input.value.trim());
+    var shown = 0;
+    items.forEach(function (el) {
+      var hit = !q || norm(el.textContent).indexOf(q) !== -1;
+      el.classList.toggle("hidden-by-search", !hit);
+      if (hit && q) shown++;
+      if (hit && q && el.tagName === "DETAILS") el.open = true;
+    });
+    info.textContent = q ? (shown ? shown + " trecho(s) encontrados." : "Nada encontrado. Tente outra palavra.") : original;
+  });
+  var toc = document.getElementById("toc-details");
+  if (window.matchMedia("(max-width: 920px)").matches) toc.open = false;
+})();
+</script>
