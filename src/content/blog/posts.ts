@@ -83,6 +83,148 @@ function table(headers: string[], rows: string[][]): BlogBlock {
  */
 export const blogPosts: BlogPost[] = [
   {
+    slug: "nota-fiscal-reforma-tributaria-ibs-cbs",
+    title:
+      "Nota fiscal na Reforma Tributária: por que o que você emite passa a valer como declaração de imposto",
+    description:
+      "Com IBS e CBS destacados na nota, o documento fiscal passa a alimentar a apuração do imposto e o crédito do seu cliente. Veja o cronograma, os erros mais comuns e como se preparar ainda em 2026.",
+    excerpt:
+      "Com IBS e CBS destacados na nota, o documento fiscal passa a funcionar como uma declaração do imposto devido. Veja o cronograma e como evitar erros antes de 2027.",
+    category: "Reforma Tributária",
+    tags: [
+      "reforma tributária",
+      "nota fiscal",
+      "NF-e",
+      "IBS",
+      "CBS",
+      "cClassTrib",
+      "2027",
+    ],
+    publishedAt: "2026-09-30",
+    updatedAt: "2026-09-30",
+    readingTime: "7 min",
+    author,
+    showLegalDisclaimer: true,
+    relatedServiceSlug: "reforma-tributaria",
+    relatedPostSlugs: [
+      "reforma-tributaria-como-preparar-empresa",
+      "regularizacao-fiscal-empresa",
+      "gestao-prazos-obrigacoes",
+    ],
+    image: {
+      src: "/images/blog/tax/invoice-tax-reform.webp",
+      alt: "Consultor da WJB revisando documentos fiscais com uma cliente, com painel de situação fiscal em conformidade exibido no monitor",
+      width: 1600,
+      height: 900,
+    },
+    content: [
+      p(
+        "Durante muito tempo, a nota fiscal foi vista como a parte burocrática da venda: um documento que precisava sair para a mercadoria circular ou o serviço ser cobrado. Com a Reforma Tributária do Consumo, essa visão deixa de funcionar. Os novos campos de IBS e CBS transformam a nota em uma informação que o Fisco usa diretamente para saber quanto imposto a sua empresa deve e quanto crédito o seu cliente pode aproveitar.",
+      ),
+      p(
+        "É por isso que se tornou comum ouvir que a nota fiscal passa a ser uma espécie de \"confissão de dívida\". A expressão é de mercado, não um termo da lei, mas resume bem a mudança: o que a sua empresa informa na nota tende a ser tratado como o imposto que ela reconhece dever.",
+      ),
+      h2("Por que a nota passa a pesar tanto"),
+      p(
+        "No modelo da Reforma, IBS e CBS são tributos não cumulativos: quem compra aproveita como crédito o imposto destacado pelo fornecedor. Para isso funcionar em escala, a apuração depende cada vez mais dos próprios documentos fiscais, cruzados automaticamente pelos sistemas do Fisco. Na prática, isso muda três coisas:",
+      ),
+      list([
+        "A nota vira base de apuração: os valores de IBS e CBS informados nela alimentam o cálculo do imposto devido pela empresa.",
+        "O erro deixa de ser só seu: se o fornecedor informa o imposto errado, o cliente pode ficar sem o crédito a que teria direito.",
+        "A correção fica mais cara: ajustar depois exige retificação, pode travar o faturamento e desgastar a relação com clientes.",
+      ]),
+      h2("O cronograma: o que já vale e o que vem em 2027"),
+      p(
+        "Segundo o cronograma divulgado pela Receita Federal e pelo Comitê Gestor do IBS, a transição acontece em etapas. 2026 é tratado como um período de adaptação assistida, e as regras de validação ficam mais rígidas a partir de 2027.",
+      ),
+      table(
+        ["Período", "O que acontece"],
+        [
+          [
+            "2026",
+            "Fase de adaptação: os documentos já trazem os campos de IBS e CBS, mas erros nesses campos, em regra, não levam à rejeição automática da nota.",
+          ],
+          [
+            "Agosto de 2026",
+            "Os layouts atualizados de NF-e, NFC-e e CT-e, com os novos campos, passam a ser de uso obrigatório.",
+          ],
+          [
+            "A partir de janeiro de 2027",
+            "Notas com IBS e CBS preenchidos de forma incorreta podem ser rejeitadas na emissão, o que impede a venda de ser concluída.",
+          ],
+        ],
+      ),
+      p(
+        "Em outras palavras, 2026 é a janela para ajustar cadastros e sistemas sem que um erro pare a operação. Deixar para depois significa descobrir os problemas quando cada nota errada já pode ser barrada.",
+      ),
+      h2("Os erros mais comuns na emissão"),
+      p(
+        "A maior parte dos problemas não vem de má-fé, e sim de cadastros antigos que nunca precisaram ser tão precisos. Os pontos que mais merecem revisão são:",
+      ),
+      list([
+        "NCM desatualizado ou genérico no cadastro de produtos, que leva à classificação tributária errada.",
+        "Código de classificação tributária do IBS/CBS (cClassTrib) e CST preenchidos de forma incorreta ou deixados em branco.",
+        "Regras fiscais copiadas de um produto para outro sem conferir se o tratamento é o mesmo.",
+        "Sistema emissor que ainda não foi atualizado para os novos layouts.",
+        "Falta de conferência entre o que foi faturado, o que foi recebido e o que foi escriturado.",
+      ]),
+      h2("O efeito em cadeia: o erro do fornecedor chega ao cliente"),
+      p(
+        "Um ponto que costuma passar despercebido é que a nota errada não prejudica só quem emitiu. Se o imposto destacado estiver incorreto, o cliente pode não conseguir aproveitar o crédito correspondente. Por isso, empresas que vendem para outras empresas tendem a ficar mais exigentes com a qualidade fiscal dos seus fornecedores. Emitir nota correta passa a ser também uma questão comercial.",
+      ),
+      h2("Como se preparar ainda em 2026"),
+      p(
+        "A melhor forma de atravessar a transição é aproveitar o período de adaptação para organizar a casa. Um roteiro prático:",
+      ),
+      list([
+        "Revisar o cadastro de produtos e serviços, conferindo NCM, classificação tributária e códigos de IBS/CBS item a item.",
+        "Confirmar com o fornecedor do sistema emissor ou ERP que os novos layouts e regras de cálculo já estão ativos.",
+        "Emitir e analisar notas de teste, comparando o imposto destacado com o esperado para cada operação.",
+        "Definir quem na empresa confere as notas antes da emissão e como os erros são corrigidos.",
+        "Integrar faturamento, financeiro e contabilidade, para que a informação da nota seja a mesma em todos os lugares.",
+        "Acompanhar com o contador as atualizações do cronograma e das regras, que ainda podem ser ajustadas.",
+      ]),
+      h2("Como a WJB pode ajudar"),
+      p(
+        "A WJB Assessoria Contábil acompanha as empresas clientes na transição da Reforma Tributária: revisa cadastros e regras fiscais, orienta a conferência das notas emitidas e mantém a escrituração alinhada com o que foi faturado. O objetivo é chegar a 2027 com a emissão já ajustada, sem descobrir os problemas quando a nota for rejeitada.",
+      ),
+    ],
+    faq: [
+      {
+        question: "A nota fiscal virou mesmo uma confissão de dívida?",
+        answer:
+          "\"Confissão de dívida\" é uma expressão de mercado, não um termo da lei. Ela descreve o fato de que os valores de IBS e CBS informados na nota passam a servir de base para a apuração do imposto. Na prática, o que a empresa destaca na nota tende a ser tratado como o imposto que ela reconhece dever.",
+      },
+      {
+        question: "Em 2026 minha nota pode ser rejeitada por erro de IBS ou CBS?",
+        answer:
+          "Pelo cronograma divulgado, 2026 é uma fase de adaptação assistida em que, em regra, erros nesses campos não levam à rejeição automática. A partir de 2027, as validações ficam mais rígidas e a nota com dados incorretos pode ser barrada na emissão. Como o cronograma pode ser ajustado, vale acompanhar com o seu contador.",
+      },
+      {
+        question: "O que é o cClassTrib?",
+        answer:
+          "É o código de classificação tributária usado para indicar, em cada item da nota, qual tratamento de IBS e CBS se aplica àquela operação. Ele depende de um cadastro de produtos correto, com NCM atualizado.",
+      },
+      {
+        question: "Empresa do Simples Nacional também precisa se preocupar?",
+        answer:
+          "Sim. As regras de transição variam conforme o regime, mas toda empresa que emite nota precisa manter cadastro e sistema emissor atualizados. Além disso, clientes que compram de empresas do Simples também dependem da informação correta na nota. O ideal é avaliar o caso específico com o contador.",
+      },
+    ],
+    cta: {
+      text: "Quer revisar a emissão de notas da sua empresa antes de 2027?",
+      label: "Conhecer a assessoria em Reforma Tributária",
+      href: "/servicos/reforma-tributaria",
+    },
+    sources: [
+      {
+        label:
+          "Omie - Reforma Tributária: por que a nota fiscal passa a ser uma confissão de dívida",
+        url: "https://www.omie.com.br/blog/nota-fiscal-reforma-tributaria-confissao-divida/",
+      },
+    ],
+  },
+  {
     slug: "reforma-tributaria-como-preparar-empresa",
     title:
       "Reforma Tributária em 2026: como preparar sua empresa para CBS, IBS e a transição",
