@@ -259,7 +259,7 @@ export function OmieMappingPanel({
       <p className="text-muted-foreground text-xs">
         {mode === "mock"
           ? "Modo mock (ambiente de desenvolvimento) - toda sincronização aqui é simulada em memória, nenhum dado real é enviado ao G-Click nem lido de lá."
-          : "\"Sincronizar cadastro\" envia o nome e o CNPJ da empresa para o G-Click. \"Sincronizar obrigações\" traz as tarefas daquele cliente para a plataforma, onde o cliente as vê - nada é escrito de volta no G-Click, e obrigações lançadas à mão pela WJB nunca são alteradas."}
+          : "\"Sincronizar cadastro\" procura o CNPJ no G-Click: se a empresa já existe lá, só vincula; se não existe, cria o cliente com nome e CNPJ. \"Sincronizar obrigações\" traz as tarefas daquele cliente para a plataforma, onde o cliente as vê - nada é escrito de volta no G-Click, e obrigações lançadas à mão pela WJB nunca são alteradas."}
       </p>
     </div>
   );

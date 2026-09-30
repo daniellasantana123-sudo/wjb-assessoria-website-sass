@@ -159,6 +159,58 @@ export async function syncOmieClient(
     );
 
   const adapter = getOmieGClickAdapter();
+
+  /*
+   * Antes de CRIAR, confere se o CNPJ já existe no G-Click (2026-09-30).
+   * A maioria dos clientes da WJB já está cadastrada lá: sem esta checagem,
+   * clicar em "Sincronizar cadastro" antes de vincular criava um cliente
+   * duplicado na ferramenta de produção do escritório. Achou: só vincula,
+   * sem sobrescrever o cadastro deles. Não conseguiu conferir: não cria.
+   */
+  if (!mapping?.external_client_id && tenant.cnpj) {
+    const existing = await findClientByDocument(adapter, tenant.cnpj);
+    if (!existing.ok) {
+      await supabase
+        .from("omie_client_mappings")
+        .upsert(
+          { tenant_id: tenantId, status: "error", last_error: existing.error.code, updated_by: session.userId },
+          { onConflict: "tenant_id" },
+        );
+      revalidatePath(`/admin/empresas/${tenantId}`);
+      return {
+        error:
+          "Não foi possível conferir se esta empresa já existe no G-Click, então nada foi criado para evitar cadastro duplicado. Tente de novo em instantes.",
+      };
+    }
+
+    const found = existing.data[0];
+    if (found?.externalId) {
+      await supabase.from("omie_client_mappings").upsert(
+        {
+          tenant_id: tenantId,
+          external_client_id: found.externalId,
+          status: "synced",
+          last_synced_at: new Date().toISOString(),
+          last_error: null,
+          updated_by: session.userId,
+        },
+        { onConflict: "tenant_id" },
+      );
+      await supabase.from("audit_log").insert({
+        actor_id: session.userId,
+        tenant_id: tenantId,
+        action: "integration.omie_linked_existing",
+        entity: "omie_client_mapping",
+        entity_id: tenantId,
+        metadata: { external_client_id: found.externalId },
+      });
+      revalidatePath(`/admin/empresas/${tenantId}`);
+      return {
+        success: `Esta empresa já existia no G-Click ("${found.name}", id ${found.externalId}). Vinculamos ao cadastro existente em vez de criar outro.`,
+      };
+    }
+  }
+
   const result = mapping?.external_client_id
     ? await adapter.clients.update({
         externalId: mapping.external_client_id,

@@ -11,9 +11,12 @@ vi.mock("next/cache", () => ({ revalidatePath: revalidatePathMock }));
 const createClientMock = vi.fn();
 const updateClientMock = vi.fn();
 const healthCheckMock = vi.fn();
+const listClientsMock = vi.fn();
+const portfolioMock = vi.fn();
 vi.mock("@/integrations/omie-gclick", () => ({
   getOmieGClickAdapter: () => ({
-    clients: { create: createClientMock, update: updateClientMock },
+    clients: { create: createClientMock, update: updateClientMock, list: listClientsMock },
+    catalog: { portfolio: portfolioMock },
     healthCheck: healthCheckMock,
   }),
   getGClickConfig: () => ({ mode: "mock" }),
@@ -76,6 +79,9 @@ beforeEach(() => {
   auditInsertMock.mockResolvedValue({ error: null });
   tenantsMaybeSingleMock.mockResolvedValue({ data: { id: "tenant-1", name: "Empresa X", cnpj: "0" } });
   mappingMaybeSingleMock.mockResolvedValue({ data: null });
+  // Por padrão o CNPJ não existe no G-Click (lista vazia) - o caminho de criação segue.
+  listClientsMock.mockResolvedValue({ ok: true, data: { items: [] } });
+  portfolioMock.mockResolvedValue({ ok: true, data: [] });
 });
 
 describe("saveOmieMapping", () => {
@@ -135,6 +141,43 @@ describe("saveOmieMapping", () => {
 });
 
 describe("syncOmieClient", () => {
+  it("CNPJ que já existe no G-Click: vincula ao cadastro existente e NÃO cria outro", async () => {
+    tenantsMaybeSingleMock.mockResolvedValue({
+      data: { id: "tenant-1", name: "Empresa X", cnpj: "12.345.678/0001-99" },
+    });
+    listClientsMock.mockResolvedValue({
+      ok: true,
+      data: {
+        items: [
+          { externalId: "77", name: "EMPRESA X LTDA", document: "12345678000199" },
+        ],
+      },
+    });
+
+    const result = await syncOmieClient("tenant-1");
+
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(updateClientMock).not.toHaveBeenCalled();
+    expect(mappingUpsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({ external_client_id: "77", status: "synced" }),
+      expect.anything(),
+    );
+    expect(result).toEqual({ success: expect.stringContaining("já existia no G-Click") });
+  });
+
+  it("sem conseguir conferir o CNPJ no G-Click, não cria nada", async () => {
+    tenantsMaybeSingleMock.mockResolvedValue({
+      data: { id: "tenant-1", name: "Empresa X", cnpj: "12.345.678/0001-99" },
+    });
+    listClientsMock.mockResolvedValue({ ok: false, error: { code: "PROVIDER_UNAVAILABLE", message: "x" } });
+    portfolioMock.mockResolvedValue({ ok: false, error: { code: "PROVIDER_UNAVAILABLE", message: "x" } });
+
+    const result = await syncOmieClient("tenant-1");
+
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(result).toEqual({ error: expect.stringContaining("duplicado") });
+  });
+
   it("rejeita staff sem permissão", async () => {
     requireStaffSessionMock.mockResolvedValue(staffSession(null));
 
