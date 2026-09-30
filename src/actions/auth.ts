@@ -47,7 +47,21 @@ export async function login(
   }
 
   const session = await getSession();
-  redirect(session?.isWjbStaff ? "/admin" : "/portal");
+  const next = safeNextPath(formData.get("next"));
+  redirect(next ?? (session?.isWjbStaff ? "/admin" : "/portal"));
+}
+
+/**
+ * Página que a pessoa tentava abrir antes de cair no login (`?next=`, posto
+ * pelo proxy) - ex.: o link de uma notificação por e-mail. Só aceita caminho
+ * interno do Portal/Admin: `//outro-site.com` ou uma URL absoluta
+ * transformariam o login num redirecionador aberto para phishing.
+ */
+function safeNextPath(value: FormDataEntryValue | null): string | null {
+  if (typeof value !== "string") return null;
+  if (!/^\/(portal|admin)(\/|$|\?)/.test(value)) return null;
+  if (value.includes("//") || value.includes("\\")) return null;
+  return value;
 }
 
 export async function logout() {

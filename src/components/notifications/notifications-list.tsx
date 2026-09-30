@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { markAllNotificationsRead } from "@/actions/notifications";
 import { listNotifications } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -14,6 +12,10 @@ import { cn } from "@/lib/utils";
  * não uma ação do usuário). Cada notificação agora linka pra
  * `/api/notifications/[id]/read` (marca só aquela como lida e redireciona
  * pro destino real, mesmo padrão de `/api/documents/[id]/download`).
+ *
+ * `<a>` e não `next/link` de propósito: o `<Link>` pré-carrega as rotas
+ * visíveis na tela, e como esse GET marca a notificação como lida, abrir a
+ * lista marcava tudo como lido sem ninguém clicar.
  */
 export async function NotificationsList() {
   const notifications = await listNotifications();
@@ -41,7 +43,7 @@ export async function NotificationsList() {
 
       <div className="border-border divide-border divide-y rounded-md border">
         {notifications.map((notification) => (
-          <Link
+          <a
             key={notification.id}
             href={`/api/notifications/${notification.id}/read`}
             className={cn(
@@ -49,11 +51,14 @@ export async function NotificationsList() {
               !notification.read && "bg-primary/5",
             )}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               {!notification.read && (
-                <span aria-hidden="true" className="bg-primary h-2 w-2 shrink-0 rounded-full" />
+                <>
+                  <span aria-hidden="true" className="bg-primary h-2 w-2 shrink-0 rounded-full" />
+                  <span className="sr-only">Não lida:</span>
+                </>
               )}
-              <div>
+              <div className="min-w-0 break-words">
                 {notification.title && (
                   <p className="text-foreground text-sm font-medium">{notification.title}</p>
                 )}
@@ -63,7 +68,7 @@ export async function NotificationsList() {
             <p className="text-muted-foreground shrink-0 text-xs">
               {new Date(notification.createdAt).toLocaleString("pt-BR")}
             </p>
-          </Link>
+          </a>
         ))}
       </div>
     </div>

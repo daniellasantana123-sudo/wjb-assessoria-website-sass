@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ClipboardCheck, FileText, Receipt, Users } from "lucide-react";
@@ -41,6 +42,13 @@ const monthNames = [
 export default async function PortalPage() {
   const session = await requireSession();
   const tenant = await getActiveTenant(session.userId);
+
+  // Equipe WJB não é membro de empresa nenhuma: sem isso, quem da equipe
+  // já estava logado e abria /login (o proxy manda pra /portal) via um
+  // Portal vazio em vez do Admin.
+  if (!tenant && session.isWjbStaff) {
+    redirect("/admin");
+  }
 
   if (!tenant) {
     return (

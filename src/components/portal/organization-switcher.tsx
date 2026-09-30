@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { Building2 } from "lucide-react";
 
 import { switchActiveTenant } from "@/actions/tenant-context";
@@ -23,6 +23,9 @@ export function OrganizationSwitcher({
   userLabel: string;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
+  // Renderizado na sidebar (desktop) e na gaveta (mobile) ao mesmo tempo -
+  // um id fixo ficaria duplicado no DOM.
+  const selectId = useId();
 
   if (organizations.length <= 1) {
     const only = organizations[0];
@@ -48,11 +51,11 @@ export function OrganizationSwitcher({
       </span>
       <div className="min-w-0 flex-1">
         <form ref={formRef} action={switchActiveTenant}>
-          <label htmlFor="tenantId" className="sr-only">
+          <label htmlFor={selectId} className="sr-only">
             Trocar de empresa
           </label>
           <Select
-            id="tenantId"
+            id={selectId}
             name="tenantId"
             defaultValue={activeId}
             className="h-8 px-2 text-sm font-medium"

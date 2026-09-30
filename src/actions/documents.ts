@@ -15,7 +15,7 @@ import { isFeatureEnabled } from "@/lib/feature-flags";
 import { notifyDocumentAvailable } from "@/lib/notifications";
 import type { DocumentCategory } from "@/types/database";
 
-export type DocumentActionState = { error: string } | undefined;
+export type DocumentActionState = { error: string } | { success: string } | undefined;
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20MB — limite razoável pra documento contábil.
 
@@ -129,7 +129,7 @@ export async function uploadDocument(
   revalidatePath(`/portal/documentos`);
   revalidatePath(`/portal/guias`);
   revalidatePath(`/admin/empresas/${tenantId}`);
-  return undefined;
+  return { success: `"${safeName}" enviado.` };
 }
 
 /**

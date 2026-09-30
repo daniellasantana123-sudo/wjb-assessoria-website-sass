@@ -5,6 +5,7 @@ import {
   suspendMember,
   updateMemberRole,
 } from "@/actions/tenants";
+import { ActionButton } from "@/components/shared/action-button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/db/supabase/server";
 
@@ -48,25 +49,25 @@ export async function MembersList({
     <div className="border-border divide-border divide-y rounded-md border">
       {members.map((member) => {
         const profile = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles;
+        const personLabel = profile?.full_name ?? profile?.email ?? "-";
         return (
-          <div key={member.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <div className="flex items-center gap-2">
-              <div>
-                <p className="text-foreground font-medium">
-                  {profile?.full_name ?? profile?.email ?? "-"}
-                </p>
-                <p className="text-muted-foreground text-sm">{profile?.email}</p>
+          <div key={member.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 p-4">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="min-w-0">
+                <p className="text-foreground font-medium break-words">{personLabel}</p>
+                <p className="text-muted-foreground text-sm break-all">{profile?.email}</p>
               </div>
               {member.status === "suspended" && <Badge tone="danger">Suspenso</Badge>}
             </div>
 
-            <div className="flex shrink-0 flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="text-muted-foreground text-sm">
                 {roleLabels[member.role] ?? member.role}
               </span>
               {canManage && profile?.id && (
                 <>
-                  <form
+                  <ActionButton
+                    label={member.role === "owner" ? "Tornar membro" : "Tornar responsável"}
                     action={async () => {
                       "use server";
                       await updateMemberRole(
@@ -75,15 +76,14 @@ export async function MembersList({
                         member.role === "owner" ? "member" : "owner",
                       );
                     }}
-                  >
-                    <button
-                      type="submit"
-                      className="text-muted-foreground hover:text-foreground focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                    >
-                      {member.role === "owner" ? "Tornar membro" : "Tornar responsável"}
-                    </button>
-                  </form>
-                  <form
+                  />
+                  <ActionButton
+                    label={member.status === "suspended" ? "Reativar" : "Suspender"}
+                    confirmMessage={
+                      member.status === "suspended"
+                        ? undefined
+                        : `Suspender o acesso de ${personLabel} a esta empresa?`
+                    }
                     action={async () => {
                       "use server";
                       if (member.status === "suspended") {
@@ -92,40 +92,24 @@ export async function MembersList({
                         await suspendMember(tenantId, profile.id);
                       }
                     }}
-                  >
-                    <button
-                      type="submit"
-                      className="text-muted-foreground hover:text-foreground focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                    >
-                      {member.status === "suspended" ? "Reativar" : "Suspender"}
-                    </button>
-                  </form>
-                  <form
+                  />
+                  <ActionButton
+                    label="Reenviar convite"
+                    pendingLabel="Enviando..."
                     action={async () => {
                       "use server";
-                      await resendMemberInvite(tenantId, profile.id);
+                      return resendMemberInvite(tenantId, profile.id);
                     }}
-                  >
-                    <button
-                      type="submit"
-                      className="text-muted-foreground hover:text-foreground focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                    >
-                      Reenviar convite
-                    </button>
-                  </form>
-                  <form
+                  />
+                  <ActionButton
+                    label="Revogar acesso"
+                    tone="danger"
+                    confirmMessage={`Revogar o acesso de ${personLabel} a esta empresa? O vínculo é removido de vez.`}
                     action={async () => {
                       "use server";
                       await revokeMemberAccess(tenantId, profile.id);
                     }}
-                  >
-                    <button
-                      type="submit"
-                      className="text-danger hover:text-danger/80 focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                    >
-                      Revogar acesso
-                    </button>
-                  </form>
+                  />
                 </>
               )}
             </div>

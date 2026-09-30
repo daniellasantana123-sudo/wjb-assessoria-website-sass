@@ -165,6 +165,7 @@ export async function resendStaffInvite(
 export async function updateStaffRole(profileId: string, staffRole: StaffRole) {
   const session = await requireStaffSession();
   if (!isSuperAdmin(session)) return;
+  if (profileId === session.userId) return; // não se auto-rebaixa por engano.
 
   const supabase = await createClient();
   await supabase

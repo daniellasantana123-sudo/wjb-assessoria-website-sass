@@ -52,6 +52,18 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  /**
+   * Upload de documentos e guias (Server Action `uploadDocument`) aceita até
+   * 20 MB, mas o Next recusa qualquer corpo de Server Action acima de 1 MB
+   * por padrão - PDF escaneado e planilha caíam no error.tsx antes de chegar
+   * na action (2026-09-30). 21 MB dá folga para o overhead do multipart.
+   * O proxy (`src/proxy.ts`) roda em toda rota e só bufferiza 10 MB do corpo
+   * por padrão, por isso o segundo limite.
+   */
+  experimental: {
+    serverActions: { bodySizeLimit: "21mb" },
+    proxyClientMaxBodySize: "21mb",
+  },
   images: {
     /**
      * 2026-09-14, a pedido do usuário ("aumente a resolução/qualidade das

@@ -133,7 +133,7 @@ export function OmieMappingPanel({
                 }
               }}
               placeholder="CNPJ ou nome da empresa"
-              className="min-w-[16rem] flex-1"
+              className="min-w-0 flex-1 basis-48"
             />
             <Button type="button" variant="outline" onClick={handleSearch} disabled={searchPending}>
               {searchPending ? "Procurando..." : "Procurar"}

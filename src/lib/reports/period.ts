@@ -88,7 +88,7 @@ export function periodRange(buckets: MonthBucket[]): { start: string; end: strin
  * um dia para trás em qualquer fuso negativo - inclusive o do Brasil. Uma
  * obrigação que vence no dia 1 cairia no mês anterior do relatório.
  */
-function toIsoDate(date: Date): string {
+export function toIsoDate(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");

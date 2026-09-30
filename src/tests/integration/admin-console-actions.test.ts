@@ -16,6 +16,7 @@ const tenantsUpdateEqMock = vi.fn().mockResolvedValue({ error: null });
 const tenantMembersRoleUpdateMock = vi.fn().mockResolvedValue({ error: null });
 const tenantMembersDeleteMock = vi.fn().mockResolvedValue({ error: null });
 const profilesMaybeSingleMock = vi.fn();
+const membershipMaybeSingleMock = vi.fn();
 const auditInsertMock = vi.fn().mockResolvedValue({ error: null });
 const featureFlagsUpsertMock = vi.fn().mockResolvedValue({ error: null });
 
@@ -27,6 +28,7 @@ const fromMock = vi.fn((table: string) => {
     return {
       update: () => ({ eq: () => ({ eq: tenantMembersRoleUpdateMock }) }),
       delete: () => ({ eq: () => ({ eq: tenantMembersDeleteMock }) }),
+      select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
     };
   }
   if (table === "profiles") {
@@ -84,6 +86,7 @@ beforeEach(() => {
     data: { email: "cliente@empresa.com.br", full_name: "Cliente" },
   });
   inviteUserByEmailMock.mockResolvedValue({ data: {}, error: null });
+  membershipMaybeSingleMock.mockResolvedValue({ data: { id: "member-1" } });
 });
 
 describe("updateTenant", () => {
@@ -167,6 +170,15 @@ describe("resendMemberInvite", () => {
     const result = await resendMemberInvite("tenant-1", "profile-2");
 
     expect(result).toEqual({ error: expect.stringContaining("responsável") });
+    expect(inviteUserByEmailMock).not.toHaveBeenCalled();
+  });
+
+  it("recusa perfil que não é membro desta empresa", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: null });
+
+    const result = await resendMemberInvite("tenant-1", "profile-de-outra-empresa");
+
+    expect(result).toEqual({ error: expect.stringContaining("não faz parte") });
     expect(inviteUserByEmailMock).not.toHaveBeenCalled();
   });
 

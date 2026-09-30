@@ -142,15 +142,24 @@ async function resolveCounterpartRecipients(
   if (actorIsStaff) {
     const { data } = await admin
       .from("tenant_members")
-      .select("profile_id, profiles(email)")
+      .select("profile_id, status, profiles(email, status)")
       .eq("tenant_id", tenantId);
-    recipients = (data ?? []).map((row) => {
+    recipients = (data ?? []).flatMap((row) => {
       const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
-      return { id: row.profile_id, email: profile?.email ?? null };
+      // Quem foi suspenso (da empresa ou da conta) não recebe mais nada sobre
+      // ela - senão continuaria vendo assunto de chamado e nome de documento
+      // por e-mail depois de ter o acesso cortado.
+      if (row.status === "suspended" || profile?.status === "suspended") return [];
+      return [{ id: row.profile_id, email: profile?.email ?? null }];
     });
   } else {
-    const { data } = await admin.from("profiles").select("id, email").eq("is_wjb_staff", true);
-    recipients = (data ?? []).map((row) => ({ id: row.id, email: row.email }));
+    const { data } = await admin
+      .from("profiles")
+      .select("id, email, status")
+      .eq("is_wjb_staff", true);
+    recipients = (data ?? [])
+      .filter((row) => row.status !== "suspended")
+      .map((row) => ({ id: row.id, email: row.email }));
   }
 
   return recipients.filter((recipient) => recipient.id !== actorId);
@@ -247,8 +256,12 @@ export async function notifyIntegrationStatus({
   excludeActorId?: string;
 }) {
   const admin = createAdminClient();
-  const { data } = await admin.from("profiles").select("id, email").eq("is_wjb_staff", true);
+  const { data } = await admin
+    .from("profiles")
+    .select("id, email, status")
+    .eq("is_wjb_staff", true);
   const recipients: NotificationRecipient[] = (data ?? [])
+    .filter((row) => row.status !== "suspended")
     .map((row) => ({ id: row.id, email: row.email }))
     .filter((recipient) => recipient.id !== excludeActorId);
 

@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ erro?: string }>;
+  searchParams: Promise<{ erro?: string; next?: string }>;
 }) {
-  const { erro } = await searchParams;
+  const { erro, next } = await searchParams;
 
   return (
     <Container className="flex flex-1 items-center justify-center py-16">
@@ -36,7 +36,7 @@ export default async function LoginPage({
         ) : null}
 
         <div className="mt-6">
-          <LoginForm />
+          <LoginForm next={next} />
         </div>
 
         <p className="text-muted-foreground mt-6 text-center text-sm">

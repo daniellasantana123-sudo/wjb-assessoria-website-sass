@@ -23,7 +23,12 @@ function useRevealOnce() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        // Também revela o que já ficou ACIMA da tela (2026-09-30): quem rola
+        // antes do JavaScript terminar de carregar (celular com internet
+        // lenta) passava por seções que nunca tinham entrado na viewport com
+        // o observer ativo - elas ficavam invisíveis até a pessoa rolar de
+        // volta para cima.
+        if (entry.isIntersecting || entry.boundingClientRect.bottom < 0) {
           setVisible(true);
           observer.disconnect();
         }

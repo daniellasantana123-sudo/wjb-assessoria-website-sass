@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 import { Logo } from "@/components/navigation/logo";
@@ -15,12 +16,19 @@ import { cn } from "@/lib/utils";
  * disclosures aninhadas, a navegação do Portal é uma lista plana de 5 itens).
  */
 export function PortalMobileNav({
-  activeHref,
   unreadCount = 0,
+  organizationSwitcher,
 }: {
-  activeHref: string;
   unreadCount?: number;
+  /**
+   * Seletor de empresa - antes só existia na sidebar de desktop, então
+   * abaixo de 1024px quem tinha duas empresas não conseguia trocar.
+   */
+  organizationSwitcher?: ReactNode;
 }) {
+  // Rota lida no cliente: o layout que renderiza este componente não é
+  // refeito ao navegar, então uma prop vinda dele ficaria desatualizada.
+  const activeHref = usePathname();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -76,7 +84,11 @@ export function PortalMobileNav({
         onClick={() => setOpen(true)}
         aria-expanded={open}
         aria-controls="portal-mobile-menu"
-        aria-label="Abrir menu do Portal"
+        aria-label={
+          unreadCount > 0
+            ? `Abrir menu do Portal (${unreadCount} notificações não lidas)`
+            : "Abrir menu do Portal"
+        }
         className="text-foreground hover:bg-muted focus-visible:ring-primary relative flex h-10 w-10 items-center justify-center rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Menu aria-hidden="true" className="h-5 w-5" />
@@ -121,7 +133,7 @@ export function PortalMobileNav({
                       onClick={handleClose}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex min-h-11 items-center gap-3 rounded-md px-3 text-base font-medium transition-colors",
+                        "focus-visible:ring-primary flex min-h-11 items-center gap-3 rounded-md px-3 text-base font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
                         active
                           ? "bg-primary/10 text-primary"
                           : "text-foreground hover:bg-muted",
@@ -138,6 +150,10 @@ export function PortalMobileNav({
                   );
                 })}
               </nav>
+
+              {organizationSwitcher ? (
+                <div className="border-border border-t p-4">{organizationSwitcher}</div>
+              ) : null}
             </div>,
             document.body,
           )

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import { toggleObligationStatus, deleteObligation } from "@/actions/obligations";
+import { ActionButton } from "@/components/shared/action-button";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/db/supabase/server";
 
@@ -119,19 +120,15 @@ export async function ObligationsList({
                     {obligation.status === "done" ? "Reabrir" : "Concluir"}
                   </button>
                 </form>
-                <form
+                <ActionButton
+                  label="Apagar"
+                  tone="danger"
+                  confirmMessage={`Apagar a obrigação "${obligation.title}"?`}
                   action={async () => {
                     "use server";
                     await deleteObligation(obligation.id);
                   }}
-                >
-                  <button
-                    type="submit"
-                    className="text-danger hover:text-danger focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                  >
-                    Apagar
-                  </button>
-                </form>
+                />
               </div>
             )}
           </div>

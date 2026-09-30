@@ -10,6 +10,7 @@ import {
   type ReportPeriod,
 } from "@/lib/reports/period";
 import type { TenantMemberRole } from "@/types/database";
+import { toIsoDate } from "@/lib/reports/period";
 
 export interface MyOrganization {
   id: string;
@@ -77,7 +78,7 @@ export interface TenantDashboardStats {
 /** Resumo real pro dashboard do Portal — nada aqui é inventado, só contagens. */
 export async function getTenantDashboardStats(tenantId: string): Promise<TenantDashboardStats> {
   const supabase = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toIsoDate(new Date());
 
   const [pending, overdue, documents, guias, members] = await Promise.all([
     supabase
@@ -130,7 +131,7 @@ export async function getUpcomingObligations(
   limit = 5,
 ): Promise<UpcomingObligation[]> {
   const supabase = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toIsoDate(new Date());
 
   const { data } = await supabase
     .from("obligations")
@@ -183,8 +184,8 @@ export async function getObligationsMonthlyBreakdown(
     .from("obligations")
     .select("due_date, status")
     .eq("tenant_id", tenantId)
-    .gte("due_date", rangeStart.toISOString().slice(0, 10))
-    .lte("due_date", rangeEnd.toISOString().slice(0, 10));
+    .gte("due_date", toIsoDate(rangeStart))
+    .lte("due_date", toIsoDate(rangeEnd));
 
   const monthLabels = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 
@@ -272,7 +273,7 @@ export async function getTenantPeriodReport(
   const supabase = await createClient();
   const buckets = buildMonthBuckets(period);
   const { start, end } = periodRange(buckets);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toIsoDate(new Date());
 
   const [obligations, documents, ticketsOpened, ticketsOpen] = await Promise.all([
     supabase

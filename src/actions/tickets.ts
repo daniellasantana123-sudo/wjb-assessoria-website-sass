@@ -139,12 +139,18 @@ export async function replyTicket(
 
   const { data: ticket } = await supabase
     .from("tickets")
-    .select("tenant_id, subject")
+    .select("tenant_id, subject, status")
     .eq("id", ticketId)
     .maybeSingle();
 
   if (!ticket) {
     return { error: "Chamado não encontrado." };
+  }
+
+  // A tela esconde o formulário de chamado fechado, mas a action também
+  // precisa recusar - senão uma chamada direta reabria a conversa.
+  if (ticket.status === "closed") {
+    return { error: "Este chamado foi encerrado. Abra um novo chamado se precisar." };
   }
 
   const { error } = await supabase.from("ticket_messages").insert({

@@ -6,6 +6,7 @@ import type {
   ExternalClient,
   UpdateExternalClientInput,
 } from "../types";
+import { toIsoDate } from "@/lib/reports/period";
 
 /**
  * GClickClientMapper - tradução entre o modelo interno da WJB e o schema
@@ -47,7 +48,7 @@ export function toInscricao(
 
 /** `yyyy-MM-dd` exigido pelo campo `dataInicio`. */
 function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  return toIsoDate(new Date());
 }
 
 export interface GClickClientPayload {

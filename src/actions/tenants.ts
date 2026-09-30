@@ -447,6 +447,21 @@ export async function resendMemberInvite(
   }
 
   const supabase = await createClient();
+
+  // A pessoa precisa ser membro DESTA empresa: sem isso, um responsável
+  // poderia disparar convite para qualquer perfil que a RLS o deixa ler
+  // (colegas de outras empresas, equipe WJB) passando outro profileId.
+  const { data: membership } = await supabase
+    .from("tenant_members")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .eq("profile_id", profileId)
+    .maybeSingle();
+
+  if (!membership) {
+    return { error: "Essa pessoa não faz parte desta empresa." };
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("email, full_name")

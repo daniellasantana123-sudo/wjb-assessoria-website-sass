@@ -6,17 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { ObligationsCalendar } from "@/components/obligations/obligations-calendar";
 import { requireSession } from "@/lib/auth/dal";
 import { getActiveTenant } from "@/lib/tenant";
+import { parseCalendarParams } from "@/lib/calendar-params";
 
 export const metadata: Metadata = {
   title: "Calendário",
   robots: { index: false, follow: false },
 };
 
-function parseIntParam(value: string | string[] | undefined, fallback: number): number {
-  const raw = Array.isArray(value) ? value[0] : value;
-  const parsed = raw ? parseInt(raw, 10) : NaN;
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
 
 export default async function PortalCalendarioPage({
   searchParams,
@@ -27,9 +23,7 @@ export default async function PortalCalendarioPage({
   const tenant = await getActiveTenant(session.userId);
   const params = await searchParams;
 
-  const now = new Date();
-  const year = parseIntParam(params.year, now.getFullYear());
-  const month = parseIntParam(params.month, now.getMonth() + 1);
+  const { year, month } = parseCalendarParams(params);
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">

@@ -111,7 +111,7 @@ describe("uploadDocument", () => {
 
     const result = await uploadDocument("tenant-1", undefined, makeFormData(file));
 
-    expect(result?.error).toBeDefined();
+    expect(result).toHaveProperty("error");
     expect(storageUploadMock).not.toHaveBeenCalled();
   });
 
@@ -134,7 +134,7 @@ describe("uploadDocument", () => {
 
     const result = await uploadDocument("tenant-1", undefined, makeFormData(file));
 
-    expect(result).toBeUndefined();
+    expect(result).toEqual({ success: expect.stringContaining("enviado") });
     expect(auditInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({ action: "document.uploaded", tenant_id: "tenant-1" }),
     );
@@ -150,7 +150,7 @@ describe("uploadDocument", () => {
 
     const result = await uploadDocument("tenant-1", undefined, makeFormData(file));
 
-    expect(result?.error).toBeDefined();
+    expect(result).toHaveProperty("error");
     expect(storageRemoveMock).toHaveBeenCalled();
   });
 });

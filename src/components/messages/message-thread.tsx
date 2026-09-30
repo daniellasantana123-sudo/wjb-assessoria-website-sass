@@ -17,7 +17,7 @@ export async function MessageThread({ tenantId }: { tenantId: string }) {
             <div
               key={message.id}
               className={cn(
-                "max-w-xl rounded-md border p-4",
+                "min-w-0 max-w-xl rounded-md border p-4",
                 message.authorIsStaff
                   ? "border-primary/20 bg-primary/5 self-start"
                   : "border-border bg-background self-end",
@@ -34,7 +34,7 @@ export async function MessageThread({ tenantId }: { tenantId: string }) {
                   {new Date(message.createdAt).toLocaleString("pt-BR")}
                 </p>
               </div>
-              <p className="text-foreground mt-2 text-sm whitespace-pre-wrap">{message.body}</p>
+              <p className="text-foreground mt-2 text-sm break-words whitespace-pre-wrap">{message.body}</p>
             </div>
           ))}
         </div>

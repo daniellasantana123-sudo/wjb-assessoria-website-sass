@@ -19,17 +19,14 @@ import { hasPermission } from "@/lib/permissions/permissions";
 import { getOmieMapping } from "@/lib/omie-gclick";
 import { getGClickConfig } from "@/integrations/omie-gclick";
 import { reactivateTenant, suspendTenant } from "@/actions/tenants";
+import { ActionButton } from "@/components/shared/action-button";
+import { parseCalendarParams } from "@/lib/calendar-params";
 
 export const metadata: Metadata = {
   title: "Empresa",
   robots: { index: false, follow: false },
 };
 
-function parseIntParam(value: string | string[] | undefined, fallback: number): number {
-  const raw = Array.isArray(value) ? value[0] : value;
-  const parsed = raw ? parseInt(raw, 10) : NaN;
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
 
 export default async function EmpresaDetailPage({
   params,
@@ -41,9 +38,7 @@ export default async function EmpresaDetailPage({
   const session = await requireStaffSession();
   const { id } = await params;
   const query = await searchParams;
-  const now = new Date();
-  const calendarYear = parseIntParam(query.year, now.getFullYear());
-  const calendarMonth = parseIntParam(query.month, now.getMonth() + 1);
+  const { year: calendarYear, month: calendarMonth } = parseCalendarParams(query);
 
   const supabase = await createClient();
   const { data: tenant } = await supabase
@@ -78,7 +73,13 @@ export default async function EmpresaDetailPage({
           {tenant.cnpj && <p className="text-muted-foreground mt-1 text-sm">{tenant.cnpj}</p>}
         </div>
         {canSuspendTenant && (
-          <form
+          <ActionButton
+            label={isSuspended ? "Reativar empresa" : "Suspender empresa"}
+            confirmMessage={
+              isSuspended
+                ? undefined
+                : `Suspender ${tenant.name}? Ninguém da empresa consegue acessar o Portal até ela ser reativada.`
+            }
             action={async () => {
               "use server";
               if (isSuspended) {
@@ -87,14 +88,7 @@ export default async function EmpresaDetailPage({
                 await suspendTenant(tenant.id);
               }
             }}
-          >
-            <button
-              type="submit"
-              className="text-muted-foreground hover:text-foreground focus-visible:ring-primary rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            >
-              {isSuspended ? "Reativar empresa" : "Suspender empresa"}
-            </button>
-          </form>
+          />
         )}
       </div>
 

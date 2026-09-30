@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 
 import { deleteDocument } from "@/actions/documents";
+import { ActionButton } from "@/components/shared/action-button";
 import { Input } from "@/components/ui/input";
 import { listTenantDocuments, formatFileSize } from "@/lib/documents";
 import type { DocumentCategory } from "@/types/database";
@@ -44,6 +45,7 @@ export async function DocumentsList({
               name="q"
               defaultValue={query}
               placeholder="Buscar por nome do arquivo"
+              aria-label="Buscar por nome do arquivo"
               className="pl-9"
             />
           </div>
@@ -61,7 +63,7 @@ export async function DocumentsList({
               <div className="min-w-0">
                 <a
                   href={`/api/documents/${document.id}/download`}
-                  className="text-foreground hover:text-primary focus-visible:ring-primary truncate font-medium underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="text-foreground hover:text-primary focus-visible:ring-primary block truncate font-medium underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   {document.fileName}
                 </a>
@@ -73,19 +75,15 @@ export async function DocumentsList({
               </div>
 
               {canDelete && (
-                <form
+                <ActionButton
+                  label="Apagar"
+                  tone="danger"
+                  confirmMessage={`Apagar "${document.fileName}"? O arquivo é removido de vez.`}
                   action={async () => {
                     "use server";
                     await deleteDocument(document.id);
                   }}
-                >
-                  <button
-                    type="submit"
-                    className="text-danger hover:text-danger focus-visible:ring-primary shrink-0 rounded-md text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                  >
-                    Apagar
-                  </button>
-                </form>
+                />
               )}
             </div>
           ))}

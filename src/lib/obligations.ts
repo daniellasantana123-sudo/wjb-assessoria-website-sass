@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/db/supabase/server";
+import { toIsoDate } from "@/lib/reports/period";
 
 export interface CalendarObligation {
   id: string;
@@ -19,14 +20,14 @@ export async function getObligationsForMonth(
   const supabase = await createClient();
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toIsoDate(new Date());
 
   const { data } = await supabase
     .from("obligations")
     .select("id, title, due_date, status")
     .eq("tenant_id", tenantId)
-    .gte("due_date", start.toISOString().slice(0, 10))
-    .lte("due_date", end.toISOString().slice(0, 10))
+    .gte("due_date", toIsoDate(start))
+    .lte("due_date", toIsoDate(end))
     .order("due_date", { ascending: true });
 
   return (data ?? []).map((row) => ({

@@ -1,14 +1,14 @@
 import { z } from "zod";
 
 export const loginFormSchema = z.object({
-  email: z.string().trim().email("Informe um e-mail válido."),
+  email: z.string().trim().toLowerCase().email("Informe um e-mail válido."),
   password: z.string().min(1, "Informe sua senha."),
 });
 
 export type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 export const passwordResetRequestSchema = z.object({
-  email: z.string().trim().email("Informe um e-mail válido."),
+  email: z.string().trim().toLowerCase().email("Informe um e-mail válido."),
 });
 
 export type PasswordResetRequestValues = z.infer<typeof passwordResetRequestSchema>;

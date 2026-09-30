@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useId, useRef } from "react";
 
 import { uploadDocument } from "@/actions/documents";
 import { Button } from "@/components/ui/button";
@@ -21,25 +21,29 @@ export function UploadDocumentForm({
   const uploadForTenant = uploadDocument.bind(null, tenantId);
   const [state, formAction, pending] = useActionState(uploadForTenant, undefined);
   const formRef = useRef<HTMLFormElement>(null);
+  // A página do Admin renderiza este formulário duas vezes (Documentos e
+  // Guias): com um id fixo, o rótulo "Enviar guia" abria o seletor do
+  // campo de Documento.
+  const fileId = useId();
+  const categoryId = useId();
+
+  // Limpa o arquivo escolhido só depois de um envio bem-sucedido - antes
+  // limpava na hora, e em caso de erro a pessoa tinha que escolher de novo.
+  useEffect(() => {
+    if (state && "success" in state) formRef.current?.reset();
+  }, [state]);
 
   return (
-    <form
-      ref={formRef}
-      action={async (formData) => {
-        await formAction(formData);
-        formRef.current?.reset();
-      }}
-      className="flex flex-wrap items-end gap-4"
-    >
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="file">Enviar {defaultCategory === "guia" ? "guia" : "documento"}</Label>
-        <Input id="file" name="file" type="file" required />
+    <form ref={formRef} action={formAction} className="flex flex-wrap items-end gap-4">
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <Label htmlFor={fileId}>Enviar {defaultCategory === "guia" ? "guia" : "documento"}</Label>
+        <Input id={fileId} name="file" type="file" required className="max-w-full" />
       </div>
 
       {showCategoryField ? (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="category">Tipo</Label>
-          <Select id="category" name="category" defaultValue={defaultCategory}>
+          <Label htmlFor={categoryId}>Tipo</Label>
+          <Select id={categoryId} name="category" defaultValue={defaultCategory}>
             <option value="documento">Documento</option>
             <option value="guia">Guia de pagamento</option>
           </Select>
@@ -48,9 +52,14 @@ export function UploadDocumentForm({
         <input type="hidden" name="category" value={defaultCategory} />
       )}
 
-      {state?.error && (
+      {state && "error" in state && (
         <p role="alert" className="text-danger text-sm">
           {state.error}
+        </p>
+      )}
+      {state && "success" in state && (
+        <p role="status" className="text-success-text text-sm">
+          {state.success}
         </p>
       )}
 

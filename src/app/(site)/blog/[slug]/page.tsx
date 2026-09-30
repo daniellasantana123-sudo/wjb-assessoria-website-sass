@@ -232,7 +232,12 @@ export default async function BlogPostPage({
           <p className="text-foreground font-medium">{post.cta.text}</p>
           <Link
             href={post.cta.href}
-            className={buttonVariants({ variant: "cta", className: "mt-4" })}
+            // O texto vem de cada post e pode ser longo: em 320px, "Conhecer a
+            // assessoria em Reforma Tributária" passava da largura da tela.
+            className={buttonVariants({
+              variant: "cta",
+              className: "mt-4 h-auto min-h-11 max-w-full py-2 text-center whitespace-normal",
+            })}
           >
             {post.cta.label}
           </Link>
