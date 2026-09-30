@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Bell,
+  BookOpen,
   Building2,
   Contact,
   LifeBuoy,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
+import { buttonVariants } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
@@ -33,7 +35,7 @@ const navCards = [
     href: "/admin/leads",
     icon: Contact,
     label: "Leads",
-    description: "Contato, proposta, simulador, assistente virtual e newsletter",
+    description: "Contato, proposta, assistente virtual e newsletter",
   },
   {
     href: "/admin/usuarios",
@@ -127,6 +129,34 @@ export default async function AdminPage() {
             </span>
           </Link>
         ))}
+      </div>
+
+      {/*
+        <a> e não <Link>: as duas rotas do manual são route handlers que
+        devolvem um documento HTML próprio, fora do layout do site.
+      */}
+      <div className="border-border bg-primary/5 flex flex-wrap items-center gap-x-6 gap-y-4 rounded-md border p-6">
+        <span className="bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-md">
+          <BookOpen aria-hidden="true" className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1 basis-64">
+          <p className="text-foreground font-medium">Manual da plataforma</p>
+          <p className="text-muted-foreground text-sm">
+            Guia completo do Admin e do Portal para a equipe. Para clientes, mande o link{" "}
+            <span className="text-foreground font-medium break-all">
+              wjbassessoriacontabil.com.br/ajuda
+            </span>
+            , que explica só o Portal.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <a href="/admin/manual" target="_blank" rel="noopener" className={buttonVariants({ variant: "primary" })}>
+            Abrir manual da equipe
+          </a>
+          <a href="/ajuda" target="_blank" rel="noopener" className={buttonVariants({ variant: "outline" })}>
+            Ver guia do cliente
+          </a>
+        </div>
       </div>
     </Container>
   );

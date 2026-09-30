@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CircleHelp } from "lucide-react";
 
 import { Logo } from "@/components/navigation/logo";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -43,6 +44,15 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
 
         <div className="border-border flex flex-col gap-3 border-t p-4">
           {switcher}
+          <a
+            href="/ajuda"
+            target="_blank"
+            rel="noopener"
+            className="text-foreground hover:bg-muted focus-visible:ring-primary flex min-h-10 items-center gap-3 rounded-md px-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            <CircleHelp aria-hidden="true" className="h-4.5 w-4.5 shrink-0" />
+            Ajuda: guia do Portal
+          </a>
           <div className="flex items-center justify-between gap-2 px-1">
             <Link
               href="/"

@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { CircleHelp, Menu, X } from "lucide-react";
 
 import { Logo } from "@/components/navigation/logo";
 import { isPortalNavItemActive, portalNavItems } from "@/config/portal-nav";
@@ -150,6 +150,19 @@ export function PortalMobileNav({
                   );
                 })}
               </nav>
+
+              <div className="px-3 pb-2">
+                <a
+                  href="/ajuda"
+                  target="_blank"
+                  rel="noopener"
+                  onClick={handleClose}
+                  className="text-foreground hover:bg-muted focus-visible:ring-primary flex min-h-11 items-center gap-3 rounded-md px-3 text-base font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                >
+                  <CircleHelp aria-hidden="true" className="h-5 w-5 shrink-0" />
+                  Ajuda: guia do Portal
+                </a>
+              </div>
 
               {organizationSwitcher ? (
                 <div className="border-border border-t p-4">{organizationSwitcher}</div>
