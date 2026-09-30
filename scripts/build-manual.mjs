@@ -51,8 +51,31 @@ function fill(template, backLink) {
   return out;
 }
 
+const SITE = "https://wjbassessoriacontabil.com.br";
+
+/**
+ * Tags de pré-visualização de link (WhatsApp, LinkedIn, e-mail). Só no guia
+ * do cliente, que é o link mandado para fora; a imagem é gerada por
+ * scripts/gen-manual-og.mjs. URLs absolutas: quem lê essas tags é o
+ * servidor do WhatsApp, não o navegador.
+ */
+const clientShareTags = `<meta name="description" content="Como entrar, acompanhar prazos, enviar documentos e falar com a WJB pelo Portal do Cliente.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WJB Assessoria Contábil">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="${SITE}/ajuda">
+<meta property="og:title" content="Guia do Portal do Cliente | WJB Assessoria Contábil">
+<meta property="og:description" content="Como entrar, acompanhar prazos, enviar documentos e falar com a WJB pelo Portal do Cliente.">
+<meta property="og:image" content="${SITE}/manual/og-ajuda.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Capa do Guia do Portal do Cliente da WJB Assessoria Contábil">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${SITE}/manual/og-ajuda.jpg">`;
+
 /** Documento completo para servir pelo site (o Artifact monta o próprio esqueleto). */
-function forSite(page) {
+function forSite(page, extraHead = "") {
   const local = page.replace(googleFonts, localFonts);
   const headEnd = local.indexOf("</style>", local.indexOf("<style>\n/* Layout")) + "</style>".length;
   return `<!doctype html>
@@ -62,6 +85,7 @@ function forSite(page) {
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="/icon.png">
+${extraHead}
 ${local.slice(0, headEnd)}
 </head>
 <body>
@@ -75,5 +99,8 @@ mkdirSync("src/content/manual", { recursive: true });
 writeFileSync("docs/manual/manual-plataforma-wjb.html", fill(staffTemplate, ""));
 writeFileSync("docs/manual/guia-portal-cliente.html", fill(clientTemplate, "Guia do cliente"));
 writeFileSync("src/content/manual/manual-equipe.html", forSite(fill(staffTemplate, '<a href="/admin">← Voltar ao Admin</a> · ')));
-writeFileSync("src/content/manual/guia-cliente.html", forSite(fill(clientTemplate, '<a href="/portal">Ir para o Portal →</a>')));
+writeFileSync(
+  "src/content/manual/guia-cliente.html",
+  forSite(fill(clientTemplate, '<a href="/portal">Ir para o Portal →</a>'), clientShareTags),
+);
 console.log("Manual gerado.");
