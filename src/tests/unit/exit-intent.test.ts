@@ -27,7 +27,7 @@ describe("popup Antes de sair: quando pode aparecer", () => {
     expect(canShowPopup({ pathname: "/", stored: null, shownThisSession: true, now })).toBe(false);
   });
 
-  it("fechou: volta só depois de 7 dias", () => {
+  it("fechou: volta só depois de 3 dias", () => {
     const dismissed = { status: "dismissed" as const, at: now - 1000 };
     expect(canShowPopup({ pathname: "/", stored: dismissed, shownThisSession: false, now })).toBe(false);
     const old = { status: "dismissed" as const, at: now - DISMISS_COOLDOWN_MS - 1 };

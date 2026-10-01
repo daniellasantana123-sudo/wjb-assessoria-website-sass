@@ -6,8 +6,8 @@
 export const EXIT_POPUP_STORAGE_KEY = "wjb-exit-popup";
 export const EXIT_POPUP_SESSION_KEY = "wjb-exit-popup-shown";
 
-/** Fechou sem enviar: não insistir por 7 dias. */
-export const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+/** Fechou sem enviar: não insistir por 3 dias (era 7; reduzido a pedido do usuário em 2026-10-01). */
+export const DISMISS_COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
 /** Tempo mínimo na página antes de aparecer (computador). */
 export const MIN_DWELL_DESKTOP_MS = 8_000;
 /** Celular: não há "mouse saindo da página"; usa leitura + tempo. */

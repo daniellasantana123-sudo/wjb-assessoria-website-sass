@@ -67,7 +67,7 @@ function writeStorage(storage: "local" | "session", key: string, value: string) 
  * computador, também quando o mouse sai pelo topo da página (gesto de
  * fechar a aba) depois de 8s; no celular, que não tem esse gesto, também
  * depois de ler metade da página e passar 25s nela. Uma vez por visita; fechou, volta
- * só depois de 7 dias; enviou, nunca mais. Não aparece em páginas que já têm
+ * só depois de 3 dias; enviou, nunca mais. Não aparece em páginas que já têm
  * formulário (`isExcludedPath`).
  *
  * O lead vai para o mesmo `/api/leads` dos outros formulários, com

@@ -27,7 +27,7 @@ Para lançar uma versão:
     - no computador, também quando o mouse sai pelo topo da página;
     - no celular, também depois de ler metade da página.
   - **Quando não aparece:** com alguém digitando num campo, com outra janela aberta ou com a aba em segundo plano.
-  - **Frequência:** uma vez por visita; se a pessoa fechar, volta só depois de 7 dias; se enviar, nunca mais.
+  - **Frequência:** uma vez por visita; se a pessoa fechar, volta só depois de 3 dias; se enviar, nunca mais.
   - **Onde não aparece:** páginas que já têm formulário, o guia e as telas de login.
   - **Destino dos contatos:** Admin → Leads, como "Popup de saída".
 
