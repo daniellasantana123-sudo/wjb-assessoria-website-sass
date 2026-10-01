@@ -21,7 +21,26 @@
  * transpilação do next.config.ts durante `next build`. Um config em JS
  * puro não precisa de transpilação nenhuma para ser carregado.
  */
+import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+
 const isDev = process.env.NODE_ENV === "development";
+
+/**
+ * Versão exibida no rodapé do Portal e do Admin (2026-10-01). Calculada no
+ * BUILD e embutida no código: aqui isso é o desejado, ao contrário das
+ * variáveis do painel da Hostinger (que só existem em runtime). Versão vem
+ * do package.json (ver CHANGELOG.md); o commit e a data identificam
+ * exatamente qual build está no ar quando alguém reportar um problema.
+ */
+const appVersion = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")).version;
+let appCommit = "";
+try {
+  appCommit = execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+} catch {
+  // Build sem .git (ex.: pacote enviado sem histórico) - a versão continua aparecendo.
+}
+const appBuildDate = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo" }).format(new Date());
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
@@ -52,6 +71,11 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: appVersion,
+    NEXT_PUBLIC_APP_COMMIT: appCommit,
+    NEXT_PUBLIC_APP_BUILD_DATE: appBuildDate,
+  },
   /**
    * Upload de documentos e guias (Server Action `uploadDocument`) aceita até
    * 20 MB, mas o Next recusa qualquer corpo de Server Action acima de 1 MB

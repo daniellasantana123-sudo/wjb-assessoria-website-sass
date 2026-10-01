@@ -4,6 +4,7 @@ import { CircleHelp } from "lucide-react";
 import { Logo } from "@/components/navigation/logo";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { OrganizationSwitcher } from "@/components/portal/organization-switcher";
+import { AppCredits } from "@/components/app-shell/app-credits";
 import { AppMobileNav } from "@/components/app-shell/app-mobile-nav";
 import { AppSidebarNav } from "@/components/app-shell/app-sidebar-nav";
 import { requireSession } from "@/lib/auth/dal";
@@ -62,6 +63,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
             </Link>
             <LogoutButton />
           </div>
+          <AppCredits />
         </div>
       </aside>
 

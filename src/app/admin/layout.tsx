@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
+import { AppCredits } from "@/components/app-shell/app-credits";
 import { AppMobileNav } from "@/components/app-shell/app-mobile-nav";
 import { AppSidebarNav } from "@/components/app-shell/app-sidebar-nav";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -62,6 +63,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             </Link>
             <LogoutButton />
           </div>
+          <AppCredits />
         </div>
       </aside>
 

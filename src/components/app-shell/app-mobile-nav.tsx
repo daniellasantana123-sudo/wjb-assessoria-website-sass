@@ -8,6 +8,7 @@ import { CircleHelp, Menu, X } from "lucide-react";
 
 import { Logo } from "@/components/navigation/logo";
 import { appAreas, type AppArea } from "@/components/app-shell/app-areas";
+import { AppCredits } from "@/components/app-shell/app-credits";
 import { isNavItemActive } from "@/config/portal-nav";
 import { cn } from "@/lib/utils";
 
@@ -171,6 +172,10 @@ export function AppMobileNav({
               {organizationSwitcher ? (
                 <div className="border-border border-t p-4">{organizationSwitcher}</div>
               ) : null}
+
+              <div className="border-border border-t px-4 py-3">
+                <AppCredits />
+              </div>
             </div>,
             document.body,
           )
