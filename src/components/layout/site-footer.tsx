@@ -122,12 +122,12 @@ export function SiteFooter() {
 
         <nav aria-label="Institucional" className="min-w-0">
           <h2 className="text-sm font-medium text-neutral-100">Institucional</h2>
-          <ul className="mt-4 flex flex-col gap-3">
+          <ul className="mt-4 flex flex-col gap-1">
             {institutionalLinks.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="hover:text-primary-foreground focus-visible:ring-primary rounded-md text-sm text-neutral-400 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="hover:text-primary-foreground focus-visible:ring-primary inline-flex min-h-7 items-center rounded-md text-sm text-neutral-400 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   {item.label}
                 </Link>
@@ -138,12 +138,12 @@ export function SiteFooter() {
 
         <nav aria-label="Serviços" className="min-w-0">
           <h2 className="text-sm font-medium text-neutral-100">Serviços</h2>
-          <ul className="mt-4 flex flex-col gap-3">
+          <ul className="mt-4 flex flex-col gap-1">
             {serviceCategories.map((service) => (
               <li key={service.href}>
                 <Link
                   href={service.href}
-                  className="hover:text-primary-foreground focus-visible:ring-primary rounded-md text-sm text-neutral-400 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="hover:text-primary-foreground focus-visible:ring-primary inline-flex min-h-7 items-center rounded-md text-sm text-neutral-400 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   {service.title}
                 </Link>
@@ -154,14 +154,14 @@ export function SiteFooter() {
 
         <div className="min-w-0">
           <h2 className="text-sm font-medium text-neutral-100">Fale conosco</h2>
-          <ul className="mt-4 flex flex-col gap-3 text-sm text-neutral-400">
+          <ul className="mt-4 flex flex-col gap-1 text-sm text-neutral-400">
             {siteConfig.contact.phones.map((phone) => (
               <li key={phone.e164}>
                 <a
                   href={phone.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-primary-foreground focus-visible:ring-primary rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="hover:text-primary-foreground focus-visible:ring-primary inline-flex min-h-7 items-center rounded-md focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   WhatsApp: {phone.display}
                 </a>
@@ -186,18 +186,19 @@ export function SiteFooter() {
                 href={siteConfig.partners.armelx.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-neutral-300"
+                className="focus-visible:ring-primary inline-flex min-h-6 items-center rounded-md hover:text-neutral-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 {siteConfig.partners.armelx.name}
               </a>
             </p>
           </div>
-          <nav aria-label="Legal" className="flex flex-wrap items-center gap-4">
+          {/* Área de toque de pelo menos 24px (WCAG 2.5.8) - antes tinham 16px no celular. */}
+          <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             {legalLinks.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="focus-visible:ring-primary rounded-md hover:text-neutral-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="focus-visible:ring-primary inline-flex min-h-6 items-center rounded-md hover:text-neutral-300 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 {item.label}
               </Link>

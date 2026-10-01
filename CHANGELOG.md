@@ -25,6 +25,7 @@ Para lançar uma versão:
 - **Áreas de toque de 24px no celular:**
   - caixas de seleção da importação, que agora ficam sempre ao lado do nome;
   - bolinhas do carrossel de depoimentos na página inicial.
+  - links do rodapé do site: Institucional, Serviços, Fale conosco, links legais e Armel-x. Antes alguns tinham 16px.
 
 ## 1.2.0 — 01/10/2026
 
