@@ -15,9 +15,9 @@ Para lançar uma versão:
 
 1. atualize `version` no `package.json`;
 2. registre as mudanças aqui;
-3. crie a etiqueta no Git (`git tag v1.2.0` e `git push origin v1.2.0`).
+3. crie a etiqueta no Git (por exemplo, `git tag v1.3.0` e `git push origin v1.3.0`).
 
-## Próxima versão (ainda não lançada)
+## 1.3.0 — 01/10/2026
 
 ### Novidades
 
@@ -26,7 +26,6 @@ Para lançar uma versão:
   - a tarefa entra na fila do escritório no G-Click, já ligada ao cliente, e o prazo é definido lá;
   - toda a equipe pode criar;
   - os departamentos são descobertos sozinhos nas tarefas do G-Click e aparecem em Integrações; `GCLICK_DEPARTAMENTOS` é opcional e serve só para limitar a lista.
-
 - **Tarefas no G-Click na ficha da empresa:**
   - todas as tarefas do cliente no G-Click (obrigações e solicitações) dos últimos 12 meses;
   - status, vencimento, competência e departamento, com filtro "Em aberto / Todas";
