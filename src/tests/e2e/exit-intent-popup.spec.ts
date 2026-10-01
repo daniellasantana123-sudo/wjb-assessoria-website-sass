@@ -59,3 +59,21 @@ test("não abre em páginas que já têm formulário e não reabre depois de fec
   await triggerExit(page, isMobile);
   await expect(page.getByRole("dialog", { name: /Precisa de um contador/ })).toHaveCount(0);
 });
+
+test("abre depois de 30s sem nenhuma interação, no computador e no celular", async ({ page }) => {
+  await page.goto("/sobre", { waitUntil: "networkidle" });
+  const dialog = page.getByRole("dialog", { name: /Precisa de um contador/ });
+
+  await page.clock.fastForward(20_000);
+  await expect(dialog).toHaveCount(0);
+
+  await page.clock.fastForward(11_000);
+  await expect(dialog).toBeVisible();
+});
+
+test("não abre por inatividade enquanto a pessoa está com um campo em foco", async ({ page }) => {
+  await page.goto("/sobre", { waitUntil: "networkidle" });
+  await page.getByRole("textbox").first().focus();
+  await page.clock.fastForward(45_000);
+  await expect(page.getByRole("dialog", { name: /Precisa de um contador/ })).toHaveCount(0);
+});

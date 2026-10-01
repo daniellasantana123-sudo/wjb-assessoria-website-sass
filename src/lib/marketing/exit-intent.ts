@@ -13,6 +13,31 @@ export const MIN_DWELL_DESKTOP_MS = 8_000;
 /** Celular: não há "mouse saindo da página"; usa leitura + tempo. */
 export const MIN_DWELL_MOBILE_MS = 25_000;
 export const MOBILE_SCROLL_RATIO = 0.5;
+/**
+ * Inatividade (2026-10-01, pedido do usuário): sem mexer o mouse, rolar,
+ * tocar ou digitar por 30s, o popup aparece - no computador e no celular.
+ */
+export const IDLE_MS = 30_000;
+
+/**
+ * O gatilho de inatividade não deve interromper quem está digitando
+ * (ex.: no assistente virtual, parado pensando) nem abrir por cima de outra
+ * janela (menu do celular, outro modal - todos travam a rolagem do body).
+ */
+export function idleTriggerBlocked({
+  activeElementTag,
+  activeElementEditable,
+  bodyScrollLocked,
+  documentHidden,
+}: {
+  activeElementTag: string | null;
+  activeElementEditable: boolean;
+  bodyScrollLocked: boolean;
+  documentHidden: boolean;
+}): boolean {
+  if (documentHidden || bodyScrollLocked || activeElementEditable) return true;
+  return activeElementTag === "INPUT" || activeElementTag === "TEXTAREA" || activeElementTag === "SELECT";
+}
 
 /**
  * Páginas onde o popup atrapalharia: as que já têm formulário de contato,

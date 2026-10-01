@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   canShowPopup,
+  idleTriggerBlocked,
   DISMISS_COOLDOWN_MS,
   isExcludedPath,
   parseStoredState,
@@ -55,5 +56,25 @@ describe("formulário curto do popup", () => {
     expect(
       exitIntentLeadSchema.safeParse({ name: "Maria", phone: "11976146375", email: "maria@empresa.com.br", serviceInterest: "Abrir uma empresa", consent: true }).success,
     ).toBe(true);
+  });
+});
+
+describe("gatilho de inatividade", () => {
+  const base = { activeElementTag: "BODY", activeElementEditable: false, bodyScrollLocked: false, documentHidden: false };
+
+  it("libera numa página parada, sem nada em foco", () => {
+    expect(idleTriggerBlocked(base)).toBe(false);
+  });
+
+  it("não interrompe quem está digitando num campo", () => {
+    for (const tag of ["INPUT", "TEXTAREA", "SELECT"]) {
+      expect(idleTriggerBlocked({ ...base, activeElementTag: tag })).toBe(true);
+    }
+    expect(idleTriggerBlocked({ ...base, activeElementEditable: true })).toBe(true);
+  });
+
+  it("não abre por cima de outra janela nem com a aba em segundo plano", () => {
+    expect(idleTriggerBlocked({ ...base, bodyScrollLocked: true })).toBe(true);
+    expect(idleTriggerBlocked({ ...base, documentHidden: true })).toBe(true);
   });
 });

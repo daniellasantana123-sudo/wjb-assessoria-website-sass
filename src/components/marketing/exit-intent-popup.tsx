@@ -15,6 +15,8 @@ import {
   canShowPopup,
   EXIT_POPUP_SESSION_KEY,
   EXIT_POPUP_STORAGE_KEY,
+  IDLE_MS,
+  idleTriggerBlocked,
   MIN_DWELL_DESKTOP_MS,
   MIN_DWELL_MOBILE_MS,
   MOBILE_SCROLL_RATIO,
@@ -61,9 +63,10 @@ function writeStorage(storage: "local" | "session", key: string, value: string) 
  * partir de um modelo do site da Armel-x, sem a oferta de "diagnóstico
  * gratuito", que a WJB não faz).
  *
- * Gatilho: no computador, quando o mouse sai pelo topo da página (gesto de
- * fechar a aba) depois de 8s; no celular, que não tem esse gesto, depois de
- * ler metade da página e passar 25s nela. Uma vez por visita; fechou, volta
+ * Gatilhos: 30s sem nenhuma interação (computador e celular); no
+ * computador, também quando o mouse sai pelo topo da página (gesto de
+ * fechar a aba) depois de 8s; no celular, que não tem esse gesto, também
+ * depois de ler metade da página e passar 25s nela. Uma vez por visita; fechou, volta
  * só depois de 7 dias; enviou, nunca mais. Não aparece em páginas que já têm
  * formulário (`isExcludedPath`).
  *
@@ -99,26 +102,61 @@ export function ExitIntentPopup() {
     if (open) return;
     const startedAt = Date.now();
     const coarse = window.matchMedia("(pointer: coarse)").matches;
+    const cleanups: (() => void)[] = [];
+
+    // 1) Inatividade - computador e celular. Qualquer interação reinicia o
+    // relógio; com a aba em segundo plano o relógio para (visibilitychange).
+    let idleTimer: number | undefined;
+    const armIdle = () => {
+      window.clearTimeout(idleTimer);
+      if (document.hidden) return;
+      idleTimer = window.setTimeout(() => {
+        const active = document.activeElement as HTMLElement | null;
+        const blocked = idleTriggerBlocked({
+          activeElementTag: active?.tagName ?? null,
+          activeElementEditable: Boolean(active?.isContentEditable),
+          bodyScrollLocked: document.body.style.overflow === "hidden",
+          documentHidden: document.hidden,
+        });
+        if (blocked) armIdle();
+        else show();
+      }, IDLE_MS);
+    };
+    const activityEvents = ["mousemove", "mousedown", "keydown", "scroll", "wheel", "touchstart", "pointerdown"] as const;
+    for (const name of activityEvents) {
+      window.addEventListener(name, armIdle, { passive: true });
+    }
+    document.addEventListener("visibilitychange", armIdle);
+    armIdle();
+    cleanups.push(() => {
+      window.clearTimeout(idleTimer);
+      for (const name of activityEvents) window.removeEventListener(name, armIdle);
+      document.removeEventListener("visibilitychange", armIdle);
+    });
 
     if (!coarse) {
-      function onMouseOut(event: MouseEvent) {
+      // 2) Computador: mouse saindo pelo topo (gesto de fechar a aba).
+      const onMouseOut = (event: MouseEvent) => {
         if (event.relatedTarget || event.clientY > 0) return;
         if (Date.now() - startedAt < MIN_DWELL_DESKTOP_MS) return;
         show();
-      }
+      };
       document.addEventListener("mouseout", onMouseOut);
-      return () => document.removeEventListener("mouseout", onMouseOut);
+      cleanups.push(() => document.removeEventListener("mouseout", onMouseOut));
+    } else {
+      // 2) Celular: leu metade da página e já passou 25s nela.
+      const onScroll = () => {
+        const doc = document.documentElement;
+        const scrollable = doc.scrollHeight - window.innerHeight;
+        if (scrollable <= 0) return;
+        const ratio = window.scrollY / scrollable;
+        if (ratio >= MOBILE_SCROLL_RATIO && Date.now() - startedAt >= MIN_DWELL_MOBILE_MS) show();
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      cleanups.push(() => window.removeEventListener("scroll", onScroll));
     }
 
-    function onScroll() {
-      const doc = document.documentElement;
-      const scrollable = doc.scrollHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-      const ratio = window.scrollY / scrollable;
-      if (ratio >= MOBILE_SCROLL_RATIO && Date.now() - startedAt >= MIN_DWELL_MOBILE_MS) show();
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => cleanups.forEach((fn) => fn());
   }, [open, show]);
 
   const close = useCallback(() => {
