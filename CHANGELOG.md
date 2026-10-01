@@ -19,6 +19,14 @@ Para lançar uma versão:
 
 ## Próxima versão (ainda não lançada)
 
+### Novidades
+
+- **Criar tarefa no G-Click** pela ficha da empresa:
+  - assunto, descrição, departamento e responsável (opcional);
+  - a tarefa entra na fila do escritório no G-Click, já ligada ao cliente, e o prazo é definido lá;
+  - toda a equipe pode criar;
+  - departamentos configurados em `GCLICK_DEPARTAMENTOS`.
+
 ### Correções
 
 - **CNPJ formatado** (12.345.678/0001-99) na tela de importação e nos resultados da busca do G-Click.

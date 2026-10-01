@@ -39,7 +39,8 @@ export type Permission =
   | "integrations.read"
   | "integrations.manage"
   | "feature_flags.manage"
-  | "tenants.suspend";
+  | "tenants.suspend"
+  | "tasks.create";
 
 const BASE_STAFF_PERMISSIONS: Permission[] = [
   "organizations.read",
@@ -62,6 +63,10 @@ const BASE_STAFF_PERMISSIONS: Permission[] = [
   "audit.read",
   "integrations.read",
   "integrations.manage",
+  // Criar tarefa no G-Click para a equipe (2026-10-01). Fica com toda a
+  // equipe, inclusive Atendimento: abrir pedido para o time é trabalho de
+  // relacionamento e não altera cadastro nenhum.
+  "tasks.create",
 ];
 
 /**

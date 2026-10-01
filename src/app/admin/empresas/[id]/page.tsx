@@ -17,7 +17,9 @@ import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
 import { getOmieMapping } from "@/lib/omie-gclick";
-import { getGClickConfig } from "@/integrations/omie-gclick";
+import { getGClickConfig, getOmieGClickAdapter } from "@/integrations/omie-gclick";
+import { CreateGClickTaskForm } from "@/components/integrations/create-gclick-task-form";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 import { reactivateTenant, suspendTenant } from "@/actions/tenants";
 import { ActionButton } from "@/components/shared/action-button";
 import { parseCalendarParams } from "@/lib/calendar-params";
@@ -50,7 +52,21 @@ export default async function EmpresaDetailPage({
   if (!tenant) notFound();
 
   const omieMapping = await getOmieMapping(tenant.id);
-  const { mode: omieMode } = getGClickConfig();
+  const { mode: omieMode, account: gclickAccount } = getGClickConfig();
+
+  // Criar tarefa no G-Click: precisa do vínculo, da integração ligada e dos
+  // departamentos configurados. Responsáveis vêm do próprio G-Click na hora;
+  // se a consulta falhar, o formulário segue sem a lista.
+  const canCreateTask = hasPermission(session, "tasks.create");
+  const taskLinked = Boolean(omieMapping?.externalClientId) && omieMapping?.status !== "disabled";
+  const gclickOn = await isFeatureEnabled("omie_gclick");
+  let taskResponsibles: { id: string; name: string; role: string | null }[] = [];
+  if (canCreateTask && taskLinked && gclickOn && omieMapping?.externalClientId) {
+    const found = await getOmieGClickAdapter().clients.listResponsibles(omieMapping.externalClientId);
+    if (found.ok) {
+      taskResponsibles = found.data.map((p) => ({ id: p.externalId, name: p.name, role: p.role }));
+    }
+  }
   const canSuspendTenant = hasPermission(session, "tenants.suspend");
   // Atendimento não apaga documentos, não mexe em obrigações nem no G-Click.
   const canDeleteDocuments = hasPermission(session, "documents.delete");
@@ -150,6 +166,34 @@ export default async function EmpresaDetailPage({
         <h2 className="text-foreground mb-4 text-sm font-semibold">Calendário</h2>
         <ObligationsCalendar tenantId={tenant.id} year={calendarYear} month={calendarMonth} />
       </div>
+
+      {canCreateTask && (
+        <div className="border-border rounded-md border p-6">
+          <h2 className="text-foreground text-sm font-semibold">Criar tarefa no G-Click</h2>
+          <p className="text-muted-foreground mt-1 mb-4 text-sm">
+            A tarefa entra na fila do escritório no G-Click, já ligada a esta empresa. O prazo e o
+            andamento são definidos lá.
+          </p>
+          {!gclickOn ? (
+            <p className="text-muted-foreground text-sm">A integração Omie.G-Click está desativada no momento.</p>
+          ) : !taskLinked ? (
+            <p className="text-muted-foreground text-sm">
+              Vincule esta empresa ao G-Click (painel abaixo) para criar tarefas.
+            </p>
+          ) : gclickAccount.departments.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              Falta configurar os departamentos do G-Click na hospedagem (variável{" "}
+              <code>GCLICK_DEPARTAMENTOS</code>, ex.: <code>1:Fiscal;2:Contábil;3:Pessoal</code>).
+            </p>
+          ) : (
+            <CreateGClickTaskForm
+              tenantId={tenant.id}
+              departments={gclickAccount.departments}
+              responsibles={taskResponsibles}
+            />
+          )}
+        </div>
+      )}
 
       <div className="border-border rounded-md border p-6">
         <h2 className="text-foreground mb-4 text-sm font-semibold">Integração Omie.G-Click</h2>

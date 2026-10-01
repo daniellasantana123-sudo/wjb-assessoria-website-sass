@@ -15,6 +15,8 @@ export interface GClickPreTaskPayload {
   assunto: string;
   andamento: string;
   clienteId?: string;
+  responsavelId?: string;
+  inscricoes?: string[];
 }
 
 /**
@@ -27,16 +29,19 @@ export function toCreatePreTaskPayload(
   input: CreateExternalPreTaskInput,
   config: GClickConfig,
 ): GClickPreTaskPayload | null {
-  const departamentoId = config.account.departamentoId;
-  if (departamentoId === null) return null;
+  const departamentoId = input.departmentId ?? config.account.departamentoId;
+  if (departamentoId === null || departamentoId === undefined) return null;
 
+  const documents = (input.documents ?? []).map((d) => d.replace(/\D/g, "")).filter(Boolean);
   return {
     departamentoId,
     assunto: input.title,
     // `andamento` é obrigatório: sem descrição, repete o assunto em vez de
     // mandar string vazia (que a API recusaria).
-    andamento: input.description ?? input.title,
+    andamento: input.description || input.title,
     clienteId: input.clientExternalId,
+    ...(input.responsibleId ? { responsavelId: input.responsibleId } : {}),
+    ...(documents.length ? { inscricoes: documents } : {}),
   };
 }
 

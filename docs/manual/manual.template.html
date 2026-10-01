@@ -661,6 +661,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
               <tr><td>Guias</td><td>Enviar guias de pagamento ao cliente.</td><td>Enviar: toda a equipe. Apagar: Contador e Super admin</td></tr>
               <tr><td>Obrigações</td><td>Lançar à mão (título, vencimento, observação), concluir, reabrir ou apagar. Lançar e concluir avisam o cliente.</td><td>Contador e Super admin</td></tr>
               <tr><td>Calendário</td><td>As obrigações do mês em grade, igual ao do cliente.</td><td>Toda a equipe</td></tr>
+              <tr><td>Criar tarefa no G-Click</td><td>Abre uma tarefa na fila do escritório no G-Click, já ligada a esta empresa: assunto, descrição, departamento e responsável (opcional). O prazo é definido no G-Click.</td><td>Toda a equipe</td></tr>
               <tr><td>Integração Omie.G-Click</td><td>Vincular ao G-Click e trazer as obrigações. Detalhes abaixo.</td><td>Contador e Super admin</td></tr>
             </tbody>
           </table></div>
@@ -703,6 +704,14 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
               <li>Qualquer outro status vira <span class="chip c-neutral">Pendente</span>.</li>
               <li>Tarefa sem vencimento é ignorada, e o resumo informa quantas.</li>
               <li>Obrigações lançadas à mão pela WJB <strong>nunca</strong> são alteradas pela sincronização.</li>
+            </ul></div>
+          </div>
+          <div class="cols">
+            <div class="block"><h4>Criar tarefa no G-Click</h4><ul class="list">
+              <li>Na ficha da empresa, quadro <strong>Criar tarefa no G-Click</strong>: assunto, descrição, departamento e, se quiser, o responsável.</li>
+              <li>Os responsáveis listados são os que cuidam deste cliente no G-Click. Sem responsável, o G-Click distribui.</li>
+              <li>A tarefa entra como pré-tarefa na fila do escritório. <strong>O prazo é definido no G-Click</strong>, porque a API não permite enviar prazo.</li>
+              <li>Precisa da empresa vinculada ao G-Click. Toda a equipe pode criar, inclusive Atendimento.</li>
             </ul></div>
           </div>
           <div class="note tip"><span class="ic">Se aparecer</span><p><span class="q">Foram lidas N tarefas no G-Click, mas nenhuma está vinculada a esta empresa.</span> O cliente selecionado provavelmente é o errado. Refaça a busca pelo CNPJ e selecione de novo. <span class="ui">Desativar integração</span> desliga o vínculo sem apagá-lo e esconde do cliente o card de responsáveis e o botão do Portal Contábil.</p></div>

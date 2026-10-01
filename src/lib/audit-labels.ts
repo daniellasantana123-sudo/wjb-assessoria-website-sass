@@ -37,6 +37,7 @@ export const auditActionLabels: Record<string, string> = {
   "integration.omie_connection_tested": "Conexão Omie testada",
   "integration.omie_linked_existing": "Empresa vinculada ao cadastro existente no G-Click",
   "integration.omie_obligations_synced": "Obrigações sincronizadas do G-Click",
+  "integration.gclick_task_created": "Tarefa criada no G-Click",
   "ticket.created": "Chamado aberto",
   "ticket.replied": "Resposta em chamado",
   "ticket.status_changed": "Status do chamado alterado",

@@ -127,6 +127,12 @@ export interface CreateExternalPreTaskInput {
   clientExternalId: string;
   title: string;
   description?: string;
+  /** Departamento escolhido; sem ele usa `GCLICK_DEPARTAMENTO_ID`. */
+  departmentId?: number;
+  /** Usuário do G-Click que fica responsável (opcional - sem ele o G-Click distribui). */
+  responsibleId?: string;
+  /** CNPJ/CPF do cliente, só dígitos (`inscricoes`). */
+  documents?: string[];
 }
 
 // ---------------------------------------------------------------------

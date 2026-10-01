@@ -45,6 +45,14 @@ export interface GClickConfig {
     clienteTipo: "FIXO" | "EVENTUAL";
     /** Obrigatório pra `POST /v2/tarefas/preTarefas`. `GET /departamentos` é partner_only, então sai da tela do G-Click. */
     departamentoId: number | null;
+    /**
+     * Departamentos que a equipe escolhe ao criar tarefa pela plataforma
+     * (2026-10-01). `GCLICK_DEPARTAMENTOS="1:Fiscal;2:Contábil;3:Pessoal"` -
+     * id e nome copiados da tela do G-Click (a API não lista departamentos
+     * para quem não é parceiro). `GCLICK_DEPARTAMENTO_ID`, se existir, entra
+     * como opção também.
+     */
+    departments: { id: number; name: string }[];
     /** Identificador do sistema integrador, gravado em `sistema` no cadastro do cliente. */
     sistema: string;
   };
@@ -98,7 +106,33 @@ export function getGClickConfig(): GClickConfig {
         process.env.GCLICK_CLIENTE_TIPO === "EVENTUAL" ? "EVENTUAL" : "FIXO",
       departamentoId:
         parseIdList(process.env.GCLICK_DEPARTAMENTO_ID)[0] ?? null,
+      departments: parseDepartments(
+        process.env.GCLICK_DEPARTAMENTOS,
+        parseIdList(process.env.GCLICK_DEPARTAMENTO_ID)[0] ?? null,
+      ),
       sistema: process.env.GCLICK_SISTEMA || "WJB Assessoria Contábil",
     },
   };
+}
+
+/**
+ * "1:Fiscal;2:Contábil" (ou separado por vírgula/quebra de linha) vira a
+ * lista de departamentos. Item sem id numérico é ignorado - chutar um id
+ * criaria tarefa no departamento errado.
+ */
+export function parseDepartments(
+  raw: string | undefined,
+  fallbackId: number | null,
+): { id: number; name: string }[] {
+  const departments: { id: number; name: string }[] = [];
+  for (const part of (raw ?? "").split(/[;\n,]/)) {
+    const match = part.trim().match(/^(\d+)\s*[:=]\s*(.+)$/);
+    if (!match) continue;
+    const id = Number(match[1]);
+    if (!departments.some((d) => d.id === id)) departments.push({ id, name: match[2].trim() });
+  }
+  if (fallbackId !== null && !departments.some((d) => d.id === fallbackId)) {
+    departments.push({ id: fallbackId, name: "Departamento padrão" });
+  }
+  return departments;
 }

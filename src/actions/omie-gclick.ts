@@ -847,3 +847,97 @@ export async function importGClickClients(externalIds: string[]): Promise<Import
     skipped,
   };
 }
+
+export type GClickTaskState = { error: string } | { success: string } | undefined;
+
+/**
+ * Cria uma tarefa (pré-tarefa) no G-Click para a equipe, a partir da ficha
+ * da empresa (2026-10-01, decisão do usuário: as tarefas vivem no G-Click,
+ * a plataforma só facilita a criação). A API não aceita prazo na
+ * pré-tarefa: a equipe completa no G-Click.
+ *
+ * O cliente vem do vínculo salvo (nunca do formulário), o departamento
+ * precisa estar na lista configurada (`GCLICK_DEPARTAMENTOS`) e o
+ * responsável, se escolhido, precisa ser um dos responsáveis do cliente no
+ * G-Click - assim um valor adulterado no formulário não cria tarefa em
+ * departamento ou pessoa aleatória.
+ */
+export async function createGClickTask(
+  tenantId: string,
+  _prev: GClickTaskState,
+  formData: FormData,
+): Promise<GClickTaskState> {
+  const session = await requireStaffSession();
+  if (!hasPermission(session, "tasks.create")) {
+    return { error: "Seu papel não permite criar tarefas." };
+  }
+  if (!(await isFeatureEnabled("omie_gclick"))) {
+    return { error: "A integração Omie.G-Click está desativada pela WJB no momento." };
+  }
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const departmentId = Number(formData.get("departmentId"));
+  const responsibleId = String(formData.get("responsibleId") ?? "").trim();
+
+  if (title.length < 3) return { error: "Informe um assunto para a tarefa." };
+  if (title.length > 200) return { error: "O assunto pode ter até 200 caracteres." };
+  if (description.length > 4000) return { error: "A descrição pode ter até 4.000 caracteres." };
+
+  const { account } = getGClickConfig();
+  if (!account.departments.some((d) => d.id === departmentId)) {
+    return { error: "Escolha um departamento da lista." };
+  }
+
+  const supabase = await createClient();
+  const [{ data: tenant }, { data: mapping }] = await Promise.all([
+    supabase.from("tenants").select("id, name, cnpj").eq("id", tenantId).maybeSingle(),
+    supabase
+      .from("omie_client_mappings")
+      .select("external_client_id, status")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
+  ]);
+  if (!tenant) return { error: "Empresa não encontrada." };
+  if (!mapping?.external_client_id) {
+    return { error: "Vincule a empresa ao G-Click antes de criar tarefas." };
+  }
+  if (mapping.status === "disabled") {
+    return { error: "A integração está desativada para esta empresa." };
+  }
+
+  const adapter = getOmieGClickAdapter();
+
+  if (responsibleId) {
+    const responsibles = await adapter.clients.listResponsibles(mapping.external_client_id);
+    if (!responsibles.ok || !responsibles.data.some((p) => p.externalId === responsibleId)) {
+      return { error: "Escolha um responsável da lista." };
+    }
+  }
+
+  const result = await adapter.tasks.createPreTask({
+    clientExternalId: mapping.external_client_id,
+    title,
+    description: description || undefined,
+    departmentId,
+    responsibleId: responsibleId || undefined,
+    documents: tenant.cnpj ? [tenant.cnpj] : undefined,
+  });
+
+  if (!result.ok) {
+    return { error: `Não foi possível criar a tarefa no G-Click (${result.error.message}).` };
+  }
+
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    tenant_id: tenantId,
+    action: "integration.gclick_task_created",
+    entity: "gclick_task",
+    entity_id: result.data.externalId,
+    metadata: { title, department_id: departmentId, responsible_id: responsibleId || null },
+  });
+
+  return {
+    success: `Tarefa "${title}" criada no G-Click${result.data.externalId ? ` (id ${result.data.externalId})` : ""}. Defina o prazo e acompanhe por lá.`,
+  };
+}
