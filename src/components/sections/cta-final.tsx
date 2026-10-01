@@ -14,26 +14,20 @@ export function CtaFinal() {
         alt=""
         fill
         sizes="100vw"
-        className="object-cover"
+        // Faixa bem mais larga que a foto: o corte prioriza os rostos (terço
+        // de cima) em vez do centro, que mostrava mais mesa que gente.
+        className="object-cover object-[center_28%]"
       />
-      {/* 90%, não 85% (2026-08-31) — em pontos claros da foto de fundo, 85%
-          deixava o texto branco abaixo de 4.5:1 (WCAG AA); 90% garante
-          contraste mesmo no pior caso (área bem clara da imagem). */}
-      <div className="bg-primary/90 absolute inset-0" aria-hidden="true" />
       {/*
-       * Formas geométricas flutuantes (2026-09-15, mesmo pedido do Hero -
-       * "antes do footer" e "na esquerda"). Sobre o overlay azul sólido,
-       * então usam branco/laranja (não azul, que sumiria contra o próprio
-       * fundo). Mesma lógica: atrás do Container no DOM, desfocadas, baixa
-       * opacidade, decorativas.
+       * Camada azul em degradê (2026-10-01, pedido do usuário: foto
+       * aparecendo na faixa toda, sem o laranja do canto). Mais forte no
+       * centro, atrás do texto - mantém o contraste do branco acima do
+       * mínimo WCAG AA - e mais leve nas bordas, onde a foto aparece mais.
+       * A forma laranja desfocada do canto esquerdo foi removida.
        */}
       <div
         aria-hidden="true"
-        className="anim-float-a pointer-events-none absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white/15 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="anim-float-b pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-[#FF6D00]/25 blur-3xl"
+        className="absolute inset-0 bg-[radial-gradient(ellipse_70%_90%_at_50%_50%,rgb(25_67_130/0.93)_0%,rgb(25_67_130/0.9)_45%,rgb(25_67_130/0.74)_100%)]"
       />
       <Container className="text-primary-foreground relative flex flex-col items-center gap-6 py-16 text-center sm:py-20">
         <h2 className="max-w-xl text-2xl font-bold tracking-tight sm:text-3xl">

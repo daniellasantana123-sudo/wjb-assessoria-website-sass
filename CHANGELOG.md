@@ -27,6 +27,13 @@ Para lançar uma versão:
   - **Onde não aparece:** páginas que já têm formulário, o guia e as telas de login.
   - **Destino dos contatos:** Admin → Leads, como "Popup de saída".
 
+### Mudanças
+
+- **Faixa azul "Pronto para ter uma contabilidade mais próxima?"** (página inicial):
+  - sem o gradiente laranja do canto esquerdo;
+  - foto mais visível em toda a faixa, com camada azul mais leve nas bordas e o corte priorizando os rostos;
+  - contraste do texto medido entre 5,9:1 e 8,3:1 em 9 tamanhos de tela (mínimo de acessibilidade: 4,5:1).
+
 ## 1.3.0 — 01/10/2026
 
 ### Novidades
