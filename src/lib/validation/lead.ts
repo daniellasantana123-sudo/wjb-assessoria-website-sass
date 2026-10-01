@@ -41,3 +41,17 @@ export const newsletterFormSchema = z.object({
 });
 
 export type NewsletterFormValues = z.infer<typeof newsletterFormSchema>;
+
+/** Popup "Antes de sair" (2026-10-01): versão curta do lead, sem mensagem livre. */
+export const exitIntentLeadSchema = z.object({
+  name: z.string().trim().min(2, "Informe seu nome."),
+  phone: z.string().trim().min(8, "Informe um WhatsApp válido."),
+  email: z.string().trim().email("Informe um e-mail válido."),
+  company: z.string().trim().optional(),
+  serviceInterest: z.string().trim().min(1, "Escolha um assunto."),
+  consent: z.boolean().refine((value) => value, {
+    message: "É necessário concordar com o uso dos dados para enviar.",
+  }),
+});
+
+export type ExitIntentLeadValues = z.infer<typeof exitIntentLeadSchema>;

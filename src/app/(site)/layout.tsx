@@ -1,6 +1,7 @@
 import { MotionConfig } from "framer-motion";
 
 import { WJBAssistant } from "@/components/assistant/WJBAssistant";
+import { ExitIntentPopup } from "@/components/marketing/exit-intent-popup";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { JsonLd } from "@/components/shared/json-ld";
 import { SiteHeader } from "@/components/navigation/site-header";
@@ -31,6 +32,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
       {children}
       <SiteFooter />
       <WJBAssistant />
+      <ExitIntentPopup />
     </>
   );
 }

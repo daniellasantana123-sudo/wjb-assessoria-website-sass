@@ -17,6 +17,16 @@ Para lançar uma versão:
 2. registre as mudanças aqui;
 3. crie a etiqueta no Git (por exemplo, `git tag v1.3.0` e `git push origin v1.3.0`).
 
+## Próxima versão (ainda não lançada)
+
+### Novidades
+
+- **Popup "Antes de sair" no site**, para captar contatos:
+  - **Quando aparece:** no computador, quando o mouse sai pelo topo da página; no celular, depois de ler metade da página.
+  - **Frequência:** uma vez por visita; se a pessoa fechar, volta só depois de 7 dias; se enviar, nunca mais.
+  - **Onde não aparece:** páginas que já têm formulário, o guia e as telas de login.
+  - **Destino dos contatos:** Admin → Leads, como "Popup de saída".
+
 ## 1.3.0 — 01/10/2026
 
 ### Novidades
