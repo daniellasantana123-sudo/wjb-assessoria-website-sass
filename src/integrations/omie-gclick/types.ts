@@ -104,6 +104,12 @@ export interface ExternalTask {
   dueDate: string | null;
   /** Departamento da tarefa (`obrigacao.departamento`), quando a API traz. */
   department?: { id: number; name: string } | null;
+  /** Competência (`dataCompetencia`, YYYY-MM-DD) - o mês a que a obrigação se refere. */
+  competence?: string | null;
+  /** Data de conclusão (`dataConclusao`). */
+  completedAt?: string | null;
+  /** Categoria de onde a tarefa foi lida. */
+  category?: "Obrigacao" | "Solicitacao";
 }
 
 export interface ListExternalTasksInput {

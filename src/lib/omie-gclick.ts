@@ -80,6 +80,8 @@ export async function listOmieMappings(): Promise<OmieMappingOverviewItem[]> {
 export interface ObligationProgress {
   activities: ExternalTaskActivity[];
   responsibles: ExternalPerson[];
+  /** Convidados da tarefa no G-Click (2026-10-01), sem repetir quem já é responsável. */
+  guests: ExternalPerson[];
 }
 
 /**
@@ -102,16 +104,20 @@ export async function getObligationProgress(
   if (!(await isFeatureEnabled("omie_gclick"))) return null;
 
   const adapter = getOmieGClickAdapter();
-  const [activities, responsibles] = await Promise.all([
+  const [activities, responsibles, guests] = await Promise.all([
     adapter.tasks.listActivities(externalId),
     adapter.tasks.listResponsibles(externalId),
+    adapter.tasks.listGuests(externalId),
   ]);
 
   if (!activities.ok && !responsibles.ok) return null;
 
+  const responsibleList = responsibles.ok ? responsibles.data : [];
+  const responsibleIds = new Set(responsibleList.map((p) => p.externalId));
   return {
     activities: activities.ok ? activities.data : [],
-    responsibles: responsibles.ok ? responsibles.data : [],
+    responsibles: responsibleList,
+    guests: guests.ok ? guests.data.filter((p) => !responsibleIds.has(p.externalId)) : [],
   };
 }
 

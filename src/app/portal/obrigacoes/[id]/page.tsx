@@ -207,6 +207,32 @@ export default async function PortalObrigacaoPage({
                   </ul>
                 </div>
               )}
+
+              {progress.guests.length > 0 && (
+                <div className="border-border mt-4 border-t pt-4">
+                  <p className="text-muted-foreground text-xs font-medium uppercase">
+                    Também acompanham
+                  </p>
+                  <ul className="mt-2 flex flex-wrap gap-3">
+                    {progress.guests.map((person) => (
+                      <li
+                        key={person.externalId}
+                        className="text-foreground flex items-center gap-2 text-sm"
+                      >
+                        <span className="bg-muted text-muted-foreground flex h-7 w-7 items-center justify-center rounded-full">
+                          <UserRound aria-hidden="true" className="h-3.5 w-3.5" />
+                        </span>
+                        <span>
+                          {person.name}
+                          {person.role && (
+                            <span className="text-muted-foreground"> · {person.role}</span>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </>
           )}
         </div>

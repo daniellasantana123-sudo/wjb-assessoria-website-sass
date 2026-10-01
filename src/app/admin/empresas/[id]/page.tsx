@@ -19,6 +19,7 @@ import { hasPermission } from "@/lib/permissions/permissions";
 import { getOmieMapping } from "@/lib/omie-gclick";
 import { getGClickConfig, getOmieGClickAdapter } from "@/integrations/omie-gclick";
 import { CreateGClickTaskForm } from "@/components/integrations/create-gclick-task-form";
+import { GClickClientTasks } from "@/components/integrations/gclick-client-tasks";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { getTaskDepartments } from "@/lib/integrations/gclick-departments";
 import { reactivateTenant, suspendTenant } from "@/actions/tenants";
@@ -36,7 +37,7 @@ export default async function EmpresaDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ year?: string | string[]; month?: string | string[] }>;
+  searchParams: Promise<{ year?: string | string[]; month?: string | string[]; tarefas?: string }>;
 }) {
   const session = await requireStaffSession();
   const { id } = await params;
@@ -173,6 +174,22 @@ export default async function EmpresaDetailPage({
         <h2 className="text-foreground mb-4 text-sm font-semibold">Calendário</h2>
         <ObligationsCalendar tenantId={tenant.id} year={calendarYear} month={calendarMonth} />
       </div>
+
+      {gclickOn && taskLinked && omieMapping?.externalClientId && (
+        <div id="tarefas-gclick" className="border-border scroll-mt-6 rounded-md border p-6">
+          <h2 className="text-foreground text-sm font-semibold">Tarefas no G-Click</h2>
+          <p className="text-muted-foreground mt-1 mb-4 text-sm">
+            Obrigações e solicitações deste cliente no G-Click, consultadas agora. O trabalho
+            continua sendo feito no G-Click.
+          </p>
+          <GClickClientTasks
+            tenantId={tenant.id}
+            externalClientId={omieMapping.externalClientId}
+            document={tenant.cnpj}
+            showAll={query.tarefas === "todas"}
+          />
+        </div>
+      )}
 
       {canCreateTask && (
         <div className="border-border rounded-md border p-6">

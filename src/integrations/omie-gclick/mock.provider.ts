@@ -233,9 +233,11 @@ export function createMockGClickProvider(): MockGClickProvider {
         if (early) return early;
 
         const items = Array.from(clientsByExternalId.values());
-        const page = input?.page ?? 1;
+        const page = input?.page ?? 0;
         const pageSize = input?.pageSize ?? 20;
-        const start = (page - 1) * pageSize;
+        // Paginação começa em 0, igual à API real (Spring) - com 1, a plataforma
+        // (que pede a página 0) recebia lista vazia no modo simulado.
+        const start = page * pageSize;
         return {
           ok: true,
           data: {
@@ -259,9 +261,11 @@ export function createMockGClickProvider(): MockGClickProvider {
             client.name.toLowerCase().includes(needle) ||
             (client.document ?? "").toLowerCase().includes(needle),
         );
-        const page = input.page ?? 1;
+        const page = input.page ?? 0;
         const pageSize = input.pageSize ?? 20;
-        const start = (page - 1) * pageSize;
+        // Paginação começa em 0, igual à API real (Spring) - com 1, a plataforma
+        // (que pede a página 0) recebia lista vazia no modo simulado.
+        const start = page * pageSize;
         return {
           ok: true,
           data: {
@@ -301,9 +305,11 @@ export function createMockGClickProvider(): MockGClickProvider {
         const early = fail<PaginatedResult<ExternalTask>>();
         if (early) return early;
 
-        const page = input?.page ?? 1;
+        const page = input?.page ?? 0;
         const pageSize = input?.pageSize ?? 20;
-        const start = (page - 1) * pageSize;
+        // Paginação começa em 0, igual à API real (Spring) - com 1, a plataforma
+        // (que pede a página 0) recebia lista vazia no modo simulado.
+        const start = page * pageSize;
         return {
           ok: true,
           data: {

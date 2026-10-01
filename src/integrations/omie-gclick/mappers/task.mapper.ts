@@ -70,6 +70,8 @@ export function fromExternalPayload(payload: unknown): ExternalTask {
     status: asString(raw.status) ?? "",
     dueDate: asString(raw.dataVencimento) ?? asString(raw.dataMeta),
     department: departmentFrom(raw),
+    competence: asString(raw.dataCompetencia),
+    completedAt: asString(raw.dataConclusao),
   };
 }
 

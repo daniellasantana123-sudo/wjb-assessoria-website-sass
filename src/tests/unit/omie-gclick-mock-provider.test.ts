@@ -97,7 +97,7 @@ describe("MockGClickProvider", () => {
     const afterReset = await provider.clients.list();
     expect(afterReset).toEqual({
       ok: true,
-      data: { items: [MOCK_CLIENT_EXISTING], page: 1, pageSize: 20, total: 1 },
+      data: { items: [MOCK_CLIENT_EXISTING], page: 0, pageSize: 20, total: 1 },
     });
   });
 

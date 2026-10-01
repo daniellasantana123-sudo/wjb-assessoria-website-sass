@@ -27,8 +27,15 @@ Para lançar uma versão:
   - toda a equipe pode criar;
   - os departamentos são descobertos sozinhos nas tarefas do G-Click e aparecem em Integrações; `GCLICK_DEPARTAMENTOS` é opcional e serve só para limitar a lista.
 
+- **Tarefas no G-Click na ficha da empresa:**
+  - todas as tarefas do cliente no G-Click (obrigações e solicitações) dos últimos 12 meses;
+  - status, vencimento, competência e departamento, com filtro "Em aberto / Todas";
+  - um clique abre o detalhe com etapas, responsáveis e convidados.
+- **Portal: "Também acompanham"** no detalhe da obrigação, com quem mais da WJB acompanha a tarefa (convidados no G-Click).
+
 ### Correções
 
+- **Modo simulado do G-Click:** a paginação começava em 1, e a API real começa em 0. Em desenvolvimento, as listas vinham vazias.
 - **CNPJ formatado** (12.345.678/0001-99) na tela de importação e nos resultados da busca do G-Click.
 - **Áreas de toque de 24px no celular:**
   - caixas de seleção da importação, que agora ficam sempre ao lado do nome;
