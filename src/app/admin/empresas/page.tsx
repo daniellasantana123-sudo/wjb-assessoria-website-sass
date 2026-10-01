@@ -9,6 +9,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { CreateTenantForm } from "@/components/admin/create-tenant-form";
 import { createClient } from "@/lib/db/supabase/server";
 import { requireStaffSession } from "@/lib/auth/dal";
+import { clientMatches } from "@/lib/integrations/client-search";
+import { hasPermission } from "@/lib/permissions/permissions";
 
 export const metadata: Metadata = {
   title: "Empresas",
@@ -20,30 +22,42 @@ export default async function EmpresasPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  await requireStaffSession();
+  const session = await requireStaffSession();
   const { q } = await searchParams;
+  const canImport =
+    hasPermission(session, "organizations.manage") && hasPermission(session, "integrations.manage");
 
   const supabase = await createClient();
-  let query = supabase
+  const { data: allTenants } = await supabase
     .from("tenants")
     .select("id, name, cnpj, status, created_at")
     .order("created_at", { ascending: false });
 
-  // Busca por nome ou CNPJ (Fase 5 do wjb-saas-mvp) - mesmo padrão `?q=` de `/portal/documentos`.
-  // `,`/`(`/`)` removidos do termo antes de interpolar - são caracteres de
-  // sintaxe do filtro `or` do PostgREST, não dados de busca legítimos aqui.
-  const safeQuery = q?.replace(/[,()]/g, "").trim();
-  if (safeQuery) query = query.or(`name.ilike.%${safeQuery}%,cnpj.ilike.%${safeQuery}%`);
-
-  const { data: tenants } = await query;
+  /*
+   * Filtro feito aqui, não no banco (2026-10-01): o `ilike` do banco
+   * diferenciava acento e não achava um CNPJ digitado sem pontuação quando
+   * ele estava gravado com pontuação. A lista de empresas é pequena o
+   * bastante para filtrar em memória com a mesma regra da busca do G-Click.
+   */
+  const term = q?.trim() ?? "";
+  const tenants = term
+    ? (allTenants ?? []).filter((tenant) => clientMatches({ name: tenant.name, document: tenant.cnpj }, term))
+    : (allTenants ?? []);
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">Empresas</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Empresas clientes cadastradas na plataforma.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-foreground text-2xl font-semibold">Empresas</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Empresas clientes cadastradas na plataforma.
+          </p>
+        </div>
+        {canImport && (
+          <Link href="/admin/empresas/importar" className={buttonVariants({ variant: "primary" })}>
+            Importar do G-Click
+          </Link>
+        )}
       </div>
 
       <div className="border-border rounded-md border p-6">
@@ -53,7 +67,7 @@ export default async function EmpresasPage({
 
       <form method="get" className="flex items-end gap-3">
         <div className="flex flex-1 flex-col gap-1.5">
-          <Label htmlFor="q">Buscar por nome ou CNPJ</Label>
+          <Label htmlFor="q">Buscar empresas da plataforma por nome ou CNPJ</Label>
           <Input id="q" name="q" type="search" defaultValue={q ?? ""} />
         </div>
         <button type="submit" className={buttonVariants({ variant: "outline", size: "md" })}>
@@ -62,10 +76,20 @@ export default async function EmpresasPage({
       </form>
 
       <div className="border-border divide-border divide-y rounded-md border">
-        {!tenants || tenants.length === 0 ? (
-          <p className="text-muted-foreground p-6 text-sm">
-            {q ? "Nenhuma empresa encontrada para essa busca." : "Nenhuma empresa cadastrada ainda."}
-          </p>
+        {tenants.length === 0 ? (
+          <div className="flex flex-col gap-2 p-6">
+            <p className="text-muted-foreground text-sm">
+              {term ? "Nenhuma empresa da plataforma encontrada para essa busca." : "Nenhuma empresa cadastrada ainda."}
+            </p>
+            {canImport && (
+              <Link
+                href={`/admin/empresas/importar${term ? `?q=${encodeURIComponent(term)}` : ""}`}
+                className="text-primary self-start text-sm font-medium underline underline-offset-4"
+              >
+                {term ? `Procurar "${term}" no G-Click e importar →` : "Importar clientes do G-Click →"}
+              </Link>
+            )}
+          </div>
         ) : (
           tenants.map((tenant) => (
             <Link
@@ -73,9 +97,9 @@ export default async function EmpresasPage({
               href={`/admin/empresas/${tenant.id}`}
               className="hover:bg-muted/30 focus-visible:ring-primary flex items-center justify-between gap-3 p-4 transition-colors focus-visible:ring-2 focus-visible:-outline-offset-2 focus-visible:outline-none"
             >
-              <div className="flex items-center gap-2">
-                <div>
-                  <p className="text-foreground font-medium">{tenant.name}</p>
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="min-w-0">
+                  <p className="text-foreground font-medium break-words">{tenant.name}</p>
                   {tenant.cnpj && (
                     <p className="text-muted-foreground text-sm">{tenant.cnpj}</p>
                   )}

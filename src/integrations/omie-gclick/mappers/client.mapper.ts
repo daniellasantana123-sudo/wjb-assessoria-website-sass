@@ -134,6 +134,7 @@ export function fromExternalPayload(
     externalId: raw.id !== undefined && raw.id !== null ? String(raw.id) : null,
     externalReference: asString(raw.integracao) ?? "",
     name: asString(raw.nome) ?? "",
+    tradeName: asString(raw.apelido),
     document: asString(raw.inscricao),
     // A API devolve "ATIVO"/"INATIVO"; qualquer outro valor vira `null` em
     // vez de ser forçado num dos dois.

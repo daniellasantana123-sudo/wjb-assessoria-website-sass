@@ -175,8 +175,13 @@ export function OmieMappingPanel({
                   >
                     <span className="min-w-0">
                       <span className="text-foreground block truncate text-sm font-medium">
-                        {option.name}
+                        {option.tradeName ?? option.name}
                       </span>
+                      {option.tradeName && (
+                        <span className="text-muted-foreground block truncate text-xs">
+                          Razão social: {option.name}
+                        </span>
+                      )}
                       <span className="text-muted-foreground block text-xs">
                         {option.document ?? "sem CNPJ cadastrado"} · id {option.externalId}
                       </span>

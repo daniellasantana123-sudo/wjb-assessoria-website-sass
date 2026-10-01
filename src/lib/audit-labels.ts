@@ -10,6 +10,7 @@ export const auditActionLabels: Record<string, string> = {
   "tenant.updated": "Empresa editada",
   "tenant.suspended": "Empresa suspensa",
   "tenant.reactivated": "Empresa reativada",
+  "tenant.imported_from_gclick": "Empresa importada do G-Click",
   "tenant_member.invited": "Pessoa convidada",
   "tenant_member.invite_resent": "Convite reenviado",
   "tenant_member.role_changed": "Papel alterado",

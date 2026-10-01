@@ -662,7 +662,7 @@ describe("GClickHttpProvider - endpoints de consulta (2026-09-24)", () => {
     mockApi({
       content: [
         {
-          cliente: { id: 1, nome: "Cliente A", inscricao: "12345678000123" },
+          cliente: { id: 1, nome: "Cliente A", apelido: "Loja A", inscricao: "12345678000123" },
           usuario: { id: 1, nome: "João Silva", email: "joao@example.com" },
         },
       ],
@@ -672,6 +672,7 @@ describe("GClickHttpProvider - endpoints de consulta (2026-09-24)", () => {
     expect(result.ok && result.data[0]).toEqual({
       clientExternalId: "1",
       name: "Cliente A",
+      tradeName: "Loja A",
       document: "12345678000123",
       responsibleName: "João Silva",
       responsibleEmail: "joao@example.com",

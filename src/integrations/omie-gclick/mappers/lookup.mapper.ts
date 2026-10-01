@@ -79,6 +79,7 @@ export function portfolioFromExternal(
     return {
       clientExternalId: asString(client.id) ?? "",
       name: asString(client.nome) ?? asString(client.apelido) ?? "",
+      tradeName: asString(client.apelido),
       // `inscricao` é o CNPJ/CPF do cliente nesta API.
       document: asString(client.inscricao),
       responsibleName: asString(user.nome) ?? asString(user.apelido),

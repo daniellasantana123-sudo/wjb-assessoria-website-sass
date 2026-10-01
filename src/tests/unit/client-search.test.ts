@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  clientMatches,
   documentsMatch,
   isSearchable,
   looksLikeDocument,
@@ -80,5 +81,30 @@ describe("looksLikeDocument", () => {
   it("não confunde nome com documento", () => {
     expect(looksLikeDocument("ARMEL X TECNOLOGIA")).toBe(false);
     expect(looksLikeDocument("Loja 24h")).toBe(false);
+  });
+});
+
+describe("clientMatches (busca na lista completa do G-Click)", () => {
+  const pimpolha = { name: "MARIA DA SILVA COMERCIO LTDA", tradeName: "PIMPOLHA", document: "12345678000199" };
+
+  it("acha pelo nome fantasia, sem diferenciar maiúscula", () => {
+    expect(clientMatches(pimpolha, "pimpolha")).toBe(true);
+    expect(clientMatches(pimpolha, "Pimpol")).toBe(true);
+  });
+
+  it("acha pela razão social e por várias palavras em qualquer ordem", () => {
+    expect(clientMatches(pimpolha, "silva maria")).toBe(true);
+    expect(clientMatches(pimpolha, "silva padaria")).toBe(false);
+  });
+
+  it("ignora acentos dos dois lados", () => {
+    expect(clientMatches({ name: "PADARIA SÃO JOSÉ", document: null }, "sao jose")).toBe(true);
+    expect(clientMatches({ name: "PADARIA SAO JOSE", document: null }, "São José")).toBe(true);
+  });
+
+  it("acha pelo CNPJ com ou sem pontuação, inclusive parte dele", () => {
+    expect(clientMatches(pimpolha, "12.345.678/0001-99")).toBe(true);
+    expect(clientMatches(pimpolha, "12345678")).toBe(true);
+    expect(clientMatches(pimpolha, "99.999.999/0001-99")).toBe(false);
   });
 });

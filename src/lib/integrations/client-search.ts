@@ -49,3 +49,38 @@ export function documentsMatch(a: string | null, b: string | null): boolean {
   const right = b.replace(/\D/g, "");
   return left.length > 0 && left === right;
 }
+
+/** Minúsculas e sem acento: "Pimpolha" acha "PIMPOLHA" e "São" acha "SAO". */
+export function foldText(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+/**
+ * Um cliente do G-Click combina com a busca (2026-10-01).
+ *
+ * A busca da própria API olha só a razão social (`nome`) e ignora o CNPJ e
+ * o nome fantasia (`apelido`) - e a equipe costuma conhecer o cliente pelo
+ * nome fantasia ("PIMPOLHA"), que muitas vezes nem aparece na razão
+ * social. Por isso a plataforma filtra a lista completa aqui:
+ * - documento: compara só os dígitos, aceitando parte do CNPJ;
+ * - texto: todas as palavras digitadas precisam aparecer na razão social
+ *   OU no nome fantasia, sem diferenciar maiúscula nem acento.
+ */
+export function clientMatches(
+  client: { name: string; tradeName?: string | null; document: string | null },
+  rawQuery: string,
+): boolean {
+  const query = rawQuery.trim();
+  if (!query) return false;
+
+  const digits = query.replace(/\D/g, "");
+  if (looksLikeDocument(query) || (digits.length >= 5 && digits.length === query.replace(/[.\-/\s]/g, "").length)) {
+    return (client.document ?? "").replace(/\D/g, "").includes(digits);
+  }
+
+  const haystack = foldText(`${client.name} ${client.tradeName ?? ""}`);
+  return foldText(query)
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((word) => haystack.includes(word));
+}

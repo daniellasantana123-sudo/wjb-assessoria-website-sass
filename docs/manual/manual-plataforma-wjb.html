@@ -313,6 +313,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
           <li class="part">Admin WJB</li>
           <li><a href="#admin">O Admin</a></li>
           <li class="sub"><a href="#a-empresas">Empresas</a></li>
+          <li class="sub"><a href="#a-importar">Importar do G-Click</a></li>
           <li class="sub"><a href="#a-ficha">Ficha da empresa</a></li>
           <li class="sub"><a href="#a-gclick">Painel do G-Click</a></li>
           <li class="sub"><a href="#a-atendimento">Tickets e Mensagens</a></li>
@@ -366,7 +367,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
         <div class="arrow"><span>→</span>o que o cliente vê</div>
         <div class="node"><b>Portal do Cliente</b><small>Prazos, andamento e quem da WJB cuida da empresa.</small></div>
       </div>
-      <div class="note tip"><span class="ic">Importante</span><p>A sincronização de obrigações é <strong>só de leitura</strong>: a plataforma lê o G-Click e nunca altera tarefas lá. A plataforma só escreve no G-Click quando alguém clica em <span class="ui">Sincronizar cadastro da empresa</span>: cria o cliente se ele não existe lá, ou atualiza nome e CNPJ de um cliente já vinculado.</p></div>
+      <div class="note tip"><span class="ic">Importante</span><p>A sincronização de obrigações é <strong>só de leitura</strong>: a plataforma lê o G-Click e nunca altera tarefas lá. A plataforma só escreve no G-Click num caso: <span class="ui">Sincronizar cadastro da empresa</span> numa empresa que <strong>ainda não existe lá</strong> cria o cliente. Cadastro existente no G-Click nunca é alterado pela plataforma.</p></div>
     </section>
 
     <!-- ================= ACESSO ================= -->
@@ -624,10 +625,24 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
             <li>Preencha o <strong>CNPJ</strong> mesmo que pareça opcional: sem ele não dá para vincular ou criar a empresa no G-Click.</li>
           </ul></div>
           <div class="block"><h4>Encontrar</h4><ul class="list">
-            <li><span class="ui">Buscar por nome ou CNPJ</span>.</li>
+            <li><span class="ui">Buscar</span> por nome ou CNPJ (com ou sem pontuação, sem diferenciar acento). Busca só as empresas já na plataforma; se não achar, a tela oferece procurar no G-Click.</li>
             <li>A lista mostra nome, CNPJ e o selo <span class="chip c-bad">Suspensa</span> quando for o caso. <span class="ui">Ver empresa →</span> abre a ficha.</li>
             <li>Empresas não são excluídas, só suspensas.</li>
           </ul></div>
+        </div>
+      </div>
+
+      <div class="screen" id="a-importar">
+        <div class="screen-head"><h3>Importar do G-Click</h3><span class="path">/admin/empresas/importar</span></div>
+        <div class="screen-body">
+          <div class="prose"><p>Traz para a plataforma os clientes que já estão no G-Click, sem cadastrar um por um. Acesso pelo botão <span class="ui">Importar do G-Click</span> em Empresas, ou pelo atalho que aparece quando uma busca de Empresas não acha nada. Só Contador e Super admin.</p></div>
+          <ol class="steps">
+            <li><div><strong>Encontre os clientes</strong><span>A lista mostra todos os clientes do G-Click. Busque por razão social, nome fantasia ou CNPJ e use os filtros <span class="ui">Ainda não importados</span>, <span class="ui">Já na plataforma</span> e <span class="ui">Todos</span>.</span></div></li>
+            <li><div><strong>Marque os que quer trazer</strong><span>Um a um, ou <span class="ui">Selecionar os da lista</span> para marcar todos os que aparecem na busca.</span></div></li>
+            <li><div><strong><span class="ui">Importar selecionados</span></strong><span>Cada cliente vira uma empresa com o nome fantasia (ou a razão social) e o CNPJ, já vinculada ao G-Click. Se já existir uma empresa com o mesmo CNPJ, ela só é vinculada, sem duplicar.</span></div></li>
+            <li><div><strong>Depois, em cada empresa</strong><span>Abra a ficha, clique em <span class="ui">Sincronizar obrigações</span> e convide o responsável do cliente.</span></div></li>
+          </ol>
+          <div class="note tip"><span class="ic">Bom saber</span><p>A importação não altera nada no G-Click e não traz as obrigações. Isso é feito empresa por empresa, para não sobrecarregar o G-Click de uma vez.</p></div>
         </div>
       </div>
 
@@ -658,7 +673,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
         <div class="screen-body">
           <div class="cols">
             <ol class="steps">
-              <li><div><strong>Procurar a empresa no G-Click</strong><span>O campo já vem com o CNPJ. Pode digitar com ponto e barra. <span class="ui">Procurar</span>, depois <span class="ui">Selecionar</span> no cliente certo.</span></div></li>
+              <li><div><strong>Procurar a empresa no G-Click</strong><span>O campo já vem com o CNPJ. A busca acha por razão social, <strong>nome fantasia</strong> ou CNPJ (com ou sem pontuação), sem diferenciar maiúscula nem acento. <span class="ui">Procurar</span>, depois <span class="ui">Selecionar</span> no cliente certo.</span></div></li>
               <li><div><strong><span class="ui">Salvar mapeamento</span></strong><span>Grava o id do cliente no G-Click. O link do Portal Contábil é opcional e precisa começar com https://.</span></div></li>
               <li><div><strong><span class="ui">Sincronizar obrigações</span></strong><span>Traz as tarefas da categoria Obrigação dos últimos 12 meses. Pode repetir quando quiser: nada é duplicado.</span></div></li>
             </ol>
@@ -680,7 +695,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
               <li><strong>Se já existir</strong>, só vincula ao cadastro existente e não cria outro.</li>
               <li><strong>Se não existir</strong>, cria o cliente no G-Click com nome e CNPJ, na visibilidade "Geral".</li>
               <li>Se não der para consultar o G-Click, nada é criado, para não duplicar.</li>
-              <li><strong>Empresa já vinculada:</strong> o mesmo botão sobrescreve nome e CNPJ no G-Click com os da plataforma. Confira os dados em Editar empresa antes de clicar.</li>
+              <li><strong>Empresa já vinculada:</strong> o botão só confere se o cliente ainda existe no G-Click. Nada é alterado lá; corrigir cadastro, só no próprio G-Click.</li>
             </ul></div>
             <div class="block"><h4>Como os status são traduzidos</h4><ul class="list">
               <li>Tarefa concluída no G-Click vira <span class="chip c-ok">Concluída</span>.</li>
@@ -765,8 +780,7 @@ mark { background: var(--leaf-tint); color: var(--ink); border-radius: 2px; padd
         <div class="screen-head"><h3>Colocar um cliente novo na plataforma</h3><span class="chip c-brand">Rotina completa</span></div>
         <div class="screen-body">
           <ol class="steps">
-            <li><div><strong>Criar a empresa</strong><span>Admin, card Empresas, quadro Nova empresa. Nome e CNPJ.</span></div></li>
-            <li><div><strong>Vincular ao G-Click</strong><span>Na ficha, painel do G-Click: procurar pelo CNPJ, selecionar e <span class="ui">Salvar mapeamento</span>. Se o cliente ainda não existe no G-Click, use <span class="ui">Sincronizar cadastro da empresa</span>.</span></div></li>
+            <li><div><strong>Trazer a empresa</strong><span>Se o cliente já está no G-Click: Empresas → <span class="ui">Importar do G-Click</span>, marcar e importar (já fica vinculada). Se ainda não está: quadro Nova empresa, com nome e CNPJ, e na ficha <span class="ui">Sincronizar cadastro da empresa</span> para criá-lo no G-Click.</span></div></li>
             <li><div><strong>Trazer as obrigações</strong><span><span class="ui">Sincronizar obrigações</span>. Confira o resumo que aparece na tela.</span></div></li>
             <li><div><strong>Convidar o responsável do cliente</strong><span>Quadro Convidar pessoa, papel <strong>Responsável</strong>. A partir daí ele mesmo pode convidar colegas.</span></div></li>
             <li><div><strong>Enviar os primeiros arquivos</strong><span>Documentos e guias na própria ficha. O cliente é avisado por e-mail.</span></div></li>

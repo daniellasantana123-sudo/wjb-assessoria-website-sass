@@ -52,6 +52,8 @@ export interface ExternalClient {
   /** Campo de correlação que a WJB controla (não confirmado se o G-Click tem um equivalente nativo). */
   externalReference: string;
   name: string;
+  /** Nome fantasia (`apelido` no G-Click) - muitas vezes é o nome pelo qual a equipe conhece o cliente. */
+  tradeName?: string | null;
   document: string | null;
   status: "active" | "inactive" | null;
   metadata: Record<string, unknown> | null;
@@ -181,6 +183,7 @@ export interface ExternalCatalogItem {
 export interface ExternalPortfolioItem {
   clientExternalId: string;
   name: string;
+  tradeName?: string | null;
   document: string | null;
   responsibleName: string | null;
   responsibleEmail: string | null;

@@ -18,14 +18,14 @@ import {
   planObligationSync,
 } from "@/lib/obligations/external-sync";
 import {
+  clientMatches,
   documentsMatch,
   isSearchable,
-  looksLikeDocument,
   MIN_SEARCH_LENGTH,
-  normalizeClientSearch,
 } from "@/lib/integrations/client-search";
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { loadAllGClickClients } from "@/lib/integrations/gclick-clients";
 import { notifyIntegrationStatus, notifyObligationEvent } from "@/lib/notifications";
 
 export type OmieActionState =
@@ -98,6 +98,24 @@ export async function saveOmieMapping(
 
   revalidatePath(`/admin/empresas/${tenantId}`);
   return { success: "Mapeamento salvo." };
+}
+
+async function verifyLinkedClient(
+  adapter: ReturnType<typeof getOmieGClickAdapter>,
+  externalId: string,
+): Promise<ProviderResult<ExternalClient>> {
+  const found = await adapter.clients.findById(externalId);
+  if (!found.ok) return found;
+  if (!found.data) {
+    return {
+      ok: false,
+      error: {
+        code: "NOT_FOUND",
+        message: `o cliente ${externalId} não existe mais no G-Click; selecione o cadastro certo`,
+      },
+    };
+  }
+  return { ok: true, data: { ...found.data, externalId } };
 }
 
 /** Referência externa determinística - mesmo tenant sempre gera a mesma, sem precisar consultar nada antes. */
@@ -211,12 +229,16 @@ export async function syncOmieClient(
     }
   }
 
+  /*
+   * Empresa já vinculada: só CONFERE que o cliente ainda existe no G-Click,
+   * sem escrever nada lá (2026-10-01). Antes este caminho chamava
+   * `clients.update` e sobrescrevia a razão social e o nome fantasia do
+   * G-Click com o nome da plataforma - e o G-Click é a fonte da verdade do
+   * cadastro (é onde a equipe trabalha), além de o nome fantasia ser como a
+   * equipe reconhece o cliente. Corrigir cadastro, agora, só no G-Click.
+   */
   const result = mapping?.external_client_id
-    ? await adapter.clients.update({
-        externalId: mapping.external_client_id,
-        name: tenant.name,
-        document: tenant.cnpj,
-      })
+    ? await verifyLinkedClient(adapter, mapping.external_client_id)
     : await adapter.clients.create({
         internalId: tenant.id,
         externalReference: externalReferenceFor(tenant.id),
@@ -604,6 +626,7 @@ export async function syncOmieObligations(
 export interface GClickClientOption {
   externalId: string;
   name: string;
+  tradeName: string | null;
   document: string | null;
 }
 
@@ -638,53 +661,34 @@ export async function searchGClickClients(
   }
 
   const adapter = getOmieGClickAdapter();
-  const normalized = normalizeClientSearch(text);
-
-  const result = await adapter.clients.search({
-    text: normalized,
-    pageSize: 20,
-  });
-
-  if (!result.ok) {
-    return { error: `Não foi possível buscar no G-Click (${result.error.message}).` };
-  }
-
-  let items = result.data.items;
 
   /*
-   * Confirmado em produção (2026-09-24, com a ARMEL X TECNOLOGIA): o
-   * `/clientes/search?texto=` do G-Click procura **só pelo nome** - o
-   * mesmo CNPJ que não devolvia nada apareceu ao buscar pelo nome. E o
-   * nome costuma divergir entre os dois sistemas (lá "ARMEL GUEZEM
-   * TITIO", aqui "ARMEL X TECNOLOGIA"), enquanto o CNPJ é o mesmo.
-   *
-   * Por isso, quando a busca textual de um documento vem vazia, varremos
-   * a lista de clientes comparando a inscrição. É mais caro, mas só
-   * acontece nesse caso específico - e é o que faz o CNPJ, que é a chave
-   * confiável, funcionar de verdade.
+   * A busca da própria API (`/clientes/search`) só olha a razão social:
+   * ignora o CNPJ (confirmado em produção em 2026-09-24) e o nome fantasia
+   * (2026-10-01: "pimpolha" não achava o cliente que a equipe conhece por
+   * esse nome). Por isso a plataforma lê a lista completa de clientes e
+   * filtra aqui por razão social, nome fantasia e CNPJ, sem diferenciar
+   * maiúscula nem acento (`clientMatches`).
    */
-  if (items.length === 0 && looksLikeDocument(text)) {
-    const byDocument = await findClientByDocument(adapter, normalized);
-    if (!byDocument.ok) {
-      return {
-        error: `Não foi possível buscar no G-Click (${byDocument.error.message}).`,
-      };
-    }
-    items = byDocument.data;
+  const all = await loadAllGClickClients(adapter);
+  if (!all.ok) {
+    return { error: `Não foi possível buscar no G-Click (${all.error.message}).` };
   }
 
-  return {
-    results: items
-      // Cliente sem id não serve para vincular - só ocuparia a lista.
-      .filter((client): client is typeof client & { externalId: string } =>
-        Boolean(client.externalId),
-      )
-      .map((client) => ({
-        externalId: client.externalId,
-        name: client.name,
-        document: client.document,
-      })),
-  };
+  const results = all.data
+    // Cliente sem id não serve para vincular - só ocuparia a lista.
+    .filter((client): client is typeof client & { externalId: string } =>
+      Boolean(client.externalId) && clientMatches(client, text),
+    )
+    .slice(0, 30)
+    .map((client) => ({
+      externalId: client.externalId,
+      name: client.name,
+      tradeName: client.tradeName && client.tradeName !== client.name ? client.tradeName : null,
+      document: client.document,
+    }));
+
+  return { results };
 }
 
 /**
@@ -703,59 +707,151 @@ async function findClientByDocument(
   adapter: ReturnType<typeof getOmieGClickAdapter>,
   document: string,
 ): Promise<ProviderResult<ExternalClient[]>> {
-  const MAX_PAGES = 15;
-  const PAGE_SIZE = 100;
-  let listFailed = false;
+  const all = await loadAllGClickClients(adapter);
+  if (!all.ok) return all;
+  const hit = all.data.find((client) => documentsMatch(client.document, document));
+  return { ok: true, data: hit ? [hit] : [] };
+}
 
-  for (let page = 0; page < MAX_PAGES; page++) {
-    const result = await adapter.clients.list({ page, pageSize: PAGE_SIZE });
-    if (!result.ok) {
-      listFailed = true;
-      break;
-    }
+export type ImportGClickState =
+  | { error: string }
+  | { success: string; imported: number; linked: number; skipped: number };
 
-    const hit = result.data.items.find((client) =>
-      documentsMatch(client.document, document),
-    );
-    if (hit) return { ok: true, data: [hit] };
+const MAX_IMPORT_PER_REQUEST = 300;
 
-    if (result.data.items.length < PAGE_SIZE) break;
+/** CNPJ/CPF só com dígitos vira o formato que a equipe lê no cartão. */
+function formatDocument(document: string | null): string | null {
+  const digits = (document ?? "").replace(/\D/g, "");
+  if (digits.length === 14) {
+    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+  }
+  if (digits.length === 11) return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+  return document?.trim() || null;
+}
+
+/**
+ * Importa clientes do G-Click para a plataforma (2026-10-01): a carteira
+ * inteira já está no G-Click, e cadastrar empresa por empresa à mão não
+ * escala.
+ *
+ * Para cada id escolhido, relendo os dados do G-Click no servidor (nunca
+ * confiando em nome/CNPJ vindos do navegador):
+ * - já vinculado a uma empresa da plataforma: pula;
+ * - mesmo CNPJ de uma empresa já cadastrada sem vínculo: só vincula, sem
+ *   criar empresa duplicada;
+ * - senão: cria a empresa (nome fantasia, ou razão social se não houver) e
+ *   já salva o vínculo.
+ * Nada é escrito no G-Click. As obrigações não são trazidas aqui - cada
+ * sincronização lê as tarefas da conta inteira, e fazer isso por empresa
+ * numa importação em massa estouraria o tempo da requisição.
+ */
+export async function importGClickClients(externalIds: string[]): Promise<ImportGClickState> {
+  const session = await requireStaffSession();
+  if (
+    !hasPermission(session, "organizations.manage") ||
+    !hasPermission(session, "integrations.manage")
+  ) {
+    return { error: "Seu papel não permite importar empresas do G-Click." };
+  }
+  if (!(await isFeatureEnabled("omie_gclick"))) {
+    return { error: "A integração Omie.G-Click está desativada pela WJB no momento." };
   }
 
-  if (!listFailed) return { ok: true, data: [] };
+  const ids = [...new Set(externalIds.map(String))].slice(0, MAX_IMPORT_PER_REQUEST);
+  if (ids.length === 0) return { error: "Selecione pelo menos um cliente." };
 
-  /*
-   * `GET /clientes` pode estar quebrado por dado inválido de UM cadastro e
-   * derrubar a listagem inteira - foi o que aconteceu na conta da WJB em
-   * 2026-09-24 ("Status complementar 'Em Carteria' não encontrado", um
-   * status com erro de digitação que a API não resolve). Nesse caso a
-   * carteira ainda responde, e ela também traz a inscrição de cada
-   * cliente, então serve para o mesmo fim.
-   */
-  const portfolio = await adapter.catalog.portfolio();
-  if (!portfolio.ok) return portfolio;
+  const all = await loadAllGClickClients(getOmieGClickAdapter(), { fresh: true });
+  if (!all.ok) {
+    return { error: `Não foi possível ler os clientes do G-Click (${all.error.message}).` };
+  }
+  const byId = new Map(all.data.filter((c) => c.externalId).map((c) => [c.externalId as string, c]));
 
-  const hit = portfolio.data.find((item) =>
-    documentsMatch(item.document, document),
-  );
-  if (!hit) return { ok: true, data: [] };
+  const supabase = await createClient();
+  const [{ data: tenants }, { data: mappings }] = await Promise.all([
+    supabase.from("tenants").select("id, cnpj"),
+    supabase.from("omie_client_mappings").select("tenant_id, external_client_id"),
+  ]);
+  const linkedIds = new Set((mappings ?? []).map((m) => m.external_client_id).filter(Boolean));
+  const mappedTenants = new Set((mappings ?? []).filter((m) => m.external_client_id).map((m) => m.tenant_id));
 
-  // A carteira traz menos campos que um cliente completo; o que importa
-  // para vincular é o id, e o resto a tela não usa.
-  return {
-    ok: true,
-    data: [
+  let imported = 0;
+  let linked = 0;
+  let skipped = 0;
+
+  for (const id of ids) {
+    const client = byId.get(id);
+    if (!client || linkedIds.has(id)) {
+      skipped++;
+      continue;
+    }
+
+    const sameDocument = (tenants ?? []).find(
+      (t) => !mappedTenants.has(t.id) && documentsMatch(t.cnpj, client.document),
+    );
+
+    let tenantId = sameDocument?.id;
+    if (!tenantId) {
+      const { data: tenant, error } = await supabase
+        .from("tenants")
+        .insert({
+          name: (client.tradeName || client.name || `Cliente G-Click ${id}`).trim(),
+          cnpj: formatDocument(client.document),
+          created_by: session.userId,
+        })
+        .select("id")
+        .single();
+      if (error || !tenant) {
+        console.error("[gclick-import] falha ao criar empresa:", error);
+        skipped++;
+        continue;
+      }
+      tenantId = tenant.id;
+    }
+
+    const { error: mappingError } = await supabase.from("omie_client_mappings").upsert(
       {
-        internalId: "",
-        externalId: hit.clientExternalId,
-        externalReference: "",
-        name: hit.name,
-        document: hit.document,
-        status: null,
-        metadata: null,
-        createdAt: null,
-        updatedAt: null,
+        tenant_id: tenantId,
+        external_client_id: id,
+        status: "connected",
+        last_error: null,
+        updated_by: session.userId,
       },
-    ],
+      { onConflict: "tenant_id" },
+    );
+    if (mappingError) {
+      console.error("[gclick-import] falha ao vincular:", mappingError);
+      skipped++;
+      continue;
+    }
+
+    linkedIds.add(id);
+    mappedTenants.add(tenantId);
+    if (sameDocument) linked++;
+    else imported++;
+
+    await supabase.from("audit_log").insert({
+      actor_id: session.userId,
+      tenant_id: tenantId,
+      action: "tenant.imported_from_gclick",
+      entity: "tenant",
+      entity_id: tenantId,
+      metadata: { external_client_id: id, linked_existing: Boolean(sameDocument) },
+    });
+  }
+
+  revalidatePath("/admin/empresas");
+  revalidatePath("/admin/empresas/importar");
+
+  const parts = [
+    imported ? `${imported} empresa(s) criada(s) na plataforma` : null,
+    linked ? `${linked} vinculada(s) a empresas que já existiam com o mesmo CNPJ` : null,
+    skipped ? `${skipped} ignorada(s) (já importadas ou não encontradas)` : null,
+  ].filter(Boolean);
+
+  return {
+    success: parts.length ? `${parts.join(", ")}.` : "Nada a importar.",
+    imported,
+    linked,
+    skipped,
   };
 }

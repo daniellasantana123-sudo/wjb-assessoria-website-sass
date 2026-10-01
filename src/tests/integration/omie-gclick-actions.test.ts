@@ -12,10 +12,16 @@ const createClientMock = vi.fn();
 const updateClientMock = vi.fn();
 const healthCheckMock = vi.fn();
 const listClientsMock = vi.fn();
+const findClientByIdMock = vi.fn();
 const portfolioMock = vi.fn();
 vi.mock("@/integrations/omie-gclick", () => ({
   getOmieGClickAdapter: () => ({
-    clients: { create: createClientMock, update: updateClientMock, list: listClientsMock },
+    clients: {
+      create: createClientMock,
+      update: updateClientMock,
+      list: listClientsMock,
+      findById: findClientByIdMock,
+    },
     catalog: { portfolio: portfolioMock },
     healthCheck: healthCheckMock,
   }),
@@ -220,14 +226,26 @@ describe("syncOmieClient", () => {
     expect(updateClientMock).not.toHaveBeenCalled();
   });
 
-  it("com external_client_id já salvo, chama clients.update() (nunca create) - idempotência", async () => {
+  it("com external_client_id já salvo, só confere o cliente no G-Click: nunca cria nem sobrescreve", async () => {
     mappingMaybeSingleMock.mockResolvedValue({ data: { external_client_id: "999" } });
-    updateClientMock.mockResolvedValue({ ok: true, data: { externalId: "999" } });
+    findClientByIdMock.mockResolvedValue({ ok: true, data: { externalId: "999", name: "X" } });
 
-    await syncOmieClient("tenant-1");
+    const result = await syncOmieClient("tenant-1");
 
-    expect(updateClientMock).toHaveBeenCalledWith(expect.objectContaining({ externalId: "999" }));
+    expect(findClientByIdMock).toHaveBeenCalledWith("999");
+    expect(updateClientMock).not.toHaveBeenCalled();
     expect(createClientMock).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: expect.any(String) });
+  });
+
+  it("vínculo apontando para cliente que não existe mais no G-Click: erro claro", async () => {
+    mappingMaybeSingleMock.mockResolvedValue({ data: { external_client_id: "999" } });
+    findClientByIdMock.mockResolvedValue({ ok: true, data: null });
+
+    const result = await syncOmieClient("tenant-1");
+
+    expect(result).toEqual({ error: expect.stringContaining("não existe mais no G-Click") });
+    expect(updateClientMock).not.toHaveBeenCalled();
   });
 
   it("sucesso: marca 'syncing' e depois 'synced', grava external_client_id e auditoria", async () => {
