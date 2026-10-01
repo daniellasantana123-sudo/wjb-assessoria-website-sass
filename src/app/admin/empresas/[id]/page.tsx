@@ -20,6 +20,7 @@ import { getOmieMapping } from "@/lib/omie-gclick";
 import { getGClickConfig, getOmieGClickAdapter } from "@/integrations/omie-gclick";
 import { CreateGClickTaskForm } from "@/components/integrations/create-gclick-task-form";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { getTaskDepartments } from "@/lib/integrations/gclick-departments";
 import { reactivateTenant, suspendTenant } from "@/actions/tenants";
 import { ActionButton } from "@/components/shared/action-button";
 import { parseCalendarParams } from "@/lib/calendar-params";
@@ -52,7 +53,7 @@ export default async function EmpresaDetailPage({
   if (!tenant) notFound();
 
   const omieMapping = await getOmieMapping(tenant.id);
-  const { mode: omieMode, account: gclickAccount } = getGClickConfig();
+  const { mode: omieMode } = getGClickConfig();
 
   // Criar tarefa no G-Click: precisa do vínculo, da integração ligada e dos
   // departamentos configurados. Responsáveis vêm do próprio G-Click na hora;
@@ -61,11 +62,17 @@ export default async function EmpresaDetailPage({
   const taskLinked = Boolean(omieMapping?.externalClientId) && omieMapping?.status !== "disabled";
   const gclickOn = await isFeatureEnabled("omie_gclick");
   let taskResponsibles: { id: string; name: string; role: string | null }[] = [];
+  let taskDepartments: { id: number; name: string }[] = [];
   if (canCreateTask && taskLinked && gclickOn && omieMapping?.externalClientId) {
-    const found = await getOmieGClickAdapter().clients.listResponsibles(omieMapping.externalClientId);
+    const adapter = getOmieGClickAdapter();
+    const [found, departments] = await Promise.all([
+      adapter.clients.listResponsibles(omieMapping.externalClientId),
+      getTaskDepartments(adapter),
+    ]);
     if (found.ok) {
       taskResponsibles = found.data.map((p) => ({ id: p.externalId, name: p.name, role: p.role }));
     }
+    taskDepartments = departments.departments;
   }
   const canSuspendTenant = hasPermission(session, "tenants.suspend");
   // Atendimento não apaga documentos, não mexe em obrigações nem no G-Click.
@@ -180,15 +187,16 @@ export default async function EmpresaDetailPage({
             <p className="text-muted-foreground text-sm">
               Vincule esta empresa ao G-Click (painel abaixo) para criar tarefas.
             </p>
-          ) : gclickAccount.departments.length === 0 ? (
+          ) : taskDepartments.length === 0 ? (
             <p className="text-muted-foreground text-sm">
-              Falta configurar os departamentos do G-Click na hospedagem (variável{" "}
-              <code>GCLICK_DEPARTAMENTOS</code>, ex.: <code>1:Fiscal;2:Contábil;3:Pessoal</code>).
+              Não foi possível descobrir os departamentos do G-Click agora (eles vêm das tarefas
+              existentes). Tente de novo em instantes ou configure a variável{" "}
+              <code>GCLICK_DEPARTAMENTOS</code> na hospedagem (ex.: <code>1:Fiscal;2:Contábil</code>).
             </p>
           ) : (
             <CreateGClickTaskForm
               tenantId={tenant.id}
-              departments={gclickAccount.departments}
+              departments={taskDepartments}
               responsibles={taskResponsibles}
             />
           )}

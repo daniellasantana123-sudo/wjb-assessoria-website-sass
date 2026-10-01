@@ -25,7 +25,7 @@ Para lançar uma versão:
   - assunto, descrição, departamento e responsável (opcional);
   - a tarefa entra na fila do escritório no G-Click, já ligada ao cliente, e o prazo é definido lá;
   - toda a equipe pode criar;
-  - departamentos configurados em `GCLICK_DEPARTAMENTOS`.
+  - os departamentos são descobertos sozinhos nas tarefas do G-Click e aparecem em Integrações; `GCLICK_DEPARTAMENTOS` é opcional e serve só para limitar a lista.
 
 ### Correções
 

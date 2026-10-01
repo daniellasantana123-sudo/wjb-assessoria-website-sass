@@ -102,6 +102,8 @@ export interface ExternalTask {
   title: string;
   status: string;
   dueDate: string | null;
+  /** Departamento da tarefa (`obrigacao.departamento`), quando a API traz. */
+  department?: { id: number; name: string } | null;
 }
 
 export interface ListExternalTasksInput {

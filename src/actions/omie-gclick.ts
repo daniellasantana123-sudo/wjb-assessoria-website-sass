@@ -27,6 +27,7 @@ import {
 import { omieMappingSchema } from "@/lib/validation/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import { loadAllGClickClients } from "@/lib/integrations/gclick-clients";
+import { getTaskDepartments } from "@/lib/integrations/gclick-departments";
 import { notifyIntegrationStatus, notifyObligationEvent } from "@/lib/notifications";
 
 export type OmieActionState =
@@ -857,7 +858,8 @@ export type GClickTaskState = { error: string } | { success: string } | undefine
  * pré-tarefa: a equipe completa no G-Click.
  *
  * O cliente vem do vínculo salvo (nunca do formulário), o departamento
- * precisa estar na lista configurada (`GCLICK_DEPARTAMENTOS`) e o
+ * precisa estar na lista oferecida (`getTaskDepartments`: configurada em
+ * `GCLICK_DEPARTAMENTOS` ou descoberta nas tarefas do G-Click) e o
  * responsável, se escolhido, precisa ser um dos responsáveis do cliente no
  * G-Click - assim um valor adulterado no formulário não cria tarefa em
  * departamento ou pessoa aleatória.
@@ -884,10 +886,6 @@ export async function createGClickTask(
   if (title.length > 200) return { error: "O assunto pode ter até 200 caracteres." };
   if (description.length > 4000) return { error: "A descrição pode ter até 4.000 caracteres." };
 
-  const { account } = getGClickConfig();
-  if (!account.departments.some((d) => d.id === departmentId)) {
-    return { error: "Escolha um departamento da lista." };
-  }
 
   const supabase = await createClient();
   const [{ data: tenant }, { data: mapping }] = await Promise.all([
@@ -907,6 +905,11 @@ export async function createGClickTask(
   }
 
   const adapter = getOmieGClickAdapter();
+
+  const { departments } = await getTaskDepartments(adapter);
+  if (!departments.some((d) => d.id === departmentId)) {
+    return { error: "Escolha um departamento da lista." };
+  }
 
   if (responsibleId) {
     const responsibles = await adapter.clients.listResponsibles(mapping.external_client_id);

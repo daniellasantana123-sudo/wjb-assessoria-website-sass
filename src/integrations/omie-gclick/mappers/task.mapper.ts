@@ -69,5 +69,21 @@ export function fromExternalPayload(payload: unknown): ExternalTask {
     title: asString(raw.nome) ?? asString(raw.assunto) ?? "",
     status: asString(raw.status) ?? "",
     dueDate: asString(raw.dataVencimento) ?? asString(raw.dataMeta),
+    department: departmentFrom(raw),
   };
+}
+
+/**
+ * O departamento vem aninhado na obrigação da tarefa
+ * (`obrigacao.departamento: { id, nome }`); em solicitações pode vir direto
+ * em `departamento`. É daqui que a plataforma descobre os departamentos da
+ * conta, já que `GET /departamentos` é exclusivo de parceiros.
+ */
+function departmentFrom(raw: Record<string, unknown>): { id: number; name: string } | null {
+  const obligation = (raw.obrigacao ?? null) as Record<string, unknown> | null;
+  const candidate = (obligation?.departamento ?? raw.departamento ?? null) as Record<string, unknown> | null;
+  if (!candidate) return null;
+  const id = Number(candidate.id);
+  const name = asString(candidate.nome);
+  return Number.isInteger(id) && id > 0 && name ? { id, name: name.trim() } : null;
 }

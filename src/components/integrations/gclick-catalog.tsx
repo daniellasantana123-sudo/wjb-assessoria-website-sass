@@ -1,6 +1,7 @@
 import { getOmieGClickAdapter } from "@/integrations/omie-gclick";
 import type { ExternalCatalogItem } from "@/integrations/omie-gclick";
 import { isFeatureEnabled } from "@/lib/feature-flags";
+import { getTaskDepartments } from "@/lib/integrations/gclick-departments";
 
 /**
  * Grupos e visibilidades da conta no G-Click (2026-09-24).
@@ -61,9 +62,10 @@ export async function GClickCatalog() {
   if (!(await isFeatureEnabled("omie_gclick"))) return null;
 
   const adapter = getOmieGClickAdapter();
-  const [groups, visibilities] = await Promise.all([
+  const [groups, visibilities, departments] = await Promise.all([
     adapter.catalog.groups(),
     adapter.catalog.visibilities(),
+    getTaskDepartments(adapter),
   ]);
 
   // Ambas falharam: provavelmente a integração está desligada ou sem
@@ -87,6 +89,22 @@ export async function GClickCatalog() {
           envVar="GCLICK_GRUPO_IDS"
           items={groups.ok ? groups.data : null}
         />
+        <div className="sm:col-span-2">
+          <CatalogList
+            title={
+              departments.source === "config"
+                ? "Departamentos para tarefas (configurados)"
+                : "Departamentos para tarefas (descobertos nas tarefas do G-Click)"
+            }
+            envVar="GCLICK_DEPARTAMENTOS"
+            items={departments.departments.map((d) => ({ externalId: String(d.id), name: d.name, description: null }))}
+          />
+          <p className="text-muted-foreground mt-2 text-xs">
+            {departments.source === "config"
+              ? "A lista vem da variável GCLICK_DEPARTAMENTOS. Apague a variável para voltar a usar os departamentos descobertos automaticamente."
+              : "Usados no formulário \"Criar tarefa no G-Click\". Não precisa configurar nada; para limitar a lista, crie GCLICK_DEPARTAMENTOS com id:nome separados por ponto e vírgula."}
+          </p>
+        </div>
       </div>
     </div>
   );
