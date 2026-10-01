@@ -1,3 +1,4 @@
+import { BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
 import { Container } from "@/components/layout/container";
@@ -27,6 +28,18 @@ export default async function SetPasswordPage({
   const { "boas-vindas": welcome } = await searchParams;
 
   if (welcome) {
+    const help = session.isWjbStaff
+      ? {
+          href: "/admin/manual",
+          title: "Manual da plataforma",
+          description: "Como usar o Admin e o Portal, tela por tela",
+        }
+      : {
+          href: "/ajuda",
+          title: "Primeira vez por aqui? Veja o guia do Portal",
+          description: "Como acompanhar prazos, enviar documentos e falar com a WJB",
+        };
+
     return (
       <Container className="flex flex-1 items-center justify-center py-16">
         <div className="border-border bg-background w-full max-w-md rounded-md border p-8 shadow-sm">
@@ -44,6 +57,30 @@ export default async function SetPasswordPage({
               defaultFullName={session.fullName ?? ""}
             />
           </div>
+
+          {/*
+            Guia logo no primeiro acesso (2026-10-01, pedido do usuário).
+            Nova aba para não perder o que já foi digitado; <a> e não <Link>
+            porque as duas rotas do manual são route handlers com documento
+            próprio. Equipe WJB vê o manual da equipe (o guia do cliente não
+            explica o Admin).
+          */}
+          <a
+            href={help.href}
+            target="_blank"
+            rel="noopener"
+            className="border-border hover:border-primary/40 hover:bg-primary/5 focus-visible:ring-primary mt-6 flex items-center gap-3 rounded-md border p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <span className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-md">
+              <BookOpen aria-hidden="true" className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="text-foreground block text-sm font-medium">{help.title}</span>
+              <span className="text-muted-foreground block text-xs">
+                {help.description} (abre em nova aba)
+              </span>
+            </span>
+          </a>
         </div>
       </Container>
     );

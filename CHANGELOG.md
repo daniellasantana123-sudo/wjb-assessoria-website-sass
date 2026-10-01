@@ -17,6 +17,12 @@ Para lançar uma versão:
 2. registre as mudanças aqui;
 3. crie a etiqueta no Git (`git tag v1.2.0` e `git push origin v1.2.0`).
 
+## 1.2.0 — 01/10/2026
+
+### Novidades
+
+- **Atalho para o guia no primeiro acesso:** abaixo do formulário de boas-vindas (o que a pessoa preenche ao aceitar o convite) aparece um link para o guia, abrindo em nova aba. Clientes veem o Guia do Portal (`/ajuda`); a equipe da WJB vê o manual da plataforma.
+
 ## 1.1.0 — 01/10/2026
 
 ### Novidades
