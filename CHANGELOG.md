@@ -17,6 +17,15 @@ Para lançar uma versão:
 2. registre as mudanças aqui;
 3. crie a etiqueta no Git (`git tag v1.2.0` e `git push origin v1.2.0`).
 
+## Próxima versão (ainda não lançada)
+
+### Correções
+
+- **CNPJ formatado** (12.345.678/0001-99) na tela de importação e nos resultados da busca do G-Click.
+- **Áreas de toque de 24px no celular:**
+  - caixas de seleção da importação, que agora ficam sempre ao lado do nome;
+  - bolinhas do carrossel de depoimentos na página inicial.
+
 ## 1.2.0 — 01/10/2026
 
 ### Novidades

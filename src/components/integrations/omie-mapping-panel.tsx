@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { OmieStatusBadge } from "@/components/integrations/omie-status-badge";
 import type { OmieMapping } from "@/lib/omie-gclick";
 import type { ProviderMode } from "@/integrations/omie-gclick";
+import { formatDocument } from "@/lib/integrations/client-search";
 
 /**
  * Painel de staff (Admin WJB > Empresas > [id]) pra configurar o
@@ -183,7 +184,7 @@ export function OmieMappingPanel({
                         </span>
                       )}
                       <span className="text-muted-foreground block text-xs">
-                        {option.document ?? "sem CNPJ cadastrado"} · id {option.externalId}
+                        {formatDocument(option.document) ?? "sem CNPJ cadastrado"} · id {option.externalId}
                       </span>
                     </span>
                     <span className="text-primary shrink-0 text-xs font-medium">

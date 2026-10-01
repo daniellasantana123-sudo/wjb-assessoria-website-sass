@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { clientMatches } from "@/lib/integrations/client-search";
+import { clientMatches, formatDocument } from "@/lib/integrations/client-search";
 import { cn } from "@/lib/utils";
 
 export interface GClickImportRow {
@@ -174,26 +174,29 @@ export function GClickImportList({ rows, initialQuery = "" }: { rows: GClickImpo
             const checkboxId = `gclick-${row.externalId}`;
             return (
               <li key={row.externalId} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
-                {row.state === "linked" ? (
-                  <span aria-hidden="true" className="w-5" />
-                ) : (
-                  <input
-                    id={checkboxId}
-                    type="checkbox"
-                    checked={selected.has(row.externalId)}
-                    onChange={() => toggle(row.externalId)}
-                    className="accent-primary h-5 w-5 shrink-0"
-                  />
-                )}
-                <label htmlFor={row.state === "linked" ? undefined : checkboxId} className="min-w-0 flex-1 basis-56">
-                  <span className="text-foreground block font-medium break-words">{row.tradeName ?? row.name}</span>
-                  {row.tradeName && (
-                    <span className="text-muted-foreground block text-sm break-words">Razão social: {row.name}</span>
+                {/* Caixa e nome sempre na mesma linha; só a etiqueta desce em telas estreitas. */}
+                <div className="flex min-w-0 flex-1 basis-56 items-start gap-3">
+                  {row.state === "linked" ? (
+                    <span aria-hidden="true" className="w-6 shrink-0" />
+                  ) : (
+                    <input
+                      id={checkboxId}
+                      type="checkbox"
+                      checked={selected.has(row.externalId)}
+                      onChange={() => toggle(row.externalId)}
+                      className="accent-primary mt-0.5 h-6 w-6 shrink-0"
+                    />
                   )}
-                  <span className="text-muted-foreground block text-xs">
-                    {row.document ?? "sem CNPJ cadastrado"} · id {row.externalId}
-                  </span>
-                </label>
+                  <label htmlFor={row.state === "linked" ? undefined : checkboxId} className="min-w-0 flex-1">
+                    <span className="text-foreground block font-medium break-words">{row.tradeName ?? row.name}</span>
+                    {row.tradeName && (
+                      <span className="text-muted-foreground block text-sm break-words">Razão social: {row.name}</span>
+                    )}
+                    <span className="text-muted-foreground block text-xs">
+                      {formatDocument(row.document) ?? "sem CNPJ cadastrado"} · id {row.externalId}
+                    </span>
+                  </label>
+                </div>
                 {row.state === "linked" && row.tenantId ? (
                   <Link
                     href={`/admin/empresas/${row.tenantId}`}

@@ -20,6 +20,7 @@ import {
 import {
   clientMatches,
   documentsMatch,
+  formatDocument,
   isSearchable,
   MIN_SEARCH_LENGTH,
 } from "@/lib/integrations/client-search";
@@ -719,15 +720,6 @@ export type ImportGClickState =
 
 const MAX_IMPORT_PER_REQUEST = 300;
 
-/** CNPJ/CPF só com dígitos vira o formato que a equipe lê no cartão. */
-function formatDocument(document: string | null): string | null {
-  const digits = (document ?? "").replace(/\D/g, "");
-  if (digits.length === 14) {
-    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
-  }
-  if (digits.length === 11) return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
-  return document?.trim() || null;
-}
 
 /**
  * Importa clientes do G-Click para a plataforma (2026-10-01): a carteira

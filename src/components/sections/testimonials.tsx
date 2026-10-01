@@ -206,7 +206,7 @@ export function Testimonials() {
           </button>
         </div>
 
-        <div className="mt-6 flex justify-center gap-2">
+        <div className="mt-6 flex justify-center gap-1">
           {testimonials.map((testimonial, index) => (
             <button
               key={testimonial.id}
@@ -214,11 +214,19 @@ export function Testimonials() {
               aria-label={`Ir para o depoimento de ${testimonial.name}`}
               aria-current={activeIndex === index}
               onClick={() => handleManualNavigation(index)}
-              className={cn(
-                "focus-visible:ring-primary h-2.5 w-2.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
-                activeIndex === index ? "bg-primary" : "bg-muted hover:bg-border",
-              )}
-            />
+              // Área de toque de 24px (WCAG 2.5.8) com a bolinha visual de
+              // 10px no centro - antes o botão inteiro tinha 10px, difícil
+              // de acertar com o dedo no celular.
+              className="group focus-visible:ring-primary flex h-6 w-6 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:outline-none"
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "h-2.5 w-2.5 rounded-full transition-colors",
+                  activeIndex === index ? "bg-primary" : "bg-muted group-hover:bg-border",
+                )}
+              />
+            </button>
           ))}
         </div>
       </Container>

@@ -84,3 +84,16 @@ export function clientMatches(
     .filter(Boolean)
     .every((word) => haystack.includes(word));
 }
+
+/**
+ * CNPJ/CPF só com dígitos (como o G-Click guarda) no formato que a equipe
+ * lê no cartão. Qualquer outro conteúdo volta como veio.
+ */
+export function formatDocument(document: string | null | undefined): string | null {
+  const digits = (document ?? "").replace(/\D/g, "");
+  if (digits.length === 14) {
+    return digits.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+  }
+  if (digits.length === 11) return digits.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+  return document?.trim() || null;
+}
