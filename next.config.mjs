@@ -87,6 +87,13 @@ const nextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "21mb" },
     proxyClientMaxBodySize: "21mb",
+    /**
+     * CSS dentro do HTML em vez de <link> (2026-10-02): o PageSpeed apontou
+     * os 2 arquivos de CSS como bloqueadores de renderização (~580 ms no
+     * celular). O CSS do site é pequeno (Tailwind, ~14 KB), o caso para o
+     * qual a opção foi feita. A CSP já permite estilos inline.
+     */
+    inlineCss: true,
   },
   images: {
     /**

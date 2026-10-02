@@ -195,16 +195,21 @@ export function Hero() {
                   {/* aspect-square (2026-09-14) — fotos são 1254x1254 (1:1), confirmado pelo usuário. */}
                   <div className="group relative aspect-square w-full overflow-hidden rounded-[10px]">
                     {/*
-                     * `unoptimized` (2026-09-14) — pedido explícito do
-                     * usuário pras fotos do carrossel: "formato original e
-                     * qualidade original". Sem isso, o otimizador de imagens
-                     * do Next recomprimiria o PNG pra webp na hora de servir
-                     * (mesmo comportamento documentado na tarefa "aumente a
-                     * resolução" - ver docs/design/images.md), o que
-                     * silenciosamente desfaria o pedido. Com `unoptimized`,
-                     * o arquivo é entregue como está, sem reprocessamento -
-                     * a troca é não ter redimensionamento responsivo
-                     * automático (arquivos maiores, ~5.5MB cada).
+                     * Otimizadas pelo Next desde 2026-10-02 (antes,
+                     * `unoptimized` a pedido do usuário em 2026-09-14:
+                     * "formato original e qualidade original"). O PNG de
+                     * ~2 MB era a maior imagem da página e o PageSpeed
+                     * apontou LCP de 4,4 s no celular. Os PNGs originais
+                     * continuam intactos em disco; o site entrega WebP na
+                     * qualidade 90 (`images.qualities` em next.config.mjs),
+                     * no tamanho de cada tela - um computador grande ainda
+                     * recebe os 1254 px inteiros. Para voltar ao original,
+                     * basta recolocar `unoptimized`.
+                     *
+                     * Só a 1ª foto carrega na hora e com prioridade alta: as
+                     * outras ficam empilhadas no mesmo lugar (efeito fade),
+                     * então "lazy" sozinho não as segura - `fetchPriority`
+                     * baixo evita que disputem banda com a 1ª.
                      *
                      * `group-hover:scale-105` (2026-09-17) — zoom suave no
                      * hover, contido pelo `overflow-hidden` do pai. O plugin
@@ -216,8 +221,8 @@ export function Hero() {
                       src={slide.src}
                       alt={slide.alt}
                       fill
-                      priority={index === 0}
-                      unoptimized
+                      loading={index === 0 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "low"}
                       sizes="(min-width: 1024px) 50vw, 100vw"
                       className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                     />
