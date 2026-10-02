@@ -1,9 +1,8 @@
-import { MotionConfig } from "framer-motion";
-
 import { WJBAssistant } from "@/components/assistant/WJBAssistant";
 import { ExitIntentPopup } from "@/components/marketing/exit-intent-popup";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { JsonLd } from "@/components/shared/json-ld";
+import { MotionProvider } from "@/components/shared/motion-provider";
 import { SiteHeader } from "@/components/navigation/site-header";
 import { getOrganizationSchema } from "@/lib/seo/schema";
 
@@ -20,15 +19,9 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       <JsonLd data={getOrganizationSchema()} />
-      {/* `reducedMotion="user"` (2026-09-19, header/menu mobile ganharam
-          framer-motion) — a regra global de `prefers-reduced-motion` em
-          globals.css só zera `animation`/`transition` via CSS; as animações
-          do framer-motion são orquestradas por JS e não são cobertas por
-          ela, então precisam desse opt-in próprio pra respeitar a mesma
-          preferência do usuário. */}
-      <MotionConfig reducedMotion="user">
+      <MotionProvider>
         <SiteHeader />
-      </MotionConfig>
+      </MotionProvider>
       {children}
       <SiteFooter />
       <WJBAssistant />

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { getTrackingParams } from "@/lib/analytics/tracking";
@@ -16,7 +15,8 @@ import { activityOptions, brazilianStates } from "@/config/pricing";
 import { serviceCategories } from "@/config/services";
 import { siteConfig } from "@/config/site";
 import { getWhatsAppLink } from "@/integrations/whatsapp";
-import { type LeadFormValues, leadFormSchema } from "@/lib/validation/lead";
+import type { LeadFormValues } from "@/lib/validation/lead";
+import { lazyResolver } from "@/lib/validation/lazy-resolver";
 
 export interface LeadFormProps {
   formContext: string;
@@ -39,6 +39,14 @@ export interface LeadFormProps {
    */
   onError?: () => void;
 }
+
+
+// zod só é baixado na primeira validação (ver lazy-resolver.ts).
+const leadFormSchemaResolver = lazyResolver(() =>
+  Promise.all([import("@hookform/resolvers/zod"), import("@/lib/validation/lead")]).then(([{ zodResolver }, mod]) =>
+    zodResolver(mod.leadFormSchema),
+  ),
+);
 
 export function LeadForm({
   formContext,
@@ -66,7 +74,7 @@ export function LeadForm({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<LeadFormValues>({
-    resolver: zodResolver(leadFormSchema),
+    resolver: leadFormSchemaResolver,
     defaultValues: {
       name: "",
       email: "",

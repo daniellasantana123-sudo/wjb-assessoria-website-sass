@@ -4,6 +4,7 @@ import { WJBAssistant } from "@/components/assistant/WJBAssistant";
 import { Container } from "@/components/layout/container";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/navigation/site-header";
+import { MotionProvider } from "@/components/shared/motion-provider";
 import { buttonVariants } from "@/components/ui/button";
 
 /**
@@ -16,7 +17,9 @@ import { buttonVariants } from "@/components/ui/button";
 export default function NotFound() {
   return (
     <>
-      <SiteHeader />
+      <MotionProvider>
+        <SiteHeader />
+      </MotionProvider>
       <Container className="flex flex-1 flex-col items-center justify-center gap-4 py-24 text-center">
         <p className="text-primary text-sm font-medium tracking-wide uppercase">404</p>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
@@ -140,7 +140,7 @@ export function MegaMenu() {
               className="absolute inset-x-0 top-full h-3"
               aria-hidden="true"
             />
-            <motion.div
+            <m.div
               key="panel"
               id="mega-menu-servicos"
               initial={{ opacity: 0, y: 8 }}
@@ -202,7 +202,7 @@ export function MegaMenu() {
                   Ver todos os serviços →
                 </Link>
               </div>
-            </motion.div>
+            </m.div>
           </>
         ) : null}
       </AnimatePresence>

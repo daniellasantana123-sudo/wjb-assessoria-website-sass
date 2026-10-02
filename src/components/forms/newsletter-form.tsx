@@ -2,11 +2,19 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { getTrackingParams } from "@/lib/analytics/tracking";
-import { type NewsletterFormValues, newsletterFormSchema } from "@/lib/validation/lead";
+import type { NewsletterFormValues } from "@/lib/validation/lead";
+import { lazyResolver } from "@/lib/validation/lazy-resolver";
+
+
+// zod só é baixado na primeira validação (ver lazy-resolver.ts).
+const newsletterFormSchemaResolver = lazyResolver(() =>
+  Promise.all([import("@hookform/resolvers/zod"), import("@/lib/validation/lead")]).then(([{ zodResolver }, mod]) =>
+    zodResolver(mod.newsletterFormSchema),
+  ),
+);
 
 export function NewsletterForm() {
   const pathname = usePathname();
@@ -18,7 +26,7 @@ export function NewsletterForm() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<NewsletterFormValues>({
-    resolver: zodResolver(newsletterFormSchema),
+    resolver: newsletterFormSchemaResolver,
     defaultValues: {
       email: "",
       tracking: {

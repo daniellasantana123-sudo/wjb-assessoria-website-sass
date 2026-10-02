@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { Check, ChevronDown, Menu, X } from "lucide-react";
 
 import {
@@ -87,7 +87,7 @@ function MobileDisclosure({
           )}
         />
       </button>
-      <motion.div
+      <m.div
         id={contentId}
         aria-hidden={!open}
         inert={!open}
@@ -97,7 +97,7 @@ function MobileDisclosure({
         style={{ overflow: "hidden" }}
       >
         {children}
-      </motion.div>
+      </m.div>
     </div>
   );
 }
@@ -201,7 +201,7 @@ export function MobileNav({ clientAreaNav }: MobileNavProps) {
         createPortal(
           <AnimatePresence>
             {open ? (
-              <motion.div
+              <m.div
                 key="mobile-menu"
                 id="mobile-menu"
                 ref={panelRef}
@@ -367,7 +367,7 @@ export function MobileNav({ clientAreaNav }: MobileNavProps) {
                     </div>
                   </MobileDisclosure>
                 </nav>
-              </motion.div>
+              </m.div>
             ) : null}
           </AnimatePresence>,
           document.body,

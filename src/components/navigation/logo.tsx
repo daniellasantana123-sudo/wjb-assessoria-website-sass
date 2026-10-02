@@ -20,9 +20,12 @@ export function Logo({
       <Image
         src="/brand/logos/logo-wjb-color.png"
         alt={siteConfig.name}
-        width={241}
-        height={137}
-        priority
+        // Tamanho em que o logo aparece (60 px de altura, o maior uso). Com
+        // 241x137 o celular baixava a versão de 640 px para mostrar 105 px
+        // (PageSpeed, 2026-10-02).
+        width={106}
+        height={60}
+        loading="eager"
         className={cn("h-[60px] w-auto shrink-0", className)}
       />
     </Link>

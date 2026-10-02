@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
 import { useDisclosure } from "@/hooks/use-disclosure";
@@ -48,7 +48,7 @@ export function NavDropdown({ label, items, footer }: NavDropdownGroup) {
               className="absolute inset-x-0 top-full h-3"
               aria-hidden="true"
             />
-            <motion.div
+            <m.div
               key="panel"
               id={panelId}
               initial={{ opacity: 0, y: 8 }}
@@ -81,7 +81,7 @@ export function NavDropdown({ label, items, footer }: NavDropdownGroup) {
                   </Link>
                 </div>
               ) : null}
-            </motion.div>
+            </m.div>
           </>
         ) : null}
       </AnimatePresence>
