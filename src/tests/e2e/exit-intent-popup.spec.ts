@@ -1,16 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-async function triggerExit(page: import("@playwright/test").Page, isMobile: boolean) {
+async function triggerExit(page: import("@playwright/test").Page) {
   await page.clock.fastForward(30_000);
   await page.clock.resume();
-  if (isMobile) {
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await page.evaluate(() => window.dispatchEvent(new Event("scroll")));
-  } else {
-    await page.evaluate(() =>
-      document.dispatchEvent(new MouseEvent("mouseout", { clientY: -5, relatedTarget: null, bubbles: true })),
-    );
-  }
+  await page.evaluate(() =>
+    document.dispatchEvent(new MouseEvent("mouseout", { clientY: -5, relatedTarget: null, bubbles: true })),
+  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -22,12 +17,26 @@ test.beforeEach(async ({ page }) => {
   await page.clock.install();
 });
 
+// O popup só existe no computador (2026-10-02). No celular, o único teste é
+// o de baixo, que garante que ele nunca abre.
+test("no celular o popup nunca abre, nem por inatividade nem rolando a página", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "cenário do celular");
+  await page.goto("/sobre", { waitUntil: "networkidle" });
+  await page.clock.fastForward(60_000);
+  await page.clock.resume();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.evaluate(() => window.dispatchEvent(new Event("scroll")));
+  await page.waitForTimeout(500);
+  await expect(page.getByRole("dialog", { name: /Precisa de um contador/ })).toHaveCount(0);
+});
+
 test("popup Antes de sair abre no gatilho, valida e envia o contato", async ({ page, isMobile }) => {
+  test.skip(isMobile, "popup só no computador");
   await page.route("**/api/leads", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true,"persisted":true}' }),
   );
   await page.goto("/servicos", { waitUntil: "networkidle" });
-  await triggerExit(page, isMobile);
+  await triggerExit(page);
 
   const dialog = page.getByRole("dialog", { name: /Precisa de um contador/ });
   await expect(dialog).toBeVisible();
@@ -45,22 +54,24 @@ test("popup Antes de sair abre no gatilho, valida e envia o contato", async ({ p
 });
 
 test("não abre em páginas que já têm formulário e não reabre depois de fechado", async ({ page, isMobile }) => {
+  test.skip(isMobile, "popup só no computador");
   await page.goto("/contato", { waitUntil: "networkidle" });
-  await triggerExit(page, isMobile);
+  await triggerExit(page);
   await expect(page.getByRole("dialog", { name: /Precisa de um contador/ })).toHaveCount(0);
 
   await page.goto("/sobre", { waitUntil: "networkidle" });
-  await triggerExit(page, isMobile);
+  await triggerExit(page);
   await expect(page.getByRole("dialog", { name: /Precisa de um contador/ })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: /Precisa de um contador/ })).toHaveCount(0);
 
   await page.goto("/planos", { waitUntil: "networkidle" });
-  await triggerExit(page, isMobile);
+  await triggerExit(page);
   await expect(page.getByRole("dialog", { name: /Precisa de um contador/ })).toHaveCount(0);
 });
 
-test("abre depois de 30s sem nenhuma interação, no computador e no celular", async ({ page }) => {
+test("abre depois de 30s sem nenhuma interação", async ({ page, isMobile }) => {
+  test.skip(isMobile, "popup só no computador");
   await page.goto("/sobre", { waitUntil: "networkidle" });
   const dialog = page.getByRole("dialog", { name: /Precisa de um contador/ });
 
@@ -71,7 +82,8 @@ test("abre depois de 30s sem nenhuma interação, no computador e no celular", a
   await expect(dialog).toBeVisible();
 });
 
-test("não abre por inatividade enquanto a pessoa está com um campo em foco", async ({ page }) => {
+test("não abre por inatividade enquanto a pessoa está com um campo em foco", async ({ page, isMobile }) => {
+  test.skip(isMobile, "popup só no computador");
   await page.goto("/sobre", { waitUntil: "networkidle" });
   await page.getByRole("textbox").first().focus();
   await page.clock.fastForward(45_000);

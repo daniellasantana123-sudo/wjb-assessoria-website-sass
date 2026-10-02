@@ -13,13 +13,12 @@ import { headerCtas } from "@/config/navigation";
 import { getTrackingParams } from "@/lib/analytics/tracking";
 import {
   canShowPopup,
+  DESKTOP_MEDIA_QUERY,
   EXIT_POPUP_SESSION_KEY,
   EXIT_POPUP_STORAGE_KEY,
   IDLE_MS,
   idleTriggerBlocked,
   MIN_DWELL_DESKTOP_MS,
-  MIN_DWELL_MOBILE_MS,
-  MOBILE_SCROLL_RATIO,
   parseStoredState,
 } from "@/lib/marketing/exit-intent";
 import { exitIntentLeadSchema } from "@/lib/validation/lead";
@@ -63,10 +62,9 @@ function writeStorage(storage: "local" | "session", key: string, value: string) 
  * partir de um modelo do site da Armel-x, sem a oferta de "diagnóstico
  * gratuito", que a WJB não faz).
  *
- * Gatilhos: 30s sem nenhuma interação (computador e celular); no
- * computador, também quando o mouse sai pelo topo da página (gesto de
- * fechar a aba) depois de 8s; no celular, que não tem esse gesto, também
- * depois de ler metade da página e passar 25s nela. Uma vez por visita; fechou, volta
+ * Só no computador (2026-10-02, pedido do usuário: no celular o popup
+ * atrapalhava a leitura). Gatilhos: 30s sem nenhuma interação, ou o mouse
+ * saindo pelo topo da página (gesto de fechar a aba) depois de 8s. Uma vez por visita; fechou, volta
  * só depois de 3 dias; enviou, nunca mais. Não aparece em páginas que já têm
  * formulário (`isExcludedPath`).
  *
@@ -100,11 +98,12 @@ export function ExitIntentPopup() {
   // Gatilhos
   useEffect(() => {
     if (open) return;
+    // Celular e tablet de toque: nenhum gatilho é ligado.
+    if (!window.matchMedia(DESKTOP_MEDIA_QUERY).matches) return;
     const startedAt = Date.now();
-    const coarse = window.matchMedia("(pointer: coarse)").matches;
     const cleanups: (() => void)[] = [];
 
-    // 1) Inatividade - computador e celular. Qualquer interação reinicia o
+    // 1) Inatividade. Qualquer interação reinicia o
     // relógio; com a aba em segundo plano o relógio para (visibilitychange).
     let idleTimer: number | undefined;
     const armIdle = () => {
@@ -134,27 +133,14 @@ export function ExitIntentPopup() {
       document.removeEventListener("visibilitychange", armIdle);
     });
 
-    if (!coarse) {
-      // 2) Computador: mouse saindo pelo topo (gesto de fechar a aba).
-      const onMouseOut = (event: MouseEvent) => {
-        if (event.relatedTarget || event.clientY > 0) return;
-        if (Date.now() - startedAt < MIN_DWELL_DESKTOP_MS) return;
-        show();
-      };
-      document.addEventListener("mouseout", onMouseOut);
-      cleanups.push(() => document.removeEventListener("mouseout", onMouseOut));
-    } else {
-      // 2) Celular: leu metade da página e já passou 25s nela.
-      const onScroll = () => {
-        const doc = document.documentElement;
-        const scrollable = doc.scrollHeight - window.innerHeight;
-        if (scrollable <= 0) return;
-        const ratio = window.scrollY / scrollable;
-        if (ratio >= MOBILE_SCROLL_RATIO && Date.now() - startedAt >= MIN_DWELL_MOBILE_MS) show();
-      };
-      window.addEventListener("scroll", onScroll, { passive: true });
-      cleanups.push(() => window.removeEventListener("scroll", onScroll));
-    }
+    // 2) Mouse saindo pelo topo (gesto de fechar a aba).
+    const onMouseOut = (event: MouseEvent) => {
+      if (event.relatedTarget || event.clientY > 0) return;
+      if (Date.now() - startedAt < MIN_DWELL_DESKTOP_MS) return;
+      show();
+    };
+    document.addEventListener("mouseout", onMouseOut);
+    cleanups.push(() => document.removeEventListener("mouseout", onMouseOut));
 
     return () => cleanups.forEach((fn) => fn());
   }, [open, show]);

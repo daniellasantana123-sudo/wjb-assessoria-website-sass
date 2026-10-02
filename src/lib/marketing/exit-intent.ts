@@ -6,16 +6,19 @@
 export const EXIT_POPUP_STORAGE_KEY = "wjb-exit-popup";
 export const EXIT_POPUP_SESSION_KEY = "wjb-exit-popup-shown";
 
+/**
+ * Só computador (2026-10-02, pedido do usuário): celular e tablet de toque
+ * não batem nesta media query e nenhum gatilho é ligado.
+ */
+export const DESKTOP_MEDIA_QUERY = "(hover: hover) and (pointer: fine)";
+
 /** Fechou sem enviar: não insistir por 3 dias (era 7; reduzido a pedido do usuário em 2026-10-01). */
 export const DISMISS_COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
-/** Tempo mínimo na página antes de aparecer (computador). */
+/** Tempo mínimo na página antes de aparecer pelo gesto de sair. */
 export const MIN_DWELL_DESKTOP_MS = 8_000;
-/** Celular: não há "mouse saindo da página"; usa leitura + tempo. */
-export const MIN_DWELL_MOBILE_MS = 25_000;
-export const MOBILE_SCROLL_RATIO = 0.5;
 /**
- * Inatividade (2026-10-01, pedido do usuário): sem mexer o mouse, rolar,
- * tocar ou digitar por 30s, o popup aparece - no computador e no celular.
+ * Inatividade (2026-10-01, pedido do usuário): sem mexer o mouse, rolar
+ * ou digitar por 30s, o popup aparece.
  */
 export const IDLE_MS = 30_000;
 
