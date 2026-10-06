@@ -14,6 +14,7 @@ import { siteConfig } from "@/config/site";
 import { isSaasPublicEnabled } from "@/lib/saas-gate";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/area-do-cliente" },
   title: "Área do Cliente",
   description:
     "Plataforma da WJB para clientes: documentos, obrigações, guias, calendário e atendimento num só lugar. O acesso é liberado pela WJB no onboarding.",

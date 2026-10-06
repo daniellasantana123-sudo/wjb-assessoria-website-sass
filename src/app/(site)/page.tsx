@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { ContentPreview } from "@/components/sections/content-preview";
 import { CtaFinal } from "@/components/sections/cta-final";
 import { DigitalAccountingPreview } from "@/components/sections/digital-accounting-preview";
@@ -13,6 +15,10 @@ import { Testimonials } from "@/components/sections/testimonials";
 import { TrustBar } from "@/components/sections/trust-bar";
 import { WjbArmelx } from "@/components/sections/wjb-armelx";
 import { RevealOnScroll } from "@/components/shared/reveal-on-scroll";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (

@@ -9,6 +9,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { blogPosts } from "@/content/blog/posts";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/conteudos" },
   title: "Conteúdos",
   description:
     "Conteúdo para ajudar sua empresa a decidir melhor em contabilidade, tributos e gestão.",

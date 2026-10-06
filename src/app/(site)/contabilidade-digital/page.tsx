@@ -16,6 +16,7 @@ import { digitalAccountingImages } from "@/config/images";
 import { headerCtas } from "@/config/navigation";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/contabilidade-digital" },
   title: "Contabilidade Digital",
   description:
     "Contabilidade organizada, acessível e conectada à rotina da sua empresa, com suporte humano por trás.",

@@ -5,6 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/politica-de-privacidade" },
   title: "Política de Privacidade",
   description: "Política de Privacidade da WJB Assessoria Contábil.",
 };

@@ -5,6 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/cookies" },
   title: "Cookies",
   description: "Política de Cookies da WJB Assessoria Contábil.",
 };

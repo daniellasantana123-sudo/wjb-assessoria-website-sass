@@ -5,6 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/termos" },
   title: "Termos de Uso",
   description: "Termos de Uso da WJB Assessoria Contábil.",
 };

@@ -39,6 +39,7 @@ export async function generateMetadata({
     title: post.title,
     description: post.description,
     keywords: post.tags,
+    alternates: { canonical: `/blog/${post.slug}` },
     // Imagem de compartilhamento: gerada por `opengraph-image.ts` (mesma pasta).
   };
 }

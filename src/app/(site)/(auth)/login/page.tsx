@@ -5,6 +5,7 @@ import { Container } from "@/components/layout/container";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: "Entrar",
   description: "Acesse o Portal do Cliente ou a área interna da WJB Assessoria Contábil.",
 };

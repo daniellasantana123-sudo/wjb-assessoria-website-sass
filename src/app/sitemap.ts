@@ -3,14 +3,13 @@ import type { MetadataRoute } from "next";
 import { servicePages } from "@/config/service-pages";
 import { blogPosts } from "@/content/blog/posts";
 import { getSiteUrl } from "@/lib/seo/site-url";
-import { isSaasPublicEnabled } from "@/lib/saas-gate";
 
 /** Lista só rotas que existem de verdade — não submeter 404 para buscadores. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getSiteUrl();
   const now = new Date();
-  /** SAAS V2 bloqueado até publicação (ver `src/middleware.ts`) — não listar /login enquanto isso. */
-  const saasPublicEnabled = isSaasPublicEnabled();
+  // /login fica fora de propósito: tela de acesso não é conteúdo para busca
+  // (também marcada noindex), e entrava no Search Console como página fraca.
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "weekly", priority: 1 },
@@ -50,16 +49,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
-    ...(saasPublicEnabled
-      ? [
-          {
-            url: `${base}/login`,
-            lastModified: now,
-            changeFrequency: "monthly" as const,
-            priority: 0.3,
-          },
-        ]
-      : []),
     {
       url: `${base}/sobre`,
       lastModified: now,

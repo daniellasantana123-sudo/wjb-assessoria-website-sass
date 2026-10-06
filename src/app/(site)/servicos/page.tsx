@@ -9,6 +9,7 @@ import { serviceCategories } from "@/config/services";
 import { cn, navigableCardClass } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/servicos" },
   title: "Serviços",
   description:
     "Contabilidade, fiscal e tributário, departamento pessoal, societário e legalização, e consultoria.",

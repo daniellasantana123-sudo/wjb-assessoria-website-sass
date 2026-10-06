@@ -25,6 +25,7 @@ import { getArmelxWhatsAppLink } from "@/integrations/whatsapp";
 import { cn, staticCardHoverClass } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/armel-x-tecnologia" },
   title: "Armel-x Tecnologia",
   description: "A parceria entre a WJB Assessoria Contábil e a Armel-x Tecnologia.",
   openGraph: {

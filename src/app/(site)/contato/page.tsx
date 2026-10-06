@@ -17,6 +17,7 @@ import {
 } from "@/config/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/contato" },
   title: "Contato",
   description: "Fale com um contador da WJB Assessoria Contábil.",
 };

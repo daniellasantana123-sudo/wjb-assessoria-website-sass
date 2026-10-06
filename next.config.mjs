@@ -183,6 +183,23 @@ const nextConfig = {
        * duas chegou a ser divulgada fora do código, e o único link interno
        * (em /contato) muda junto.
        */
+      /**
+       * Search Console (2026-10-06): "www." respondia 200 com o mesmo
+       * conteúdo do domínio principal, o que o Google trata como página
+       * duplicada. Toda visita a www vai para o endereço sem www.
+       */
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.wjbassessoriacontabil.com.br" }],
+        destination: "https://wjbassessoriacontabil.com.br/:path*",
+        permanent: true,
+      },
+      /**
+       * Nomes antigos da assistente virtual. O Google chegou a rastrear
+       * esses endereços e os registrava como 404 no Search Console.
+       */
+      { source: "/bia", destination: "/", permanent: true },
+      { source: "/daniella", destination: "/", permanent: true },
       {
         source: "/dani",
         destination: "/?assistente=aberto",

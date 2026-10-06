@@ -5,6 +5,7 @@ import { Container } from "@/components/layout/container";
 import { PasswordResetForm } from "@/components/auth/password-reset-form";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: true },
   title: "Recuperar senha",
   description: "Solicite a redefinição da sua senha de acesso à plataforma WJB.",
 };

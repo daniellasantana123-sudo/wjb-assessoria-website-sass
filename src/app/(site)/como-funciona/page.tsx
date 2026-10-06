@@ -9,6 +9,7 @@ import { headerCtas } from "@/config/navigation";
 import { cn, staticCardHoverClass } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/como-funciona" },
   title: { absolute: "Como funciona a WJB | Contabilidade simples e consultiva" },
   description:
     "Entenda como funciona o atendimento da WJB Assessoria Contábil, desde o diagnóstico da empresa até a rotina contábil e o acompanhamento contínuo.",

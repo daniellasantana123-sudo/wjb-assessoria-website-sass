@@ -7,6 +7,7 @@ import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scr
 import { blogPosts } from "@/content/blog/posts";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/blog" },
   title: "Blog",
   description:
     "Artigos sobre reforma tributária, planejamento tributário, contabilidade, departamento pessoal e tecnologia para ajudar sua empresa a decidir melhor.",

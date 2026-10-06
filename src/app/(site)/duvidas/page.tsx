@@ -6,6 +6,7 @@ import { Faq } from "@/components/sections/faq";
 import { RevealOnScroll } from "@/components/shared/reveal-on-scroll";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/duvidas" },
   title: "Dúvidas",
   description: "Perguntas frequentes sobre a WJB Assessoria Contábil.",
 };

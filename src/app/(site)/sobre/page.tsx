@@ -25,6 +25,7 @@ import { siteConfig } from "@/config/site";
 import { cn, staticCardHoverClass } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/sobre" },
   title: {
     absolute: "Sobre a WJB Assessoria Contábil | Contabilidade e Consultoria",
   },

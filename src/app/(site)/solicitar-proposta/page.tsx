@@ -5,6 +5,7 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { LeadForm } from "@/components/forms/lead-form";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/solicitar-proposta" },
   title: "Solicitar Proposta",
   description:
     "Conte sobre a sua empresa e receba uma proposta da WJB Assessoria Contábil.",

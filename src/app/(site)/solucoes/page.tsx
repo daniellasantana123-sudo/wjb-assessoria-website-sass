@@ -7,6 +7,7 @@ import { RevealStagger } from "@/components/shared/reveal-on-scroll";
 import { cn, navigableCardClass } from "@/lib/utils";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/solucoes" },
   title: "Soluções",
   description:
     "As soluções da WJB Assessoria Contábil: serviços contábeis, Contabilidade Digital e a parceria com a Armel-x Tecnologia.",
