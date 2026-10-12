@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import { getSupabaseEnv } from "@/lib/db/supabase/env";
 import { isSaasPublicEnabled } from "@/lib/saas-gate";
+import { isLegacyWordPressPath } from "@/lib/seo/legacy-paths";
 
 /**
  * `proxy.ts` (2026-09-16) — nesta versão do Next.js o antigo `middleware.ts`
@@ -56,6 +57,15 @@ function isSaasGated(pathname: string) {
 }
 
 export async function proxy(request: NextRequest) {
+  // Restos do site antigo em WordPress: 410 tira do Google mais depressa
+  // que 404 (ver `lib/seo/legacy-paths.ts`).
+  if (isLegacyWordPressPath(request.nextUrl.pathname)) {
+    return new NextResponse("Este conteúdo foi removido.", {
+      status: 410,
+      headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex" },
+    });
+  }
+
   if (isSaasGated(request.nextUrl.pathname)) {
     return NextResponse.rewrite(
       new URL(`/saas-indisponivel${request.nextUrl.pathname}`, request.url),

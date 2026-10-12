@@ -198,6 +198,13 @@ const nextConfig = {
        * Nomes antigos da assistente virtual. O Google chegou a rastrear
        * esses endereços e os registrava como 404 no Search Console.
        */
+      /**
+       * Páginas do site antigo em WordPress que o Google ainda conhecia
+       * (Search Console, 2026-10-12). O resto do WordPress responde 410
+       * em `src/proxy.ts`.
+       */
+      { source: "/home", destination: "/", permanent: true },
+      { source: "/quem-somos", destination: "/sobre", permanent: true },
       { source: "/bia", destination: "/", permanent: true },
       { source: "/daniella", destination: "/", permanent: true },
       {
