@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   title: "Armel-x Tecnologia",
   description: "A parceria entre a WJB Assessoria Contábil e a Armel-x Tecnologia.",
   openGraph: {
-    images: [{ url: "/images/og/armelx.webp", width: 1200, height: 630 }],
+    images: [{ url: "/images/og/armelx.jpg", width: 1200, height: 630 }],
   },
 };
 

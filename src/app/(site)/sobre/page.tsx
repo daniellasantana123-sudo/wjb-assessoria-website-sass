@@ -26,6 +26,9 @@ import { cn, staticCardHoverClass } from "@/lib/utils";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/sobre" },
+  openGraph: {
+    images: [{ url: "/images/og/sobre.jpg", width: 1200, height: 630 }],
+  },
   title: {
     absolute: "Sobre a WJB Assessoria Contábil | Contabilidade e Consultoria",
   },

@@ -20,6 +20,8 @@ export interface ServicePage {
   title: string;
   category: string;
   shortDescription: string;
+  /** Descrição para o Google quando `shortDescription` é curta demais (ideal: 120 a 160 caracteres). */
+  seoDescription?: string;
   includes: string[];
   note?: string;
   /** Quando definido, embute o LeadForm na página com este contexto (seção 19). */
@@ -218,6 +220,8 @@ export const servicePages: ServicePage[] = [
     title: "Recuperação Tributária",
     category: "Fiscal e Tributário",
     shortDescription: "Recuperação tributária quando aplicável ao seu caso.",
+    seoDescription:
+      "Recuperação tributária na WJB Assessoria Contábil: analisamos a situação fiscal da sua empresa para identificar, quando aplicável, valores a recuperar.",
     includes: ["Recuperação tributária"],
     note: "Aplicável conforme diagnóstico da situação fiscal da sua empresa.",
     image: {

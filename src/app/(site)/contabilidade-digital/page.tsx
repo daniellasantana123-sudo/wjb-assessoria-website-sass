@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description:
     "Contabilidade organizada, acessível e conectada à rotina da sua empresa, com suporte humano por trás.",
   openGraph: {
-    images: [{ url: "/images/og/contabilidade-digital.webp", width: 1200, height: 630 }],
+    images: [{ url: "/images/og/contabilidade-digital.jpg", width: 1200, height: 630 }],
   },
 };
 

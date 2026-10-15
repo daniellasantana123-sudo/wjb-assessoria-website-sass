@@ -10,13 +10,17 @@ import { faqItems } from "@/content/faq";
 
 import { SectionHeading } from "./section-heading";
 
-export function Faq() {
+/**
+ * `headingLevel` (2026-10-14, auditoria): na Home o FAQ é uma seção (h2); em
+ * /duvidas ele é o conteúdo da página e o título precisa ser o h1 dela.
+ */
+export function Faq({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2" } = {}) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <section className="border-border border-b">
       <Container className="py-16 sm:py-20">
-        <SectionHeading eyebrow="FAQ" title="Dúvidas frequentes" />
+        <SectionHeading eyebrow="FAQ" title="Dúvidas frequentes" as={headingLevel} />
         <div className="divide-border mx-auto mt-10 max-w-2xl divide-y">
           {faqItems.map((item, index) => {
             const isOpen = openIndex === index;

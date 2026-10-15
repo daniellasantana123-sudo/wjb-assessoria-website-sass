@@ -325,6 +325,6 @@ export const servicesMenuPromoImage: PageImage = {
 
 /** WJB_Assets_Imagens_V1.md, seção 12 — 1200×630, só para páginas reais. */
 export function getServiceOgImage(slug: string): string {
-  return `/images/og/servico-${slug}.webp`;
+  return `/images/og/servico-${slug}.jpg`;
 }
 

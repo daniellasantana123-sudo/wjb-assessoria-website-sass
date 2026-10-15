@@ -18,8 +18,11 @@ import {
 
 export const metadata: Metadata = {
   alternates: { canonical: "/contato" },
+  openGraph: {
+    images: [{ url: "/images/og/contato.jpg", width: 1200, height: 630 }],
+  },
   title: "Contato",
-  description: "Fale com um contador da WJB Assessoria Contábil.",
+  description: "Fale com um contador da WJB Assessoria Contábil pelo WhatsApp, por e-mail ou pelo formulário. Nosso escritório fica no Brooklin, em São Paulo (SP).",
 };
 
 /**

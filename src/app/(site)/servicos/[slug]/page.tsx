@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   return {
     title: service.title,
-    description: service.shortDescription,
+    description: service.seoDescription ?? service.shortDescription,
     alternates: { canonical: `/servicos/${service.slug}` },
     openGraph: {
       images: [{ url: getServiceOgImage(service.slug), width: 1200, height: 630 }],

@@ -25,6 +25,13 @@ export interface BlogSource {
 export interface BlogPost {
   slug: string;
   title: string;
+  /**
+   * Título para o Google (aba do navegador e resultado de busca), quando
+   * `title` passa de ~60 caracteres e seria cortado (2026-10-14, auditoria).
+   * Usado como título absoluto: já inclui "| WJB". O H1 da página continua
+   * sendo `title`.
+   */
+  seoTitle?: string;
   /** Meta description (SEO) — WJB_Blog_Conteudos_V1.md, frontmatter de cada artigo. */
   description: string;
   excerpt: string;
@@ -86,6 +93,7 @@ export const blogPosts: BlogPost[] = [
     slug: "nota-fiscal-reforma-tributaria-ibs-cbs",
     title:
       "Nota fiscal na Reforma Tributária: por que o que você emite passa a valer como declaração de imposto",
+    seoTitle: "Nota fiscal na Reforma Tributária: o que muda | WJB",
     description:
       "Com IBS e CBS destacados na nota, o documento fiscal passa a alimentar a apuração do imposto e o crédito do seu cliente. Veja o cronograma, os erros mais comuns e como se preparar ainda em 2026.",
     excerpt:
@@ -228,6 +236,7 @@ export const blogPosts: BlogPost[] = [
     slug: "reforma-tributaria-como-preparar-empresa",
     title:
       "Reforma Tributária em 2026: como preparar sua empresa para CBS, IBS e a transição",
+    seoTitle: "Reforma Tributária 2026: como preparar sua empresa | WJB",
     description:
       "Entenda o que muda com CBS e IBS em 2026, quais áreas da empresa precisam ser revisadas e como se preparar para a transição da Reforma Tributária do Consumo.",
     excerpt:
@@ -364,6 +373,7 @@ export const blogPosts: BlogPost[] = [
     slug: "planejamento-tributario-para-empresas",
     title:
       "Planejamento Tributário: como pagar o que é devido com segurança e estratégia",
+    seoTitle: "Planejamento Tributário: pague o devido com segurança | WJB",
     description:
       "Veja como o planejamento tributário ajuda empresas a escolher regimes, revisar operações e reduzir desperdícios fiscais dentro da lei.",
     excerpt:
@@ -514,6 +524,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "como-evitar-pagar-impostos-a-mais",
     title: "Como evitar pagar impostos indevidamente a mais na sua empresa",
+    seoTitle: "Como evitar pagar impostos a mais na empresa | WJB",
     description:
       "Veja onde surgem pagamentos tributários indevidos, como revisar cadastros e apurações e quando um diagnóstico tributário pode identificar oportunidades.",
     excerpt:
@@ -644,6 +655,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "simples-nacional-guia-empresas",
     title: "Simples Nacional em 2026: como funciona e quando ele pode ser vantajoso",
+    seoTitle: "Simples Nacional 2026: como funciona e quando vale | WJB",
     description:
       "Entenda como funciona o Simples Nacional, quem pode optar, por que nem sempre é o regime mais barato e o que muda com a Reforma Tributária.",
     excerpt:
@@ -776,6 +788,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "lucro-presumido-como-funciona",
     title: "Lucro Presumido: como funciona e quando vale comparar com outros regimes",
+    seoTitle: "Lucro Presumido: como funciona e quando comparar | WJB",
     description:
       "Entenda a lógica do Lucro Presumido, principais tributos, cuidados com margens e quando comparar o regime com Simples Nacional e Lucro Real.",
     excerpt:
@@ -898,6 +911,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "como-abrir-empresa",
     title: "Como abrir uma empresa em 2026: do planejamento ao CNPJ e às licenças",
+    seoTitle: "Como abrir empresa em 2026: do plano ao CNPJ | WJB",
     description:
       "Veja o passo a passo para abrir uma empresa em 2026: viabilidade, CNAE, natureza jurídica, CNPJ, regime tributário, registro e licenciamento.",
     excerpt:
@@ -1041,6 +1055,7 @@ export const blogPosts: BlogPost[] = [
     slug: "como-trocar-de-contador",
     title:
       "Como trocar de contador com segurança: checklist para uma transição organizada",
+    seoTitle: "Como trocar de contador com segurança: checklist | WJB",
     description:
       "Saiba quando trocar de contador, quais documentos conferir e como organizar a transição sem perder prazos ou informações importantes.",
     excerpt:
@@ -1181,6 +1196,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "regularizacao-fiscal-empresa",
     title: "Regularização fiscal: o que fazer quando a empresa tem pendências",
+    seoTitle: "Regularização fiscal: o que fazer com pendências | WJB",
     description:
       "Entenda como diagnosticar pendências fiscais, diferenciar débitos e obrigações, consultar certidões e criar um plano de regularização da empresa.",
     excerpt:
@@ -1320,6 +1336,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "balanco-dre-decisoes",
     title: "Balanço e DRE: como transformar a contabilidade em decisões melhores",
+    seoTitle: "Balanço e DRE: contabilidade para decidir melhor | WJB",
     description:
       "Entenda como Balanço Patrimonial, DRE e indicadores contábeis ajudam empresários a avaliar lucro, caixa, endividamento e crescimento.",
     excerpt:
@@ -1452,6 +1469,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "contabilidade-digital",
     title: "Contabilidade Digital: tecnologia sem perder o atendimento humano",
+    seoTitle: "Contabilidade Digital com atendimento humano | WJB",
     description:
       "Entenda como a contabilidade digital organiza documentos, integra sistemas, melhora prazos e aproxima contador e empresário com mais informação.",
     excerpt:
@@ -1561,6 +1579,7 @@ export const blogPosts: BlogPost[] = [
     slug: "departamento-pessoal-folha",
     title:
       "Departamento Pessoal: como organizar folha, admissões e obrigações trabalhistas",
+    seoTitle: "Departamento Pessoal: folha, admissões e obrigações | WJB",
     description:
       "Veja como organizar folha de pagamento, admissões, férias, afastamentos e eventos do eSocial com processos e responsabilidades claras.",
     excerpt:
@@ -1683,6 +1702,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "gestao-prazos-obrigacoes",
     title: "Gestão de prazos contábeis: como evitar atrasos, multas e retrabalho",
+    seoTitle: "Prazos contábeis: como evitar atrasos e multas | WJB",
     description:
       "Aprenda a criar um calendário de obrigações e um fluxo entre empresa e contabilidade para reduzir atrasos, multas e retrabalho.",
     excerpt:
@@ -1791,6 +1811,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "automacao-processos-empresariais",
     title: "Automação de processos: por onde uma empresa deve começar",
+    seoTitle: "Automação de processos: por onde começar | WJB",
     description:
       "Veja como mapear tarefas repetitivas, escolher automações e integrar sistemas sem automatizar erros ou criar dependência tecnológica.",
     excerpt:
@@ -1899,6 +1920,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "dashboards-dados-gestao",
     title: "Dashboards empresariais: quais dados realmente ajudam a tomar decisões",
+    seoTitle: "Dashboards empresariais: dados que ajudam a decidir | WJB",
     description:
       "Aprenda a escolher indicadores, integrar dados financeiros e contábeis e construir dashboards que apoiem decisões em vez de apenas mostrar gráficos.",
     excerpt:
@@ -2013,6 +2035,7 @@ export const blogPosts: BlogPost[] = [
     slug: "inteligencia-artificial-negocios",
     title:
       "Inteligência Artificial nos negócios: como usar com produtividade, segurança e responsabilidade",
+    seoTitle: "Inteligência Artificial nos negócios com segurança | WJB",
     description:
       "Veja aplicações práticas de IA em pequenas e médias empresas, quais cuidados adotar com dados, revisão humana e como começar com baixo risco.",
     excerpt:

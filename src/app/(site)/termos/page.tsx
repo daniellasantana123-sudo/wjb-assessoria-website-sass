@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 export const metadata: Metadata = {
   alternates: { canonical: "/termos" },
   title: "Termos de Uso",
-  description: "Termos de Uso da WJB Assessoria Contábil.",
+  description: "Termos de Uso do site da WJB Assessoria Contábil: regras sobre o conteúdo publicado, links externos, disponibilidade do site, privacidade e canais de contato.",
 };
 
 /**

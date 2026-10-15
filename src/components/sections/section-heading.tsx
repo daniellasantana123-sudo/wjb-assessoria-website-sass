@@ -9,6 +9,7 @@ export function SectionHeading({
   align = "center",
   className,
   titleClassName,
+  as: Heading = "h2",
 }: {
   eyebrow?: string;
   title: ReactNode;
@@ -16,6 +17,8 @@ export function SectionHeading({
   align?: "left" | "center";
   className?: string;
   titleClassName?: string;
+  /** "h1" quando o heading é o título da página (ex.: /duvidas reaproveita o FAQ da Home). */
+  as?: "h1" | "h2";
 }) {
   return (
     <div
@@ -31,9 +34,9 @@ export function SectionHeading({
           {eyebrow}
         </p>
       ) : null}
-      <h2 className={cn("text-2xl font-bold tracking-tight sm:text-3xl", titleClassName)}>
+      <Heading className={cn("text-2xl font-bold tracking-tight sm:text-3xl", titleClassName)}>
         {title}
-      </h2>
+      </Heading>
       {description ? (
         <p className="text-muted-foreground mt-3 text-base">{description}</p>
       ) : null}

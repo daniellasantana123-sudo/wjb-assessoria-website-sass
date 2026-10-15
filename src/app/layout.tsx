@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     siteName,
     locale: "pt_BR",
     type: "website",
-    images: [{ url: "/images/og/home.webp", width: 1200, height: 630 }],
+    images: [{ url: "/images/og/home.jpg", width: 1200, height: 630 }],
   },
 };
 

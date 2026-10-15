@@ -8,7 +8,7 @@ import { RevealOnScroll } from "@/components/shared/reveal-on-scroll";
 export const metadata: Metadata = {
   alternates: { canonical: "/duvidas" },
   title: "Dúvidas",
-  description: "Perguntas frequentes sobre a WJB Assessoria Contábil.",
+  description: "Respostas sobre abertura de empresa, troca de contador, Simples Nacional, planejamento tributário, Departamento Pessoal e atendimento da WJB.",
 };
 
 export default function FaqPage() {
@@ -21,7 +21,7 @@ export default function FaqPage() {
           ganha a entrada padrão, que na Home já vem do `RevealOnScroll`
           em page.tsx e aqui não existia. */}
       <RevealOnScroll>
-        <Faq />
+        <Faq headingLevel="h1" />
       </RevealOnScroll>
     </>
   );

@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 export const metadata: Metadata = {
   alternates: { canonical: "/cookies" },
   title: "Cookies",
-  description: "Política de Cookies da WJB Assessoria Contábil.",
+  description: "Política de Cookies da WJB Assessoria Contábil: quais categorias de cookies o site pode usar, como funciona o seu consentimento e como falar com a nossa equipe.",
 };
 
 /**

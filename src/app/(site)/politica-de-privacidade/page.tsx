@@ -7,7 +7,7 @@ import { siteConfig } from "@/config/site";
 export const metadata: Metadata = {
   alternates: { canonical: "/politica-de-privacidade" },
   title: "Política de Privacidade",
-  description: "Política de Privacidade da WJB Assessoria Contábil.",
+  description: "Política de Privacidade da WJB Assessoria Contábil: como tratamos seus dados pessoais, quando são compartilhados, cookies e seus direitos pela LGPD.",
 };
 
 /**
