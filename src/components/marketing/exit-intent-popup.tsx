@@ -282,13 +282,13 @@ export function ExitIntentPopup() {
         </button>
 
         <div className="bg-brand-blue-800 flex flex-col gap-4 px-6 pt-8 pb-6 text-white md:p-8">
-          {/* Mesmo logo branco do rodapé (2026-10-16, a pedido do usuário). */}
+          {/* Mesmo logo branco do rodapé (2026-10-16); maior desde 2026-11-10, a pedido do usuário. */}
           <Image
             src="/brand/logos/logo-wjb-white.png"
             alt="WJB Assessoria Contábil"
             width={164}
             height={93}
-            className="h-12 w-auto shrink-0 self-start"
+            className="h-14 w-auto shrink-0 self-start md:h-[72px]"
           />
           <p className="text-xs font-semibold tracking-[0.14em] text-[#ffb27a] uppercase">Antes de sair</p>
           <h2 id={titleId} className="pr-8 text-2xl leading-tight font-semibold text-balance md:pr-0 md:text-[1.7rem]">

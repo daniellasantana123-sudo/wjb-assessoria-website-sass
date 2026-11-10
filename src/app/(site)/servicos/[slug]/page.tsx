@@ -320,12 +320,18 @@ export default async function ServicePage({
           <h2 className="text-foreground text-lg font-semibold">
             Outros serviços em {service.category}
           </h2>
+          {/*
+           * `inline-flex` no link (2026-11-10, bug no celular): o RevealStagger
+           * envolve cada item num <div>, então o link deixa de ser item do flex
+           * e volta a ser inline - o padding vertical não ocupa espaço na linha
+           * e a 2ª fileira de botões subia por cima da 1ª.
+           */}
           <RevealStagger className="mt-4 flex flex-wrap gap-3">
             {related.map((item) => (
               <Link
                 key={item.slug}
                 href={`/servicos/${item.slug}`}
-                className="border-border hover:border-primary hover:bg-muted focus-visible:ring-primary text-foreground rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="border-border hover:border-primary hover:bg-muted focus-visible:ring-primary text-foreground inline-flex min-h-10 items-center rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 {item.title}
               </Link>
