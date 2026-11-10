@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { getGtmId } from "@/config/analytics";
+import { getActiveMeasurementServices } from "@/config/analytics";
 import {
   getServerConsentSnapshot,
   getStoredConsent,
@@ -21,7 +21,7 @@ export function CookieConsentBanner() {
   );
 
   if (consent !== null) return null;
-  const measurementActive = getGtmId() !== null;
+  const measurementActive = getActiveMeasurementServices().googleAds;
 
   function handleChoice(choice: ConsentChoice) {
     storeConsent(choice);

@@ -15,10 +15,27 @@
  */
 export const analyticsConfig = {
   /** Contêiner Web do Google Tag Manager, formato `GTM-XXXXXXX`. */
-  gtmId: "",
+  gtmId: "GTM-TZKJ7CS8",
+  /**
+   * Marcar `true` só quando a tag correspondente estiver PUBLICADA no GTM.
+   * Controlam o texto do banner e da política de cookies, que não pode
+   * citar um serviço que o site ainda não usa.
+   */
+  services: {
+    googleAnalytics: false,
+    googleAds: false,
+  },
 } as const;
 
 const GTM_ID_PATTERN = /^GTM-[A-Z0-9]{4,12}$/;
+
+export function getActiveMeasurementServices() {
+  const active = getGtmId() !== null;
+  return {
+    googleAnalytics: active && analyticsConfig.services.googleAnalytics,
+    googleAds: active && analyticsConfig.services.googleAds,
+  };
+}
 
 export function getGtmId(): string | null {
   const id = analyticsConfig.gtmId.trim();

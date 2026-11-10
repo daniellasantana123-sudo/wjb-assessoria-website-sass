@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { CookiePreferencesButton } from "@/components/shared/cookie-preferences-button";
-import { getGtmId } from "@/config/analytics";
+import { getActiveMeasurementServices } from "@/config/analytics";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -24,7 +24,8 @@ export const metadata: Metadata = {
  * recomendada, como nas demais páginas legais.
  */
 export default function CookiesPage() {
-  const measurementActive = getGtmId() !== null;
+  const services = getActiveMeasurementServices();
+  const measurementActive = services.googleAnalytics || services.googleAds;
   return (
     <Container className="py-12 sm:py-16">
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Cookies" }]} />
@@ -63,12 +64,12 @@ export default function CookiesPage() {
                 <p className="text-foreground mt-1">
                   Quando utilizados, ajudam a entender de forma agregada como o site é
                   acessado e quais páginas são mais utilizadas.
-                  {measurementActive
+                  {services.googleAnalytics
                     ? " Usamos o Google Analytics, do Google, para esse fim."
                     : null}
                 </p>
               </div>
-              {measurementActive ? (
+              {services.googleAds ? (
                 <div>
                   <h3 className="text-foreground font-medium">Cookies de publicidade</h3>
                   <p className="text-foreground mt-1">
@@ -86,7 +87,7 @@ export default function CookiesPage() {
             <h2 className="text-foreground text-lg font-semibold">Consentimento</h2>
             <p className="text-foreground mt-2">
               {measurementActive
-                ? "Cookies de análise e de publicidade só são ativados depois que você clica em \"Aceitar todos\" no aviso de cookies. Se você recusar, nenhum deles é usado."
+                ? "Cookies de análise e de publicidade (quando usados) só são ativados depois que você clica em \"Aceitar todos\" no aviso de cookies. Se você recusar, nenhum deles é usado."
                 : "Quando houver cookies não essenciais sujeitos a consentimento, o site deverá oferecer uma ferramenta para aceitar ou rejeitar preferências."}
             </p>
           </section>
