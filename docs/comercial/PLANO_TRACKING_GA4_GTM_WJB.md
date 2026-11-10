@@ -18,20 +18,24 @@ Só o ID do GTM entra no código. Os outros dois são configurados dentro do GTM
 
 ## 3. Configuração dentro do GTM
 
-### Variáveis (Variáveis > Novo > Variável da camada de dados)
+### Variáveis (Variáveis > Nova > Variável da camada de dados)
 
-`event_id`, `form_id`, `service_name`, `service_id`, `link_location`, `lead_source`, `lead_medium`, `lead_campaign`, `landing_page`.
+Uma por parâmetro, com o título `DLV - <nome>`: `event_id`, `form_id`, `service_name`, `service_id`, `link_location`, `lead_source`, `lead_medium`, `lead_campaign`, `landing_page` e `method` (só usado no `sign_up`).
 
-### Acionadores (Acionadores > Novo > Evento personalizado)
+### Acionador (um só, "Eventos WJB")
 
-Um por evento do contrato: `generate_lead`, `click_whatsapp`, `form_start`, `view_service`, `select_service`, `chat_start`, `newsletter_signup`.
+Evento personalizado, com "Usar correspondência de regex" marcado e nome do evento:
+
+```
+^(generate_lead|click_whatsapp|form_start|view_service|select_service|chat_start|sign_up)$
+```
 
 ### Tags
 
 | Tag | Tipo | Acionador | Observação |
 | --- | --- | --- | --- |
 | Google tag (GA4) | Tag do Google, ID `G-...` | Initialization - All Pages | |
-| GA4 - eventos | Evento do GA4, nome `{{Event}}` | Os 7 acionadores acima | Enviar como parâmetros as variáveis da camada de dados |
+| GA4 - Eventos WJB | Evento do GA4, nome `{{Event}}` | Eventos WJB | Parâmetros: cada variável `DLV - ...` com o nome do parâmetro igual ao da variável |
 | Vinculador de conversões | Vinculador de conversões | All Pages | Necessário para o Google Ads ler o clique do anúncio |
 | Ads - Lead do site | Acompanhamento de conversões do Google Ads | `generate_lead` | ID e rótulo da ação; **ID da transação = `{{event_id}}`** (deduplicação) |
 | Ads - WhatsApp | Acompanhamento de conversões do Google Ads | `click_whatsapp` | Ação marcada como **secundária** no Google Ads |

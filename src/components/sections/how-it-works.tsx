@@ -16,7 +16,7 @@ const steps = [
   {
     step: "2",
     title: "Proposta e onboarding",
-    description: "Alinhamos escopo e organizamos a transição, sem burocracia para você.",
+    description: "Alinhamos o escopo e planejamos a transição com você.",
   },
   {
     step: "3",

@@ -26,7 +26,7 @@ const needs = [
   },
   {
     title: "Quero trocar de contador",
-    description: "Transição conduzida pela WJB, sem burocracia para você.",
+    description: "Transição planejada, com a WJB cuidando do contato com o contador anterior.",
     href: "/servicos/trocar-de-contador",
     icon: ArrowRightLeft,
   },

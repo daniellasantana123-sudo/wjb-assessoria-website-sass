@@ -17,9 +17,17 @@ import {
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { SectionHeading } from "@/components/sections/section-heading";
-import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scroll";
+import {
+  RevealOnScroll,
+  RevealStagger,
+} from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
-import { aboutImage, aboutOfficeImage, armelxImages, teamImages } from "@/config/images";
+import {
+  aboutImage,
+  aboutOfficeImage,
+  armelxImages,
+  teamImages,
+} from "@/config/images";
 import { headerCtas } from "@/config/navigation";
 import { siteConfig } from "@/config/site";
 import { cn, staticCardHoverClass } from "@/lib/utils";
@@ -33,7 +41,7 @@ export const metadata: Metadata = {
     absolute: "Sobre a WJB Assessoria Contábil | Contabilidade e Consultoria",
   },
   description:
-    "Conheça a WJB Assessoria Contábil, escritório em São Paulo com atendimento consultivo, soluções contábeis, fiscais, tributárias, trabalhistas e apoio tecnológico para empresas.",
+    "Conheça a WJB Assessoria Contábil, escritório em São Paulo com atendimento consultivo e soluções contábeis, fiscais, tributárias e trabalhistas para empresas.",
 };
 
 /** Cada card corresponde a uma das 3 frases do título da seção (mesmo texto do doc mestre, só redistribuído). */
@@ -131,17 +139,34 @@ const attendanceHighlights = [
   },
 ];
 
-/** WJB_Conteudos_Incompletos_Implementacao_Claude.md + ajuste do usuário em 2026-08-31. */
-const teamMembers = [
+/**
+ * WJB_Conteudos_Incompletos_Implementacao_Claude.md + ajuste do usuário em 2026-08-31.
+ *
+ * `image: null` (2026-11-10, ajustes finais comerciais): enquanto não houver
+ * foto oficial aprovada, o card mostra as iniciais sobre um fundo neutro da
+ * marca. Antes era uma imagem com "FOTO PENDENTE" escrito, visível a todo
+ * visitante. Nunca usar retrato genérico no lugar de uma pessoa real. Para
+ * publicar a foto, apontar `image` para `teamImages.<pessoa>` com o `src`
+ * da foto aprovada (a de Daniella já existe em
+ * `public/images/team/daniella-santana-portrait.webp`).
+ */
+const teamMembers: {
+  name: string;
+  initials: string;
+  roleLines: string[];
+  image: (typeof teamImages)[keyof typeof teamImages] | null;
+}[] = [
   {
     name: "Daniella Santana",
+    initials: "DS",
     roleLines: ["CEO, Founder", "Contadora"],
-    image: teamImages.daniellaSantana,
+    image: null,
   },
   {
     name: "Diego Júlio de Barros",
+    initials: "DB",
     roleLines: ["Cofundador", "Diretor do Departamento Fiscal"],
-    image: teamImages.diegoJulioDeBarros,
+    image: null,
   },
 ];
 
@@ -149,7 +174,9 @@ export default function AboutPage() {
   return (
     <>
       <Container className="py-12 sm:py-16">
-        <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Sobre" }]} />
+        <Breadcrumb
+          items={[{ label: "Home", href: "/" }, { label: "Sobre" }]}
+        />
 
         <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
           <div>
@@ -157,18 +184,21 @@ export default function AboutPage() {
               Sobre a WJB
             </p>
             <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-              Contabilidade para cuidar da empresa e das pessoas que constroem o negócio.
+              Contabilidade para cuidar da empresa e das pessoas que constroem o
+              negócio.
             </h1>
             <div className="text-muted-foreground mt-4 flex max-w-2xl flex-col gap-3 text-lg">
               <p>
-                A WJB Assessoria Contábil combina conhecimento técnico, atendimento
-                próximo e tecnologia para ajudar empresas a manterem suas obrigações em
-                dia, tomarem decisões com mais clareza e crescerem com segurança.
+                A WJB Assessoria Contábil combina conhecimento técnico,
+                atendimento próximo e tecnologia para ajudar empresas a manterem
+                suas obrigações em dia, tomarem decisões com mais clareza e
+                crescerem com segurança.
               </p>
               <p>
-                Nosso trabalho vai além do cumprimento de rotinas contábeis. Buscamos
-                compreender a realidade de cada negócio, antecipar riscos, organizar
-                informações e orientar o empresário para que ele possa decidir melhor.
+                Nosso trabalho vai além do cumprimento de rotinas contábeis.
+                Buscamos compreender a realidade de cada negócio, antecipar
+                riscos, organizar informações e orientar o empresário para que
+                ele possa decidir melhor.
               </p>
             </div>
 
@@ -181,7 +211,10 @@ export default function AboutPage() {
               >
                 {headerCtas.talkToAccountant.label}
               </Link>
-              <Link href="/servicos" className={buttonVariants({ variant: "outline" })}>
+              <Link
+                href="/servicos"
+                className={buttonVariants({ variant: "outline" })}
+              >
                 Conhecer nossos serviços
               </Link>
             </div>
@@ -200,7 +233,10 @@ export default function AboutPage() {
         </div>
       </Container>
 
-      <RevealOnScroll as="section" className="border-border bg-muted/30 border-y">
+      <RevealOnScroll
+        as="section"
+        className="border-border bg-muted/30 border-y"
+      >
         <Container className="py-16 sm:py-20">
           <SectionHeading title="Pessoas em primeiro lugar. Clareza para decidir. Excelência para crescer." />
           <RevealStagger
@@ -218,8 +254,12 @@ export default function AboutPage() {
                 <span className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-md">
                   <card.icon aria-hidden="true" className="h-5 w-5" />
                 </span>
-                <span className="text-foreground font-medium">{card.title}</span>
-                <span className="text-muted-foreground text-sm">{card.description}</span>
+                <span className="text-foreground font-medium">
+                  {card.title}
+                </span>
+                <span className="text-muted-foreground text-sm">
+                  {card.description}
+                </span>
               </div>
             ))}
           </RevealStagger>
@@ -244,15 +284,22 @@ export default function AboutPage() {
                 <span className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-md">
                   <card.icon aria-hidden="true" className="h-5 w-5" />
                 </span>
-                <span className="text-foreground font-medium">{card.title}</span>
-                <span className="text-muted-foreground text-sm">{card.description}</span>
+                <span className="text-foreground font-medium">
+                  {card.title}
+                </span>
+                <span className="text-muted-foreground text-sm">
+                  {card.description}
+                </span>
               </div>
             ))}
           </RevealStagger>
         </Container>
       </RevealOnScroll>
 
-      <RevealOnScroll as="section" className="border-border bg-muted/30 border-b">
+      <RevealOnScroll
+        as="section"
+        className="border-border bg-muted/30 border-b"
+      >
         <Container className="py-16 sm:py-20">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-12">
             <div>
@@ -262,14 +309,15 @@ export default function AboutPage() {
                 title="Quando contabilidade e tecnologia trabalham juntas, a gestão fica mais simples."
               />
               <p className="text-muted-foreground mt-6 max-w-xl text-lg">
-                A WJB Assessoria Contábil atua em parceria com a Armel-x Tecnologia para
-                aproximar contabilidade, processos digitais, automação, dados e soluções
-                de software.
+                A WJB Assessoria Contábil atua em parceria com a Armel-x
+                Tecnologia para aproximar contabilidade, processos digitais,
+                automação, dados e soluções de software.
                 <br />
                 <br />
-                Essa integração amplia a capacidade de apoiar empresas que precisam
-                organizar rotinas, conectar sistemas, automatizar processos e
-                transformar dados em informações úteis para a gestão.
+                Essa integração amplia a capacidade de apoiar empresas que
+                precisam organizar rotinas, conectar sistemas, automatizar
+                processos e transformar dados em informações úteis para a
+                gestão.
               </p>
             </div>
 
@@ -294,7 +342,10 @@ export default function AboutPage() {
                 key={item}
                 className="border-border bg-background flex items-start gap-2 rounded-md border p-4 text-sm"
               >
-                <Check aria-hidden="true" className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                <Check
+                  aria-hidden="true"
+                  className="text-primary mt-0.5 h-4 w-4 shrink-0"
+                />
                 <span className="text-foreground">{item}</span>
               </div>
             ))}
@@ -309,7 +360,10 @@ export default function AboutPage() {
             >
               Conhecer a Armel-x Tecnologia
             </a>
-            <Link href="/solucoes" className={buttonVariants({ variant: "outline" })}>
+            <Link
+              href="/solucoes"
+              className={buttonVariants({ variant: "outline" })}
+            >
               Conhecer nossas soluções
             </Link>
           </div>
@@ -324,7 +378,10 @@ export default function AboutPage() {
        * (`attendanceHighlights`, mesmo padrão do `HumanPlusTech` da Home)
        * em vez de texto corrido, diferenciando a seção das duas vizinhas.
        */}
-      <RevealOnScroll as="section" className="border-border bg-primary/5 border-b">
+      <RevealOnScroll
+        as="section"
+        className="border-border bg-primary/5 border-b"
+      >
         <Container className="py-16 sm:py-20">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-12">
             <div className="group relative aspect-[3/2] w-full overflow-hidden rounded-[10px] lg:order-2">
@@ -342,7 +399,10 @@ export default function AboutPage() {
                 title="Um escritório preparado para atender empresas em diferentes momentos."
                 description="Atendemos empresas que estão começando, negócios em crescimento e organizações que precisam reorganizar processos contábeis, fiscais, tributários, societários ou trabalhistas."
               />
-              <RevealStagger className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2" itemClassName="h-full">
+              <RevealStagger
+                className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2"
+                itemClassName="h-full"
+              >
                 {attendanceHighlights.map((item) => (
                   <div
                     key={item.title}
@@ -354,8 +414,12 @@ export default function AboutPage() {
                     <span className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-md">
                       <item.icon aria-hidden="true" className="h-4 w-4" />
                     </span>
-                    <p className="text-foreground mt-2 text-sm font-medium">{item.title}</p>
-                    <p className="text-muted-foreground mt-1 text-sm">{item.description}</p>
+                    <p className="text-foreground mt-2 text-sm font-medium">
+                      {item.title}
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      {item.description}
+                    </p>
                   </div>
                 ))}
               </RevealStagger>
@@ -364,7 +428,10 @@ export default function AboutPage() {
         </Container>
       </RevealOnScroll>
 
-      <RevealOnScroll as="section" className="border-border bg-muted/30 border-b">
+      <RevealOnScroll
+        as="section"
+        className="border-border bg-muted/30 border-b"
+      >
         <Container className="py-16 sm:py-20">
           <SectionHeading
             title="Especialistas trabalhando para dar segurança ao seu negócio."
@@ -372,15 +439,27 @@ export default function AboutPage() {
           />
           <RevealStagger className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-8 sm:grid-cols-2">
             {teamMembers.map((member) => (
-              <div key={member.name} className="flex flex-col items-center gap-4 text-center">
+              <div
+                key={member.name}
+                className="flex flex-col items-center gap-4 text-center"
+              >
                 <div className="group relative aspect-[4/5] w-40 overflow-hidden rounded-[10px] sm:w-48">
-                  <Image
-                    src={member.image.src}
-                    alt={member.image.alt}
-                    fill
-                    sizes="192px"
-                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  />
+                  {member.image ? (
+                    <Image
+                      src={member.image.src}
+                      alt={member.image.alt}
+                      fill
+                      sizes="192px"
+                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    />
+                  ) : (
+                    <div
+                      aria-hidden="true"
+                      className="bg-primary/10 text-primary flex h-full w-full items-center justify-center text-5xl font-semibold tracking-wide"
+                    >
+                      {member.initials}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="text-foreground font-medium">{member.name}</p>
@@ -400,8 +479,8 @@ export default function AboutPage() {
         <Container className="flex flex-col items-center gap-6 py-16 text-center sm:py-20">
           <SectionHeading title="Quer uma contabilidade mais próxima da realidade da sua empresa?" />
           <p className="text-muted-foreground max-w-xl">
-            Converse com a WJB e entenda como podemos apoiar sua empresa com organização,
-            clareza e acompanhamento contábil.
+            Converse com a WJB e entenda como podemos apoiar sua empresa com
+            organização, clareza e acompanhamento contábil.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link

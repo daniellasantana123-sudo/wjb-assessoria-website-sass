@@ -61,7 +61,7 @@ export function NewsletterForm() {
       // Inscrição não é lead comercial: evento próprio, que não deve virar
       // conversão no Google Ads.
       if (result?.persisted && result.leadId) {
-        pushEvent("newsletter_signup", { event_id: result.leadId, form_id: "Newsletter" });
+        pushEvent("sign_up", { event_id: result.leadId, method: "newsletter", form_id: "Newsletter" });
       }
       setStatus("success");
       reset();

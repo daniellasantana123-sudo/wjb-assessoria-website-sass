@@ -59,7 +59,7 @@ export const servicePages: ServicePage[] = [
     title: "Trocar de Contador",
     category: "Societário e Legalização",
     shortDescription:
-      "A WJB conduz a transição com o seu contador atual, sem burocracia para você.",
+      "A WJB conduz a transição com o seu contador atual e cuida do contato técnico e da documentação.",
     includes: ["Diagnóstico inicial", "Transição conduzida pela WJB", "Onboarding"],
     leadFormContext: "Trocar de Contador",
     image: {
@@ -101,6 +101,8 @@ export const servicePages: ServicePage[] = [
     title: "Fiscal e Tributário",
     category: "Fiscal e Tributário",
     shortDescription: "Apuração e obrigações fiscais em dia, no seu regime tributário.",
+    seoDescription:
+      "Apuração de impostos e obrigações fiscais em dia no Simples Nacional e no Lucro Presumido, com acompanhamento próximo da WJB Assessoria Contábil.",
     includes: [
       "Apuração",
       "Simples Nacional",
@@ -126,7 +128,7 @@ export const servicePages: ServicePage[] = [
     slug: "departamento-pessoal",
     title: "Departamento Pessoal",
     category: "Departamento Pessoal",
-    shortDescription: "Folha, admissões e obrigações trabalhistas sem dor de cabeça.",
+    shortDescription: "Folha, admissões e obrigações trabalhistas com acompanhamento especializado.",
     includes: [
       "Folha",
       "Pró-labore",
@@ -237,6 +239,8 @@ export const servicePages: ServicePage[] = [
     title: "Legalização e Societário",
     category: "Societário e Legalização",
     shortDescription: "Alterações societárias e transformações com segurança jurídica.",
+    seoDescription:
+      "Alteração contratual, mudança de endereço ou atividade, entrada e saída de sócios e transformação societária, com registro acompanhado pela WJB.",
     includes: ["Alteração", "Transformação", "Entrada e saída de sócios"],
     image: {
       src: "/images/services/corporate-legalization.webp",

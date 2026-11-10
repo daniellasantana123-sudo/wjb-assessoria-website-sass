@@ -34,6 +34,16 @@ export interface ServiceDetail {
   steps: ServiceStep[];
   /** Documentos ou informações que ajudam a começar. */
   documents?: string[];
+  /**
+   * "O que inclui" detalhado (2026-11-10, ajustes finais comerciais): quando
+   * existe, substitui a lista curta de `includes` de `service-pages.ts`, que
+   * nestas páginas eram rótulos de uma palavra ("CNAE", "Baixa"). O texto só
+   * reorganiza o que já está aprovado nas etapas e no documento do projeto -
+   * sem prazos, preços ou garantias.
+   */
+  scope?: ServiceStep[];
+  /** Ressalva do escopo (o que varia ou depende de contratação à parte). */
+  scopeNote?: string;
   faq: ServiceFaq[];
 }
 
@@ -90,6 +100,40 @@ export const serviceDetails: Record<string, ServiceDetail> = {
       "Descrição das atividades que a empresa vai exercer.",
       "Capital social e a participação de cada sócio.",
     ],
+    scope: [
+      {
+        title: "Análise da atividade e dos CNAEs",
+        description:
+          "Orientação para escolher as atividades (CNAEs) adequadas ao que a empresa vai fazer.",
+      },
+      {
+        title: "Estrutura da empresa",
+        description:
+          "Definição do tipo societário, dos sócios, do capital social e do regime tributário.",
+      },
+      {
+        title: "Viabilidade do endereço",
+        description:
+          "Consulta à prefeitura para confirmar se a atividade é permitida no endereço escolhido.",
+      },
+      {
+        title: "Registro e CNPJ",
+        description:
+          "Preparação do ato constitutivo, registro no órgão competente e acompanhamento da emissão do CNPJ.",
+      },
+      {
+        title: "Inscrições municipal e estadual",
+        description:
+          "Acompanhamento das inscrições que a atividade exigir e orientação sobre as licenças aplicáveis.",
+      },
+      {
+        title: "Início da operação",
+        description:
+          "Orientação sobre emissão de notas fiscais, obrigações mensais e a rotina contábil desde o começo.",
+      },
+    ],
+    scopeNote:
+      "Taxas públicas (como as da Junta Comercial e da prefeitura), certificado digital e licenças específicas da atividade variam conforme o caso e são detalhados na proposta.",
     faq: [
       {
         question: "Qual é o melhor tipo de empresa para mim?",
@@ -116,7 +160,7 @@ export const serviceDetails: Record<string, ServiceDetail> = {
 
   "trocar-de-contador": {
     intro:
-      "Trocar de contador é mais simples do que parece. A WJB conduz a transição com o seu contador atual, recebe a documentação e organiza tudo para que a rotina da sua empresa continue sem interrupção.",
+      "Trocar de contador é mais simples do que parece. A WJB conduz a transição com o seu contador atual, recebe a documentação e planeja a troca para que as obrigações da empresa continuem em dia durante a transição.",
     primaryCta: "Solicitar proposta para troca",
     whatsappMessage:
       "Olá! Vim pelo site da WJB e quero trocar de contador. Pode me ajudar?",
@@ -155,6 +199,35 @@ export const serviceDetails: Record<string, ServiceDetail> = {
       "Certificado digital da empresa, quando houver.",
       "Informações sobre funcionários e pró-labore, se a empresa tiver folha.",
     ],
+    scope: [
+      {
+        title: "Diagnóstico inicial",
+        description:
+          "Levantamento da situação da empresa, do regime tributário, da folha e das obrigações em andamento.",
+      },
+      {
+        title: "Definição do momento da troca",
+        description:
+          "Combinamos com você a data da transição, considerando o aviso previsto no contrato com o contador atual.",
+      },
+      {
+        title: "Contato com o contador anterior",
+        description:
+          "A WJB solicita e recebe a documentação contábil, fiscal e trabalhista, e orienta sobre o que cabe a cada parte.",
+      },
+      {
+        title: "Conferência das informações",
+        description:
+          "Conferimos o que foi recebido e apontamos o que precisa ser ajustado ou regularizado.",
+      },
+      {
+        title: "Início da rotina com a WJB",
+        description:
+          "Onboarding da empresa, rotina mensal organizada e canal direto com a equipe.",
+      },
+    ],
+    scopeNote:
+      "A data em que a WJB assume e a continuidade das entregas dependem do contrato com o contador anterior e da documentação recebida. Pendências da gestão anterior são apontadas e tratadas à parte.",
     faq: [
       {
         question: "Posso trocar de contador com a empresa funcionando?",
@@ -361,6 +434,29 @@ export const serviceDetails: Record<string, ServiceDetail> = {
           "Revisamos o planejamento quando a empresa ou a legislação mudam.",
       },
     ],
+    scope: [
+      {
+        title: "Levantamento dos números",
+        description: "Faturamento, despesas, folha e atividades da empresa.",
+      },
+      {
+        title: "Comparação de regimes",
+        description:
+          "Simples Nacional, Lucro Presumido e as alternativas que a legislação permite para o seu caso.",
+      },
+      {
+        title: "Recomendação com riscos",
+        description:
+          "As opções apresentadas com os cuidados e os riscos de cada uma.",
+      },
+      {
+        title: "Revisão periódica",
+        description:
+          "Atualização do planejamento quando a empresa ou a legislação mudam.",
+      },
+    ],
+    scopeNote:
+      "Não há garantia de redução de tributos: em alguns casos a análise confirma que o regime atual já é o mais adequado.",
     faq: [
       {
         question: "Planejamento tributário é legal?",
@@ -406,6 +502,23 @@ export const serviceDetails: Record<string, ServiceDetail> = {
         title: "Acompanhamento da transição",
         description:
           "Atualizamos as orientações conforme novas regras forem regulamentadas.",
+      },
+    ],
+    scope: [
+      {
+        title: "Diagnóstico de impacto",
+        description:
+          "Como a CBS, o IBS e as demais mudanças atingem as atividades e as operações da empresa.",
+      },
+      {
+        title: "Plano de adaptação",
+        description:
+          "Ajustes indicados em processos, cadastros, notas fiscais e regime tributário.",
+      },
+      {
+        title: "Acompanhamento da transição",
+        description:
+          "Orientações atualizadas conforme novas regras forem regulamentadas.",
       },
     ],
     faq: [
@@ -465,6 +578,33 @@ export const serviceDetails: Record<string, ServiceDetail> = {
       "Certificado digital da empresa, quando houver.",
       "Notificações ou cobranças recebidas dos órgãos, se existirem.",
     ],
+    scope: [
+      {
+        title: "Levantamento de pendências",
+        description:
+          "Consulta aos órgãos para identificar débitos, declarações em atraso e restrições.",
+      },
+      {
+        title: "Plano de regularização",
+        description:
+          "Explicação de cada pendência e das alternativas, como parcelamentos previstos em lei.",
+      },
+      {
+        title: "Entrega do que está em atraso",
+        description:
+          "Regularização das obrigações e acompanhamento de cada pendência até a solução.",
+      },
+      {
+        title: "Certidões",
+        description: "Emissão das certidões possíveis depois da regularização.",
+      },
+      {
+        title: "Baixa da empresa",
+        description: "Condução do encerramento, quando a empresa vai fechar.",
+      },
+    ],
+    scopeNote:
+      "O prazo e a possibilidade de obter certidão negativa dependem das pendências e dos órgãos envolvidos.",
     faq: [
       {
         question: "Dá para regularizar uma empresa com muitas pendências?",
@@ -514,14 +654,14 @@ export const serviceDetails: Record<string, ServiceDetail> = {
     ],
     faq: [
       {
-        question: "Preciso ser cliente da contabilidade para contratar a consultoria?",
+        question:
+          "Preciso ser cliente da contabilidade para contratar a consultoria?",
         answer:
           "Não necessariamente. Conte sua necessidade e indicamos o formato mais adequado.",
       },
       {
         question: "A consultoria é pontual ou contínua?",
-        answer:
-          "Pode ser das duas formas, conforme a necessidade da empresa.",
+        answer: "Pode ser das duas formas, conforme a necessidade da empresa.",
       },
     ],
   },
@@ -554,6 +694,25 @@ export const serviceDetails: Record<string, ServiceDetail> = {
           "Quando aplicável, conduzimos a compensação ou a restituição pelos meios legais.",
       },
     ],
+    scope: [
+      {
+        title: "Análise de apurações e pagamentos",
+        description:
+          "Revisão para identificar se houve tributo pago a mais ou crédito não aproveitado.",
+      },
+      {
+        title: "Parecer",
+        description:
+          "O que foi encontrado, os riscos e o caminho para o pedido.",
+      },
+      {
+        title: "Pedido pelos meios legais",
+        description:
+          "Quando aplicável, condução da compensação ou da restituição.",
+      },
+    ],
+    scopeNote:
+      "Nem toda empresa tem valores a recuperar; só a análise confirma.",
     faq: [
       {
         question: "Toda empresa tem algo a recuperar?",
@@ -600,6 +759,23 @@ export const serviceDetails: Record<string, ServiceDetail> = {
       "Contrato social atual e alterações anteriores.",
       "Documentos dos sócios que entram ou saem, quando for o caso.",
       "Novo endereço ou novas atividades, quando for o caso.",
+    ],
+    scope: [
+      {
+        title: "Alteração contratual",
+        description:
+          "Mudança de endereço, atividades, capital social ou tipo societário, com o documento preparado e conferido com os sócios.",
+      },
+      {
+        title: "Entrada e saída de sócios",
+        description:
+          "Registro da nova composição e da divisão das cotas, com orientação sobre os efeitos para cada sócio.",
+      },
+      {
+        title: "Registro e atualização de cadastros",
+        description:
+          "Registro da alteração e atualização nos órgãos necessários.",
+      },
     ],
     faq: [
       {

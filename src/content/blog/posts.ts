@@ -95,7 +95,7 @@ export const blogPosts: BlogPost[] = [
       "Nota fiscal na Reforma Tributária: por que o que você emite passa a valer como declaração de imposto",
     seoTitle: "Nota fiscal na Reforma Tributária: o que muda | WJB",
     description:
-      "Com IBS e CBS destacados na nota, o documento fiscal passa a alimentar a apuração do imposto e o crédito do seu cliente. Veja o cronograma, os erros mais comuns e como se preparar ainda em 2026.",
+      "Com IBS e CBS destacados na nota, ela passa a alimentar a apuração do imposto e o crédito do seu cliente. Veja o cronograma e como se preparar ainda em 2026.",
     excerpt:
       "Com IBS e CBS destacados na nota, o documento fiscal passa a funcionar como uma declaração do imposto devido. Veja o cronograma e como evitar erros antes de 2027.",
     category: "Reforma Tributária",

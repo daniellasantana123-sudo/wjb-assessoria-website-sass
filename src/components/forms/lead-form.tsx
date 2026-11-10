@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { pushEvent } from "@/lib/analytics/datalayer";
-import { getAttributionParams, getTrackingParams } from "@/lib/analytics/tracking";
+import {
+  getAttributionParams,
+  getTrackingParams,
+} from "@/lib/analytics/tracking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +28,11 @@ export interface LeadFormProps {
   defaultMessage?: string;
   showServiceInterest?: boolean;
   showCompany?: boolean;
+  /**
+   * CNPJ é opcional; escondido onde a pessoa ainda não tem empresa (Abrir
+   * Empresa) ou o espaço é pequeno (assistente virtual). 2026-11-10.
+   */
+  showCnpj?: boolean;
   showCity?: boolean;
   showState?: boolean;
   showBusinessActivity?: boolean;
@@ -41,12 +49,12 @@ export interface LeadFormProps {
   onError?: () => void;
 }
 
-
 // zod só é baixado na primeira validação (ver lazy-resolver.ts).
 const leadFormSchemaResolver = lazyResolver(() =>
-  Promise.all([import("@hookform/resolvers/zod"), import("@/lib/validation/lead")]).then(([{ zodResolver }, mod]) =>
-    zodResolver(mod.leadFormSchema),
-  ),
+  Promise.all([
+    import("@hookform/resolvers/zod"),
+    import("@/lib/validation/lead"),
+  ]).then(([{ zodResolver }, mod]) => zodResolver(mod.leadFormSchema)),
 );
 
 export function LeadForm({
@@ -55,6 +63,7 @@ export function LeadForm({
   defaultMessage = "",
   showServiceInterest = true,
   showCompany = true,
+  showCnpj = true,
   showCity = false,
   showState = false,
   showBusinessActivity = false,
@@ -237,14 +246,16 @@ export function LeadForm({
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="cnpj">CNPJ (opcional)</Label>
-          <Input id="cnpj" autoComplete="off" {...register("cnpj")} />
-        </div>
+        {showCnpj ? (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="cnpj">CNPJ (opcional)</Label>
+            <Input id="cnpj" autoComplete="off" {...register("cnpj")} />
+          </div>
+        ) : null}
 
         {showCity ? (
           <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="city">Cidade</Label>
+            <Label htmlFor="city">Cidade (opcional)</Label>
             <Input
               id="city"
               autoComplete="address-level2"
@@ -255,7 +266,7 @@ export function LeadForm({
 
         {showState ? (
           <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="state">Estado</Label>
+            <Label htmlFor="state">Estado (opcional)</Label>
             <Select
               id="state"
               autoComplete="address-level1"
@@ -303,7 +314,9 @@ export function LeadForm({
 
         {showBusinessActivity ? (
           <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor="businessActivity">Ramo de atividade</Label>
+            <Label htmlFor="businessActivity">
+              Ramo de atividade (opcional)
+            </Label>
             <Select id="businessActivity" {...register("businessActivity")}>
               <option value="">Selecione o ramo de atividade</option>
               {activityOptions.map((activity) => (
@@ -318,7 +331,8 @@ export function LeadForm({
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="message">
-          {messageLabel} <span className="text-muted-foreground font-normal">(opcional)</span>
+          {messageLabel}{" "}
+          <span className="text-muted-foreground font-normal">(opcional)</span>
         </Label>
         <Textarea
           id="message"
@@ -340,9 +354,18 @@ export function LeadForm({
        * pelo teclado e escondido de leitores de tela. Quem preencher é
        * tratado como robô pelo servidor.
        */}
-      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-px w-px overflow-hidden"
+      >
         <label htmlFor="website">Não preencha este campo</label>
-        <input id="website" type="text" tabIndex={-1} autoComplete="off" {...register("website")} />
+        <input
+          id="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          {...register("website")}
+        />
       </div>
 
       <div className="flex flex-col gap-2">

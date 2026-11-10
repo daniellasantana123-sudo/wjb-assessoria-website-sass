@@ -9,7 +9,10 @@ import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { TrackServiceView } from "@/components/analytics/track-service-view";
 import { LeadForm } from "@/components/forms/lead-form";
 import { JsonLd } from "@/components/shared/json-ld";
-import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scroll";
+import {
+  RevealOnScroll,
+  RevealStagger,
+} from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
 import { getServiceOgImage } from "@/config/images";
 import { headerCtas } from "@/config/navigation";
@@ -36,7 +39,9 @@ export async function generateMetadata({
     description: service.seoDescription ?? service.shortDescription,
     alternates: { canonical: `/servicos/${service.slug}` },
     openGraph: {
-      images: [{ url: getServiceOgImage(service.slug), width: 1200, height: 630 }],
+      images: [
+        { url: getServiceOgImage(service.slug), width: 1200, height: 630 },
+      ],
     },
   };
 }
@@ -81,7 +86,10 @@ export default async function ServicePage({
       <TrackServiceView serviceId={service.slug} serviceName={service.title} />
       <Breadcrumb items={breadcrumbItems} />
 
-      <div data-analytics-location="servico-topo" className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
+      <div
+        data-analytics-location="servico-topo"
+        className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-12"
+      >
         <div>
           <p className="text-primary text-sm font-medium tracking-wide uppercase">
             {service.category}
@@ -94,7 +102,10 @@ export default async function ServicePage({
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a href="#formulario" className={buttonVariants({ variant: "cta" })}>
+            <a
+              href="#formulario"
+              className={buttonVariants({ variant: "cta" })}
+            >
               {detail?.primaryCta ?? headerCtas.requestProposal.label}
             </a>
             <Link
@@ -126,11 +137,19 @@ export default async function ServicePage({
       >
         {detail ? (
           <div>
-            <h2 className="text-foreground text-lg font-semibold">Para quem é</h2>
+            <h2 className="text-foreground text-lg font-semibold">
+              Para quem é
+            </h2>
             <ul className="mt-4 flex flex-col gap-3">
               {detail.audience.map((item) => (
-                <li key={item} className="text-foreground flex items-start gap-2 text-sm">
-                  <Check aria-hidden="true" className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                <li
+                  key={item}
+                  className="text-foreground flex items-start gap-2 text-sm"
+                >
+                  <Check
+                    aria-hidden="true"
+                    className="text-primary mt-0.5 h-4 w-4 shrink-0"
+                  />
                   {item}
                 </li>
               ))}
@@ -138,19 +157,48 @@ export default async function ServicePage({
           </div>
         ) : null}
         <div>
-          <h2 className="text-foreground text-lg font-semibold">O que inclui</h2>
+          <h2 className="text-foreground text-lg font-semibold">
+            O que inclui
+          </h2>
           <RevealStagger
             as="ul"
             itemAs="li"
             className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
           >
-            {service.includes.map((item) => (
-              <div key={item} className="text-foreground flex items-start gap-2 text-sm">
-                <Check aria-hidden="true" className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                {item}
-              </div>
-            ))}
+            {detail?.scope
+              ? detail.scope.map((item) => (
+                  <div
+                    key={item.title}
+                    className="text-foreground flex items-start gap-2 text-sm"
+                  >
+                    <Check
+                      aria-hidden="true"
+                      className="text-primary mt-0.5 h-4 w-4 shrink-0"
+                    />
+                    <span>
+                      <span className="font-semibold">{item.title}:</span>{" "}
+                      {item.description}
+                    </span>
+                  </div>
+                ))
+              : service.includes.map((item) => (
+                  <div
+                    key={item}
+                    className="text-foreground flex items-start gap-2 text-sm"
+                  >
+                    <Check
+                      aria-hidden="true"
+                      className="text-primary mt-0.5 h-4 w-4 shrink-0"
+                    />
+                    {item}
+                  </div>
+                ))}
           </RevealStagger>
+          {detail?.scopeNote ? (
+            <p className="text-muted-foreground mt-4 text-sm">
+              {detail.scopeNote}
+            </p>
+          ) : null}
           {service.note ? (
             <p className="text-muted-foreground mt-4 text-sm">{service.note}</p>
           ) : null}
@@ -158,8 +206,13 @@ export default async function ServicePage({
       </RevealOnScroll>
 
       {detail ? (
-        <RevealOnScroll as="section" className="border-border mt-12 border-t pt-8">
-          <h2 className="text-foreground text-lg font-semibold">Como funciona</h2>
+        <RevealOnScroll
+          as="section"
+          className="border-border mt-12 border-t pt-8"
+        >
+          <h2 className="text-foreground text-lg font-semibold">
+            Como funciona
+          </h2>
           <RevealStagger
             as="ol"
             itemAs="li"
@@ -173,8 +226,12 @@ export default async function ServicePage({
                 <span className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
                   {index + 1}
                 </span>
-                <h3 className="text-foreground mt-3 font-semibold">{step.title}</h3>
-                <p className="text-muted-foreground mt-1 text-sm">{step.description}</p>
+                <h3 className="text-foreground mt-3 font-semibold">
+                  {step.title}
+                </h3>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {step.description}
+                </p>
               </div>
             ))}
           </RevealStagger>
@@ -182,16 +239,27 @@ export default async function ServicePage({
       ) : null}
 
       {detail?.documents ? (
-        <RevealOnScroll as="section" className="border-border mt-12 border-t pt-8">
-          <h2 className="text-foreground text-lg font-semibold">O que ter em mãos</h2>
+        <RevealOnScroll
+          as="section"
+          className="border-border mt-12 border-t pt-8"
+        >
+          <h2 className="text-foreground text-lg font-semibold">
+            O que ter em mãos
+          </h2>
           <p className="text-muted-foreground mt-2 text-sm">
-            Não precisa ter tudo para começar: a equipe confirma o que falta na conversa
-            inicial.
+            Não precisa ter tudo para começar: a equipe confirma o que falta na
+            conversa inicial.
           </p>
           <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {detail.documents.map((item) => (
-              <li key={item} className="text-foreground flex items-start gap-2 text-sm">
-                <Check aria-hidden="true" className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+              <li
+                key={item}
+                className="text-foreground flex items-start gap-2 text-sm"
+              >
+                <Check
+                  aria-hidden="true"
+                  className="text-primary mt-0.5 h-4 w-4 shrink-0"
+                />
                 {item}
               </li>
             ))}
@@ -202,7 +270,9 @@ export default async function ServicePage({
       <div className="border-border mt-12 grid grid-cols-1 gap-10 border-t pt-8 lg:grid-cols-2">
         {detail ? (
           <RevealOnScroll as="section">
-            <h2 className="text-foreground text-lg font-semibold">Perguntas frequentes</h2>
+            <h2 className="text-foreground text-lg font-semibold">
+              Perguntas frequentes
+            </h2>
             <div className="divide-border border-border mt-4 divide-y border-y">
               {detail.faq.map((item) => (
                 <details key={item.question} className="group py-1">
@@ -213,7 +283,9 @@ export default async function ServicePage({
                       className="text-muted-foreground h-4 w-4 shrink-0 transition-transform group-open:rotate-180"
                     />
                   </summary>
-                  <p className="text-muted-foreground pb-3 text-sm">{item.answer}</p>
+                  <p className="text-muted-foreground pb-3 text-sm">
+                    {item.answer}
+                  </p>
                 </details>
               ))}
             </div>
@@ -225,14 +297,15 @@ export default async function ServicePage({
             {service.title}: fale com a WJB
           </h2>
           <p className="text-muted-foreground mt-2 text-sm">
-            Preencha os dados abaixo e um contador da WJB entra em contato. Atendimento de
-            segunda a sexta, das 9h às 18h.
+            Preencha os dados abaixo e um contador da WJB entra em contato.
+            Atendimento de segunda a sexta, das 9h às 18h.
           </p>
           <div className="mt-6">
             <LeadForm
               formContext={service.leadFormContext ?? service.title}
               defaultServiceInterest={service.title}
               showServiceInterest={false}
+              showCnpj={service.slug !== "abrir-empresa"}
               submitLabel={detail?.primaryCta ?? "Enviar"}
             />
           </div>
@@ -240,7 +313,10 @@ export default async function ServicePage({
       </div>
 
       {related.length > 0 ? (
-        <RevealOnScroll as="section" className="border-border mt-12 border-t pt-8">
+        <RevealOnScroll
+          as="section"
+          className="border-border mt-12 border-t pt-8"
+        >
           <h2 className="text-foreground text-lg font-semibold">
             Outros serviços em {service.category}
           </h2>

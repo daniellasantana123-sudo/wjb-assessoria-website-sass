@@ -20,7 +20,7 @@ Fonte de verdade dos eventos que o site envia ao Google Tag Manager. Código: `s
 | `view_service` | Abertura de uma página de serviço. | `service_id` (slug), `service_name` | Não |
 | `select_service` | Escolha de um serviço no assistente virtual. | `service_id`, `link_location` | Não |
 | `chat_start` | Abertura do painel do assistente virtual. | `link_location` (`botao`, `direct_link`) | Não |
-| `newsletter_signup` | Inscrição na newsletter gravada. | `event_id`, `form_id` | Não |
+| `sign_up` | Inscrição na newsletter gravada (evento recomendado do GA4). | `event_id`, `method` (`newsletter`), `form_id` | Não |
 
 Todo evento leva também `page_path`.
 

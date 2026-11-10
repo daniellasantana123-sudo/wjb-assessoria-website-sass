@@ -19,7 +19,7 @@ export type AnalyticsEventName =
   | "generate_lead"
   | "click_whatsapp"
   | "chat_start"
-  | "newsletter_signup";
+  | "sign_up";
 
 export type AnalyticsParams = Partial<Record<(typeof ALLOWED_PARAMS)[number], string | number | boolean>>;
 
@@ -35,6 +35,7 @@ export const ALLOWED_PARAMS = [
   "lead_source",
   "lead_medium",
   "lead_campaign",
+  "method",
 ] as const;
 
 const MAX_VALUE_LENGTH = 100;

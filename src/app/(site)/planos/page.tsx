@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/planos" },
   title: { absolute: "Planos de Contabilidade | WJB Assessoria Contábil" },
   description:
-    "Compare os planos mensais da WJB para MEI, Simples Nacional e Lucro Presumido e fale com a nossa equipe para receber o valor da contabilidade de acordo com o perfil da sua empresa.",
+    "Compare os planos mensais da WJB para MEI, Simples Nacional e Lucro Presumido e fale com a nossa equipe para receber o valor de acordo com a sua empresa.",
 };
 
 const breadcrumbItems = [{ label: "Home", href: "/" }, { label: "Planos" }];

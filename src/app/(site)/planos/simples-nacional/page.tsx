@@ -5,7 +5,7 @@ import { getPlan } from "@/config/plans";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/planos/simples-nacional" },
-  title: "Contabilidade para Simples Nacional | WJB",
+  title: { absolute: "Contabilidade para Simples Nacional | WJB Assessoria Contábil" },
   description:
     "Plano contábil para empresas do Simples Nacional com apuração fiscal, contabilidade, folha e atendimento consultivo.",
 };

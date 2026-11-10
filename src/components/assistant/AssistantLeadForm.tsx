@@ -64,6 +64,7 @@ export function AssistantLeadForm({
       defaultMessage={defaultMessage}
       showServiceInterest={false}
       showCompany={false}
+      showCnpj={false}
       submitLabel="Enviar e abrir WhatsApp"
       onSuccess={handleSuccess}
       onError={handleError}

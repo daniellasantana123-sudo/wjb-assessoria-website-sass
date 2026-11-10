@@ -176,7 +176,7 @@ export const teamImages = {
    */
   daniellaSantana: {
     src: "/images/team/daniella-santana-portrait-placeholder.webp",
-    alt: "Retrato de Daniella Santana, CEO e fundadora da WJB (foto pendente)",
+    alt: "Retrato de Daniella Santana, CEO e fundadora da WJB",
     width: 1200,
     height: 1500,
   },
