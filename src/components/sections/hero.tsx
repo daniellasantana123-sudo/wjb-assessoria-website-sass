@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Fade from "embla-carousel-fade";
@@ -21,6 +22,7 @@ import { Container } from "@/components/layout/container";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
@@ -107,7 +109,43 @@ const heroSlideBadges: HeroSlideBadge[] = [
   },
 ];
 
+/**
+ * Fotos 2 a 9 do carrossel só entram depois que a página termina de
+ * carregar (2026-11-10, Fase 5 do plano comercial - LCP do celular).
+ * Como o efeito fade empilha todos os slides no mesmo lugar, `loading="lazy"`
+ * não segurava nada: o celular baixava ~430 KB de fotos que ninguém vê na
+ * abertura, disputando banda com a 1ª foto (o LCP). O carrossel não troca
+ * sozinho, então as outras só são necessárias quando a pessoa clica na seta -
+ * qualquer interação também libera as fotos na hora.
+ */
+function useDeferredSlides() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const release = () => {
+      timer = setTimeout(() => setReady(true), 1500);
+    };
+    if (document.readyState === "complete") release();
+    else window.addEventListener("load", release, { once: true });
+    return () => {
+      window.removeEventListener("load", release);
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
+
+  const setApi = useCallback((api: CarouselApi) => {
+    if (!api) return;
+    const releaseNow = () => setReady(true);
+    api.on("pointerDown", releaseNow);
+    api.on("select", releaseNow);
+  }, []);
+
+  return { ready, setApi };
+}
+
 export function Hero() {
+  const { ready: slidesReady, setApi } = useDeferredSlides();
   return (
     <section className="border-border relative overflow-hidden border-b">
       {/*
@@ -135,7 +173,9 @@ export function Hero() {
           <h1 className="anim-fade-up font-noto-sans-thai max-w-xl text-4xl font-bold tracking-tight sm:text-5xl">
             {/* Título comercial (2026-11-09, plano comercial aprovado pela WJB). */}
             <span className="text-primary">Contabilidade especializada</span>{" "}
-            <span className="text-foreground">para sua empresa crescer com segurança.</span>
+            <span className="text-foreground">
+              para sua empresa crescer com segurança.
+            </span>
           </h1>
           {/*
            * Entrada orquestrada (2026-09-17, a pedido do usuário —
@@ -193,6 +233,7 @@ export function Hero() {
         <Carousel
           opts={{ loop: true }}
           plugins={heroCarouselPlugins}
+          setApi={setApi}
           className="w-full"
         >
           <CarouselContent className="ml-0">
@@ -225,15 +266,17 @@ export function Hero() {
                      * none` (ver hero.tsx acima), então só o slide realmente
                      * visível reage ao hover do mouse.
                      */}
-                    <Image
-                      src={slide.src}
-                      alt={slide.alt}
-                      fill
-                      loading={index === 0 ? "eager" : "lazy"}
-                      fetchPriority={index === 0 ? "high" : "low"}
-                      sizes="(min-width: 1024px) 50vw, 100vw"
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                    />
+                    {index === 0 || slidesReady ? (
+                      <Image
+                        src={slide.src}
+                        alt={slide.alt}
+                        fill
+                        loading={index === 0 ? "eager" : "lazy"}
+                        fetchPriority={index === 0 ? "high" : "low"}
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      />
+                    ) : null}
                     {/*
                      * Gradiente preto (2026-09-17, a pedido do usuário —
                      * voltar do laranja pro preto; o laranja tinha sido pedido

@@ -18,30 +18,33 @@ import "./globals.css";
  */
 const sourceSans3 = Source_Sans_3({
   variable: "--font-source-sans-3",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
 });
 
 const lexend = Lexend({
   variable: "--font-lexend",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
 });
 
 /**
  * Noto Sans Thai (2026-09-17, a pedido do usuário — trocar de novo a fonte
  * do H1 do Hero, antes Oxanium desde 2026-09-14). Mesmo padrão de
- * self-host via `next/font/google` do Inter/Oxanium. `subsets` inclui
- * `latin-ext` além de `latin` — o pacote "latin" puro do Google Fonts não
- * cobre todos os acentos do português (ex.: ê/ã/ç), e o nome da fonte
- * sugere script tailandês, mas o arquivo real cobre os 3 scripts (`latin`,
- * `latin-ext`, `thai`, confirmado em `font-data.json` do pacote `next`
- * antes de usar). Fonte variável (peso 100-900, eixo `wdth` 62.5-100) —
+ * self-host via `next/font/google` do Inter/Oxanium. O nome da fonte
+ * sugere script tailandês, mas o arquivo real também cobre `latin`
+ * (confirmado em `font-data.json` do pacote `next` antes de usar).
+ *
+ * Só o subset `latin` nas 3 fontes (2026-11-10, Fase 5 do plano comercial):
+ * ele já cobre todo o português (U+0000-00FF inclui ã/ç/ê/õ). O `latin-ext`
+ * não acrescentava nenhum caractere usado no site (conferido com grep no
+ * conteúdo) e dobrava as fontes pré-carregadas com prioridade alta - 6
+ * arquivos (~210 KB) disputando banda com a foto principal no celular. Fonte variável (peso 100-900, eixo `wdth` 62.5-100) —
  * sem passar `weight`, o Next carrega o range inteiro; o H1 usa
  * `font-semibold` (600, pedido explícito do usuário) via Tailwind, `wdth`
  * fica no valor default (100), sem precisar de CSS extra.
  */
 const notoSansThai = Noto_Sans_Thai({
   variable: "--font-noto-sans-thai",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
 });
 
 const siteName = "WJB Assessoria Contábil";
