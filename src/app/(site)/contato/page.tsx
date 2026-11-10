@@ -2,7 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { FileText, Mail, MapPin } from "lucide-react";
+import { Clock, FileText, Mail, MapPin } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
@@ -132,6 +132,10 @@ export default function ContactPage() {
               {phone.display}
             </ContactRow>
           ))}
+
+          <ContactRow icon={Clock} label="Horário de atendimento">
+            {siteConfig.businessHours.display}
+          </ContactRow>
 
           <ContactRow icon={MapPin} label="Endereço" href={getAddressMapUrl()}>
             {siteConfig.address.full}

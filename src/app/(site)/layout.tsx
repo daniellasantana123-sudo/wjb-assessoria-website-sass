@@ -1,5 +1,6 @@
 import { WJBAssistant } from "@/components/assistant/WJBAssistant";
 import { ExitIntentPopup } from "@/components/marketing/exit-intent-popup";
+import { FirstTouchCapture } from "@/components/marketing/first-touch-capture";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { JsonLd } from "@/components/shared/json-ld";
 import { MotionProvider } from "@/components/shared/motion-provider";
@@ -25,6 +26,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
       {children}
       <SiteFooter />
       <WJBAssistant />
+      <FirstTouchCapture />
       <ExitIntentPopup />
     </>
   );

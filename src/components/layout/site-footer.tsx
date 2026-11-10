@@ -167,6 +167,7 @@ export function SiteFooter() {
                 </a>
               </li>
             ))}
+            <li className="mt-1">Atendimento: {siteConfig.businessHours.display}</li>
           </ul>
           <div className="mt-4">
             <SocialLinks />

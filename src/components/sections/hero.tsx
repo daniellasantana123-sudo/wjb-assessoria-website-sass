@@ -133,10 +133,9 @@ export function Hero() {
       <Container className="relative grid grid-cols-1 items-center gap-10 py-16 lg:grid-cols-2 lg:gap-12 lg:py-24">
         <div className="flex flex-col items-center gap-8 text-center lg:items-start lg:text-left">
           <h1 className="anim-fade-up font-noto-sans-thai max-w-xl text-4xl font-bold tracking-tight sm:text-5xl">
-            <span className="text-primary">Sua empresa cresce melhor</span>{" "}
-            <span className="text-foreground">
-              quando você entende os números.
-            </span>
+            {/* Título comercial (2026-11-09, plano comercial aprovado pela WJB). */}
+            <span className="text-primary">Contabilidade especializada</span>{" "}
+            <span className="text-foreground">para sua empresa crescer com segurança.</span>
           </h1>
           {/*
            * Entrada orquestrada (2026-09-17, a pedido do usuário —
@@ -147,21 +146,30 @@ export function Hero() {
            * junto com o H1, entram em sequência logo atrás dele.
            */}
           <p className="anim-fade-up text-muted-foreground max-w-xl text-lg [animation-delay:120ms]">
-            Contabilidade consultiva, atendimento próximo e tecnologia para
-            manter sua empresa organizada, segura e pronta para crescer.
+            Da abertura da empresa ao planejamento tributário, a WJB oferece
+            assessoria contábil, fiscal e trabalhista com atendimento próximo,
+            tecnologia e orientação personalizada.
           </p>
-          <div className="anim-fade-up flex flex-wrap items-center justify-center gap-3 [animation-delay:240ms] lg:justify-start">
-            <Link
-              href={headerCtas.talkToAccountant.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonVariants({ variant: "cta", size: "lg" })}
-            >
-              Falar com um contador
-            </Link>
+          <div className="anim-fade-up flex flex-col items-center gap-3 [animation-delay:240ms] lg:items-start">
+            <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+              <Link
+                href={headerCtas.requestProposal.href}
+                className={buttonVariants({ variant: "cta", size: "lg" })}
+              >
+                Solicitar proposta
+              </Link>
+              <Link
+                href={headerCtas.talkToAccountant.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({ variant: "outline", size: "lg" })}
+              >
+                Falar com um contador
+              </Link>
+            </div>
             <Link
               href="/servicos"
-              className={buttonVariants({ variant: "outline", size: "lg" })}
+              className="text-primary focus-visible:ring-primary rounded-md text-sm font-medium underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Conhecer nossos serviços
             </Link>

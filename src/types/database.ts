@@ -12,7 +12,15 @@ export type ObligationStatus = "pending" | "done";
 /** Sistemas dos quais uma obrigação pode vir espelhada (migration 0020). */
 export type ExternalObligationSource = "omie_gclick";
 export type DocumentCategory = "documento" | "guia";
-export type LeadStatus = "new" | "contacted" | "won" | "lost";
+/** 7 etapas do funil comercial desde a migration 0023 (2026-11-09). */
+export type LeadStatus =
+  | "new"
+  | "contacted"
+  | "qualified"
+  | "proposal_sent"
+  | "negotiation"
+  | "won"
+  | "lost";
 export type TicketStatus = "open" | "in_progress" | "closed";
 export type AccountStatus = "active" | "suspended";
 export type FeatureFlagKey = "omie_gclick" | "documents" | "notifications";
@@ -260,6 +268,14 @@ export interface Database {
           utm_campaign: string | null;
           status: LeadStatus;
           created_at: string;
+          submission_id: string | null;
+          landing_page: string | null;
+          utm_term: string | null;
+          utm_content: string | null;
+          gclid: string | null;
+          assigned_to: string | null;
+          next_step: string | null;
+          status_changed_at: string | null;
         };
         Insert: {
           id?: string;
@@ -280,6 +296,14 @@ export interface Database {
           utm_campaign?: string | null;
           status?: LeadStatus;
           created_at?: string;
+          submission_id?: string | null;
+          landing_page?: string | null;
+          utm_term?: string | null;
+          utm_content?: string | null;
+          gclid?: string | null;
+          assigned_to?: string | null;
+          next_step?: string | null;
+          status_changed_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["leads"]["Insert"]>;
         Relationships: [];

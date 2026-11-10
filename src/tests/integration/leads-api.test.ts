@@ -144,6 +144,34 @@ describe("POST /api/leads", () => {
     });
   });
 
+  it("ignora em silêncio o envio de robô (campo-armadilha preenchido)", async () => {
+    insertMock.mockClear();
+    const response = await POST(makeRequest({ ...validPayload, website: "http://spam.example" }));
+    expect(response.status).toBe(200);
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it("trata envio repetido (mesmo submissionId) como já gravado", async () => {
+    insertMock.mockResolvedValueOnce({ error: { code: "23505", message: "duplicate" } });
+    const response = await POST(
+      makeRequest({ ...validPayload, submissionId: "6f1c9a52-2a0e-4f3b-9d2e-6c8b0e1a7d41" }),
+    );
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.duplicate).toBe(true);
+  });
+
+  it("grava sem as colunas novas quando a migration 0023 ainda não foi aplicada", async () => {
+    insertMock.mockClear();
+    insertMock.mockResolvedValueOnce({ error: { code: "PGRST204", message: "missing column" } });
+    const response = await POST(makeRequest(validPayload));
+    expect(response.status).toBe(200);
+    expect(insertMock).toHaveBeenCalledTimes(2);
+    expect(insertMock.mock.calls[1][0]).not.toHaveProperty("gclid");
+    const json = await response.json();
+    expect(json.leadId).toEqual(expect.any(String));
+  });
+
   it("responde 503 quando o insert falha, sem derrubar a rota", async () => {
     insertMock.mockResolvedValueOnce({ error: { message: "boom" } });
     const response = await POST(makeRequest(validPayload));

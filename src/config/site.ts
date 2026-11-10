@@ -35,6 +35,16 @@ export const siteConfig = {
       },
     ],
   },
+  /**
+   * Horário de atendimento (2026-11-09, informado pela WJB): segunda a
+   * sexta, das 9h às 18h. Fonte única para rodapé, Contato, FAQ e JSON-LD.
+   */
+  businessHours: {
+    display: "Segunda a sexta, das 9h às 18h",
+    days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    opens: "09:00",
+    closes: "18:00",
+  },
   address: {
     street: "Av. Engenheiro Luís Carlos Berrini, 1140",
     complement: "Conj. 72/211E",

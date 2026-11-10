@@ -55,6 +55,11 @@ export const faqItems: FaqItem[] = [
     linkLabel: "Conhecer a Contabilidade Digital",
   },
   {
+    question: "Qual é o horário de atendimento?",
+    answer:
+      "Atendemos de segunda a sexta, das 9h às 18h. Fora desse horário, você pode enviar sua mensagem pelo WhatsApp ou pelo formulário, e respondemos no próximo horário de atendimento.",
+  },
+  {
     question: "Como solicito uma proposta?",
     answer:
       "Acesse a página de contato, envie o formulário ou fale diretamente conosco pelo WhatsApp.",

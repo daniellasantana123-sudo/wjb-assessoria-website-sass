@@ -24,6 +24,12 @@ export function getOrganizationSchema() {
       postalCode: siteConfig.address.zipCode,
       addressCountry: "BR",
     },
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: siteConfig.businessHours.days,
+      opens: siteConfig.businessHours.opens,
+      closes: siteConfig.businessHours.closes,
+    },
     sameAs: [siteConfig.partners.armelx.website],
     employee: {
       "@type": "Person",
@@ -91,5 +97,32 @@ export function getBreadcrumbSchema(items: { label: string; href?: string }[]) {
       name: item.label,
       ...(item.href ? { item: `${base}${item.href}` } : {}),
     })),
+  };
+}
+
+/**
+ * `Service` de cada página de serviço (2026-11-09). Sem preço nem
+ * avaliação: o schema só descreve o que a página mostra.
+ */
+export function getServiceSchema(service: {
+  slug: string;
+  title: string;
+  shortDescription: string;
+  category: string;
+}) {
+  const base = getSiteUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description: service.shortDescription,
+    serviceType: service.category,
+    url: `${base}/servicos/${service.slug}`,
+    areaServed: { "@type": "Country", name: "Brasil" },
+    provider: {
+      "@type": "AccountingService",
+      name: siteConfig.company.name,
+      url: siteConfig.company.website,
+    },
   };
 }

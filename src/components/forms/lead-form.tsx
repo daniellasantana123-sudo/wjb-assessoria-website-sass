@@ -64,6 +64,10 @@ export function LeadForm({
 }: LeadFormProps) {
   const pathname = usePathname();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  // Um identificador por envio: se a pessoa clicar duas vezes ou tentar de
+  // novo após erro de rede, o servidor reconhece e não grava o lead em dobro.
+  // Renovado depois de cada envio bem-sucedido.
+  const [submissionId, setSubmissionId] = useState(() => crypto.randomUUID());
   const whatsAppFallbackLink = getWhatsAppLink(
     `Olá! Tentei enviar uma mensagem pelo site (${formContext}) e não consegui. Pode me ajudar por aqui?`,
   );
@@ -105,11 +109,13 @@ export function LeadForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...values,
+          submissionId,
           tracking: getTrackingParams(pathname),
         }),
       });
       if (!response.ok) throw new Error("request failed");
       setStatus("success");
+      setSubmissionId(crypto.randomUUID());
       reset({
         name: "",
         email: "",
@@ -285,10 +291,12 @@ export function LeadForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="message">{messageLabel}</Label>
+        <Label htmlFor="message">
+          {messageLabel} <span className="text-muted-foreground font-normal">(opcional)</span>
+        </Label>
         <Textarea
           id="message"
-          rows={5}
+          rows={4}
           aria-invalid={!!errors.message}
           aria-describedby={errors.message ? "message-error" : undefined}
           {...register("message")}
@@ -301,6 +309,15 @@ export function LeadForm({
       </div>
 
       <input type="hidden" {...register("formContext")} />
+      {/*
+       * Campo-armadilha contra robôs (2026-11-09): fora da tela, sem foco
+       * pelo teclado e escondido de leitores de tela. Quem preencher é
+       * tratado como robô pelo servidor.
+       */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label htmlFor="website">Não preencha este campo</label>
+        <input id="website" type="text" tabIndex={-1} autoComplete="off" {...register("website")} />
+      </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-start gap-2">

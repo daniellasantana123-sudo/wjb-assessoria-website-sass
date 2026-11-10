@@ -1,6 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowRightLeft, Building2, Compass, UserCheck } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowRightLeft,
+  Building2,
+  Calculator,
+  CalendarCheck,
+  Compass,
+  ShieldCheck,
+} from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { RevealStagger } from "@/components/shared/reveal-on-scroll";
@@ -23,16 +31,28 @@ const needs = [
     icon: ArrowRightLeft,
   },
   {
+    title: "Preciso regularizar a empresa",
+    description: "Pendências fiscais, certidões e situação cadastral em ordem.",
+    href: "/servicos/certidoes-regularizacao",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Contabilidade mensal",
+    description: "Contabilidade, fiscal e obrigações da sua empresa todo mês.",
+    href: "/servicos/contabilidade-completa",
+    icon: CalendarCheck,
+  },
+  {
+    title: "Planejamento tributário",
+    description: "Avaliação do regime e da carga tributária para decidir melhor.",
+    href: "/servicos/planejamento-tributario",
+    icon: Calculator,
+  },
+  {
     title: "Preciso de consultoria",
     description: "Diagnóstico contábil, fiscal e tributário para decidir melhor.",
     href: "/servicos/consultoria-contabil",
     icon: Compass,
-  },
-  {
-    title: "Já sou cliente",
-    description: "Acesse a Área do Cliente para acompanhar sua empresa.",
-    href: "/area-do-cliente",
-    icon: UserCheck,
   },
 ];
 
@@ -56,7 +76,7 @@ export function NeedsPicker() {
             description="Encontre a solução ideal para o momento da sua empresa. A WJB oferece orientação contábil, fiscal e tributária para ajudar você a tomar decisões com mais segurança, cumprir suas obrigações e focar no crescimento do seu negócio."
           />
         </div>
-        <RevealStagger className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <RevealStagger className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {needs.map((item) => (
             <Link
               key={item.href}

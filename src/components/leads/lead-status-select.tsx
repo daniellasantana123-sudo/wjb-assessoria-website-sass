@@ -6,11 +6,16 @@ import { updateLeadStatus } from "@/actions/leads";
 import { Select } from "@/components/ui/select";
 import type { LeadStatus } from "@/types/database";
 
+// Ordem = ordem do funil comercial (migration 0023). "contacted" e "won"
+// mantêm o valor antigo no banco e só mudaram de rótulo.
 const statusLabels: Record<LeadStatus, string> = {
   new: "Novo",
-  contacted: "Contatado",
-  won: "Convertido",
-  lost: "Perdido",
+  contacted: "Em atendimento",
+  qualified: "Qualificado",
+  proposal_sent: "Proposta enviada",
+  negotiation: "Negociação",
+  won: "Contratado",
+  lost: "Perdido ou desqualificado",
 };
 
 export function LeadStatusSelect({ leadId, status }: { leadId: string; status: LeadStatus }) {

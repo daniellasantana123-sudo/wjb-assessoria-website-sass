@@ -9,7 +9,7 @@ test("home carrega com o hero e navega para Serviços pelo mega menu", async ({
 
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Sua empresa cresce melhor",
+    "Contabilidade especializada",
   );
 
   await page

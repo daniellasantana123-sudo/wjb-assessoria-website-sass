@@ -38,8 +38,13 @@ describe("leadFormSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejeita mensagem muito curta", () => {
-    const result = leadFormSchema.safeParse({ ...validLeadPayload, message: "curta" });
+  it("aceita lead sem mensagem (opcional desde 2026-11-09)", () => {
+    const result = leadFormSchema.safeParse({ ...validLeadPayload, message: "" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejeita identificador de envio que não é UUID", () => {
+    const result = leadFormSchema.safeParse({ ...validLeadPayload, submissionId: "123" });
     expect(result.success).toBe(false);
   });
 

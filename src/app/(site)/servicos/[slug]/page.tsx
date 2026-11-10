@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
@@ -12,8 +12,10 @@ import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scr
 import { buttonVariants } from "@/components/ui/button";
 import { getServiceOgImage } from "@/config/images";
 import { headerCtas } from "@/config/navigation";
+import { getServiceDetail } from "@/config/service-details";
 import { getServicePage, servicePages } from "@/config/service-pages";
-import { getBreadcrumbSchema } from "@/lib/seo/schema";
+import { getWhatsAppLink } from "@/integrations/whatsapp";
+import { getBreadcrumbSchema, getServiceSchema } from "@/lib/seo/schema";
 
 export function generateStaticParams() {
   return servicePages.map((service) => ({ slug: service.slug }));
@@ -38,6 +40,14 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * Página de serviço orientada a conversão (2026-11-09, Fase 3 do plano
+ * comercial). Ordem pensada para quem chega pelo Google ou por anúncio:
+ * o que é e o botão principal logo no topo; para quem é e o que inclui;
+ * como funciona; o que ter em mãos; perguntas frequentes; e o formulário
+ * na própria página, com o serviço já preenchido. O botão principal leva
+ * ao formulário (âncora) para o visitante não precisar sair da página.
+ */
 export default async function ServicePage({
   params,
 }: {
@@ -46,10 +56,16 @@ export default async function ServicePage({
   const { slug } = await params;
   const service = getServicePage(slug);
   if (!service) notFound();
+  const detail = getServiceDetail(slug);
 
   const related = servicePages.filter(
     (item) => item.category === service.category && item.slug !== service.slug,
   );
+  const whatsappHref =
+    getWhatsAppLink(
+      detail?.whatsappMessage ??
+        `Olá! Vim pelo site da WJB e quero saber mais sobre ${service.title}.`,
+    ) ?? headerCtas.talkToAccountant.href;
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -60,6 +76,7 @@ export default async function ServicePage({
   return (
     <Container className="py-12 sm:py-16">
       <JsonLd data={getBreadcrumbSchema(breadcrumbItems)} />
+      <JsonLd data={getServiceSchema(service)} />
       <Breadcrumb items={breadcrumbItems} />
 
       <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
@@ -71,23 +88,20 @@ export default async function ServicePage({
             {service.title}
           </h1>
           <p className="text-muted-foreground mt-3 max-w-2xl text-lg">
-            {service.shortDescription}
+            {detail?.intro ?? service.shortDescription}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
+            <a href="#formulario" className={buttonVariants({ variant: "cta" })}>
+              {detail?.primaryCta ?? headerCtas.requestProposal.label}
+            </a>
             <Link
-              href={headerCtas.talkToAccountant.href}
+              href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className={buttonVariants({ variant: "cta" })}
-            >
-              {headerCtas.talkToAccountant.label}
-            </Link>
-            <Link
-              href={headerCtas.requestProposal.href}
               className={buttonVariants({ variant: "outline" })}
             >
-              {headerCtas.requestProposal.label}
+              Falar pelo WhatsApp
             </Link>
           </div>
         </div>
@@ -104,45 +118,124 @@ export default async function ServicePage({
         </div>
       </div>
 
-      <RevealOnScroll as="section" className="border-border mt-12 border-t pt-8">
-        <h2 className="text-foreground text-lg font-semibold">O que inclui</h2>
-        <RevealStagger
-          as="ul"
-          itemAs="li"
-          className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
-        >
-          {service.includes.map((item) => (
-            <div key={item} className="text-foreground flex items-start gap-2 text-sm">
-              <Check
-                aria-hidden="true"
-                className="text-primary mt-0.5 h-4 w-4 shrink-0"
-              />
-              {item}
-            </div>
-          ))}
-        </RevealStagger>
-        {service.note ? (
-          <p className="text-muted-foreground mt-4 text-sm">{service.note}</p>
+      <RevealOnScroll
+        as="section"
+        className="border-border mt-12 grid grid-cols-1 gap-10 border-t pt-8 lg:grid-cols-2"
+      >
+        {detail ? (
+          <div>
+            <h2 className="text-foreground text-lg font-semibold">Para quem é</h2>
+            <ul className="mt-4 flex flex-col gap-3">
+              {detail.audience.map((item) => (
+                <li key={item} className="text-foreground flex items-start gap-2 text-sm">
+                  <Check aria-hidden="true" className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
+        <div>
+          <h2 className="text-foreground text-lg font-semibold">O que inclui</h2>
+          <RevealStagger
+            as="ul"
+            itemAs="li"
+            className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
+          >
+            {service.includes.map((item) => (
+              <div key={item} className="text-foreground flex items-start gap-2 text-sm">
+                <Check aria-hidden="true" className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                {item}
+              </div>
+            ))}
+          </RevealStagger>
+          {service.note ? (
+            <p className="text-muted-foreground mt-4 text-sm">{service.note}</p>
+          ) : null}
+        </div>
       </RevealOnScroll>
 
-      {service.leadFormContext ? (
-        <RevealOnScroll as="section" className="border-border mt-12 max-w-2xl border-t pt-8">
+      {detail ? (
+        <RevealOnScroll as="section" className="border-border mt-12 border-t pt-8">
+          <h2 className="text-foreground text-lg font-semibold">Como funciona</h2>
+          <RevealStagger
+            as="ol"
+            itemAs="li"
+            className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {detail.steps.map((step, index) => (
+              <div
+                key={step.title}
+                className="border-border bg-background h-full rounded-md border p-5"
+              >
+                <span className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
+                  {index + 1}
+                </span>
+                <h3 className="text-foreground mt-3 font-semibold">{step.title}</h3>
+                <p className="text-muted-foreground mt-1 text-sm">{step.description}</p>
+              </div>
+            ))}
+          </RevealStagger>
+        </RevealOnScroll>
+      ) : null}
+
+      {detail?.documents ? (
+        <RevealOnScroll as="section" className="border-border mt-12 border-t pt-8">
+          <h2 className="text-foreground text-lg font-semibold">O que ter em mãos</h2>
+          <p className="text-muted-foreground mt-2 text-sm">
+            Não precisa ter tudo para começar: a equipe confirma o que falta na conversa
+            inicial.
+          </p>
+          <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {detail.documents.map((item) => (
+              <li key={item} className="text-foreground flex items-start gap-2 text-sm">
+                <Check aria-hidden="true" className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </RevealOnScroll>
+      ) : null}
+
+      <div className="border-border mt-12 grid grid-cols-1 gap-10 border-t pt-8 lg:grid-cols-2">
+        {detail ? (
+          <RevealOnScroll as="section">
+            <h2 className="text-foreground text-lg font-semibold">Perguntas frequentes</h2>
+            <div className="divide-border border-border mt-4 divide-y border-y">
+              {detail.faq.map((item) => (
+                <details key={item.question} className="group py-1">
+                  <summary className="text-foreground focus-visible:ring-primary flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-md py-2 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+                    {item.question}
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="text-muted-foreground h-4 w-4 shrink-0 transition-transform group-open:rotate-180"
+                    />
+                  </summary>
+                  <p className="text-muted-foreground pb-3 text-sm">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </RevealOnScroll>
+        ) : null}
+
+        <RevealOnScroll as="section" id="formulario" className="scroll-mt-24">
           <h2 className="text-foreground text-lg font-semibold">
-            {service.leadFormContext}: conte sua situação
+            {service.title}: fale com a WJB
           </h2>
           <p className="text-muted-foreground mt-2 text-sm">
-            Preencha os dados abaixo e um contador da WJB entra em contato.
+            Preencha os dados abaixo e um contador da WJB entra em contato. Atendimento de
+            segunda a sexta, das 9h às 18h.
           </p>
           <div className="mt-6">
             <LeadForm
-              formContext={service.leadFormContext}
-              defaultServiceInterest={service.category}
-              submitLabel="Enviar"
+              formContext={service.leadFormContext ?? service.title}
+              defaultServiceInterest={service.title}
+              showServiceInterest={false}
+              submitLabel={detail?.primaryCta ?? "Enviar"}
             />
           </div>
         </RevealOnScroll>
-      ) : null}
+      </div>
 
       {related.length > 0 ? (
         <RevealOnScroll as="section" className="border-border mt-12 border-t pt-8">

@@ -33,6 +33,12 @@ export async function LeadsList() {
               {new Date(lead.createdAt).toLocaleString("pt-BR")}
               {lead.sourcePath ? ` · ${lead.sourcePath}` : ""}
             </p>
+            {lead.utmSource ? (
+              <p className="text-muted-foreground text-xs">
+                Origem: {lead.utmSource}
+                {lead.utmCampaign ? ` · campanha ${lead.utmCampaign}` : ""}
+              </p>
+            ) : null}
           </div>
 
           <LeadStatusSelect leadId={lead.id} status={lead.status} />

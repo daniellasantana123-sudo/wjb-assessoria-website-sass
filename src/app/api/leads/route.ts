@@ -128,25 +128,54 @@ export async function POST(request: Request) {
     );
   }
 
+  // Campo-armadilha preenchido = robô. Responde sucesso sem gravar nem
+  // avisar ninguém, para o robô não aprender a contornar.
+  if (result.data.website) {
+    return NextResponse.json({ ok: true, persisted: false });
+  }
+
+  const leadId = crypto.randomUUID();
+  const tracking = result.data.tracking;
+  const baseRow = {
+    id: leadId,
+    name: result.data.name,
+    email: result.data.email,
+    phone: result.data.phone,
+    company: result.data.company || null,
+    cnpj: result.data.cnpj || null,
+    city: result.data.city || null,
+    state: result.data.state || null,
+    business_activity: result.data.businessActivity || null,
+    service_interest: result.data.serviceInterest,
+    message: result.data.message || null,
+    form_context: result.data.formContext,
+    source_path: tracking.sourcePath,
+    utm_source: tracking.utmSource,
+    utm_medium: tracking.utmMedium,
+    utm_campaign: tracking.utmCampaign,
+  };
+  // Colunas da migration 0023. Se ela ainda não foi aplicada no banco, o
+  // insert com essas colunas falha; nesse caso grava sem elas em vez de
+  // perder o lead.
+  const extendedRow = {
+    ...baseRow,
+    submission_id: result.data.submissionId ?? null,
+    landing_page: tracking.landingPage ?? null,
+    utm_term: tracking.utmTerm ?? null,
+    utm_content: tracking.utmContent ?? null,
+    gclid: tracking.gclid ?? null,
+  };
+
   let persisted = false;
   if (supabase) {
-    const { error } = await supabase.from("leads").insert({
-      name: result.data.name,
-      email: result.data.email,
-      phone: result.data.phone,
-      company: result.data.company || null,
-      cnpj: result.data.cnpj || null,
-      city: result.data.city || null,
-      state: result.data.state || null,
-      business_activity: result.data.businessActivity || null,
-      service_interest: result.data.serviceInterest,
-      message: result.data.message,
-      form_context: result.data.formContext,
-      source_path: result.data.tracking.sourcePath,
-      utm_source: result.data.tracking.utmSource,
-      utm_medium: result.data.tracking.utmMedium,
-      utm_campaign: result.data.tracking.utmCampaign,
-    });
+    let { error } = await supabase.from("leads").insert(extendedRow);
+    if (error?.code === "23505") {
+      // Mesmo submission_id: o lead já foi gravado num envio anterior.
+      return NextResponse.json({ ok: true, persisted: true, duplicate: true });
+    }
+    if (error && (error.code === "42703" || error.code === "PGRST204")) {
+      ({ error } = await supabase.from("leads").insert(baseRow));
+    }
 
     if (error) console.error("[leads] falha ao salvar lead:", error);
     else persisted = true;
@@ -227,5 +256,7 @@ export async function POST(request: Request) {
   if (!persisted && !notified)
     return storageUnavailable(supabase ? "write_failed" : "not_configured");
 
-  return NextResponse.json({ ok: true, persisted });
+  // `leadId` só quando gravou: é o identificador que a camada de eventos
+  // vai usar para deduplicar a conversão (Fase 6).
+  return NextResponse.json({ ok: true, persisted, leadId: persisted ? leadId : null });
 }

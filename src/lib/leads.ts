@@ -12,6 +12,8 @@ export interface LeadListItem {
   message: string | null;
   formContext: string;
   sourcePath: string | null;
+  utmSource: string | null;
+  utmCampaign: string | null;
   status: LeadStatus;
   createdAt: string;
 }
@@ -22,7 +24,7 @@ export async function listLeads(): Promise<LeadListItem[]> {
   const { data } = await supabase
     .from("leads")
     .select(
-      "id, name, email, phone, service_interest, message, form_context, source_path, status, created_at",
+      "id, name, email, phone, service_interest, message, form_context, source_path, utm_source, utm_campaign, status, created_at",
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -38,6 +40,8 @@ export async function listLeads(): Promise<LeadListItem[]> {
     message: row.message,
     formContext: row.form_context,
     sourcePath: row.source_path,
+    utmSource: row.utm_source,
+    utmCampaign: row.utm_campaign,
     status: row.status,
     createdAt: row.created_at,
   }));
