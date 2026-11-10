@@ -41,16 +41,70 @@ try {
   // Build sem .git (ex.: pacote enviado sem histórico) - a versão continua aparecendo.
 }
 const appBuildDate = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo" }).format(new Date());
+/**
+ * Domínios do Google Tag Manager, GA4 e Google Ads (Fase 6 do plano
+ * comercial), conforme o guia de CSP do GTM. Sem eles a CSP bloqueia as tags
+ * em silêncio. `tagassistant.google.com` é o modo Preview do GTM, usado para
+ * testar antes de publicar. Os scripts só são carregados depois do
+ * consentimento (`src/lib/consent/consent-mode.ts`); liberar o domínio aqui
+ * não carrega nada sozinho.
+ */
+const googleTagSources = {
+  script: [
+    "https://www.googletagmanager.com",
+    "https://*.googletagmanager.com",
+    "https://tagassistant.google.com",
+    "https://www.google-analytics.com",
+    "https://www.googleadservices.com",
+    "https://googleads.g.doubleclick.net",
+    "https://www.google.com",
+  ],
+  img: [
+    "https://www.googletagmanager.com",
+    "https://*.googletagmanager.com",
+    "https://*.google-analytics.com",
+    "https://googleads.g.doubleclick.net",
+    "https://*.g.doubleclick.net",
+    "https://www.googleadservices.com",
+    "https://www.google.com",
+    "https://www.google.com.br",
+    "https://ssl.gstatic.com",
+    "https://fonts.gstatic.com",
+  ],
+  connect: [
+    "https://*.google-analytics.com",
+    "https://*.analytics.google.com",
+    "https://*.googletagmanager.com",
+    "https://*.g.doubleclick.net",
+    "https://googleads.g.doubleclick.net",
+    "https://www.googleadservices.com",
+    "https://pagead2.googlesyndication.com",
+    "https://www.google.com",
+    "https://www.google.com.br",
+  ],
+  frame: [
+    "https://www.googletagmanager.com",
+    "https://tagassistant.google.com",
+    "https://td.doubleclick.net",
+    "https://*.doubleclick.net",
+    // Mapa embutido de /contato (só aparece com chave do Google Maps).
+    "https://www.google.com",
+  ],
+  style: ["https://tagassistant.google.com", "https://fonts.googleapis.com"],
+  font: ["https://fonts.gstatic.com"],
+};
+
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data:",
-      "font-src 'self' data:",
-      "connect-src 'self'",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} ${googleTagSources.script.join(" ")}`,
+      `style-src 'self' 'unsafe-inline' ${googleTagSources.style.join(" ")}`,
+      `img-src 'self' data: ${googleTagSources.img.join(" ")}`,
+      `font-src 'self' data: ${googleTagSources.font.join(" ")}`,
+      `connect-src 'self' ${googleTagSources.connect.join(" ")}`,
+      `frame-src 'self' ${googleTagSources.frame.join(" ")}`,
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

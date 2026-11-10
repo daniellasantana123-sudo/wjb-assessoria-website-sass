@@ -3,7 +3,6 @@ import { Lexend, Noto_Sans_Thai, Source_Sans_3 } from "next/font/google";
 
 import { SkipLink } from "@/components/layout/skip-link";
 import { CookieConsentBanner } from "@/components/shared/cookie-consent-banner";
-import { AnalyticsLoader } from "@/lib/analytics/loader";
 import { getSiteUrl } from "@/lib/seo/site-url";
 
 import "./globals.css";
@@ -106,7 +105,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <CookieConsentBanner />
-        <AnalyticsLoader />
       </body>
     </html>
   );

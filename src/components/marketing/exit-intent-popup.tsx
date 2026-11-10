@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { headerCtas } from "@/config/navigation";
-import { getTrackingParams } from "@/lib/analytics/tracking";
+import { pushEvent } from "@/lib/analytics/datalayer";
+import { getAttributionParams, getTrackingParams } from "@/lib/analytics/tracking";
 import {
   canShowPopup,
   DESKTOP_MEDIA_QUERY,
@@ -77,6 +78,7 @@ export function ExitIntentPopup() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [errors, setErrors] = useState<Errors>({});
   const panelRef = useRef<HTMLDivElement>(null);
+  const formStartedRef = useRef(false);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -224,8 +226,20 @@ export function ExitIntentPopup() {
           tracking: getTrackingParams(pathname),
         }),
       });
-      const result = (await response.json().catch(() => null)) as { ok?: boolean } | null;
+      const result = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        persisted?: boolean;
+        leadId?: string | null;
+      } | null;
       if (!response.ok || !result?.ok) throw new Error("falha no envio");
+      if (result.persisted && result.leadId) {
+        pushEvent("generate_lead", {
+          event_id: result.leadId,
+          form_id: "Popup de saída",
+          service_name: parsed.data.serviceInterest,
+          ...getAttributionParams(),
+        });
+      }
       setStatus("sent");
       writeStorage("local", EXIT_POPUP_STORAGE_KEY, JSON.stringify({ status: "submitted", at: Date.now() }));
     } catch {
@@ -320,7 +334,16 @@ export function ExitIntentPopup() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+            <form
+              onSubmit={handleSubmit}
+              onFocusCapture={() => {
+                if (formStartedRef.current) return;
+                formStartedRef.current = true;
+                pushEvent("form_start", { form_id: "Popup de saída" });
+              }}
+              noValidate
+              className="flex flex-col gap-4"
+            >
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor={ids.name}>Nome</Label>
                 <Input ref={firstFieldRef} id={ids.name} name="name" autoComplete="name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? `${ids.name}-erro` : undefined} />

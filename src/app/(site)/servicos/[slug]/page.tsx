@@ -6,6 +6,7 @@ import { Check, ChevronDown } from "lucide-react";
 
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
+import { TrackServiceView } from "@/components/analytics/track-service-view";
 import { LeadForm } from "@/components/forms/lead-form";
 import { JsonLd } from "@/components/shared/json-ld";
 import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scroll";
@@ -77,9 +78,10 @@ export default async function ServicePage({
     <Container className="py-12 sm:py-16">
       <JsonLd data={getBreadcrumbSchema(breadcrumbItems)} />
       <JsonLd data={getServiceSchema(service)} />
+      <TrackServiceView serviceId={service.slug} serviceName={service.title} />
       <Breadcrumb items={breadcrumbItems} />
 
-      <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
+      <div data-analytics-location="servico-topo" className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
         <div>
           <p className="text-primary text-sm font-medium tracking-wide uppercase">
             {service.category}

@@ -72,3 +72,17 @@ export function getTrackingParams(pathname: string) {
     landingPage: stored.landing_page ?? null,
   };
 }
+
+/**
+ * Origem da visita no formato dos parâmetros do `dataLayer`. O `gclid` fica
+ * de fora de propósito: o próprio Google Ads já o associa à conversão.
+ */
+export function getAttributionParams() {
+  const t = getTrackingParams(typeof window === "undefined" ? "" : window.location.pathname);
+  return {
+    landing_page: t.landingPage ?? undefined,
+    lead_source: t.utmSource ?? undefined,
+    lead_medium: t.utmMedium ?? undefined,
+    lead_campaign: t.utmCampaign ?? undefined,
+  };
+}

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { NewsletterForm } from "@/components/forms/newsletter-form";
+import { CookiePreferencesButton } from "@/components/shared/cookie-preferences-button";
 import { serviceCategories } from "@/config/services";
 import { siteConfig } from "@/config/site";
 
@@ -204,6 +205,7 @@ export function SiteFooter() {
                 {item.label}
               </Link>
             ))}
+            <CookiePreferencesButton className="inline-flex min-h-6 items-center hover:text-neutral-300 focus-visible:ring-offset-2" />
           </nav>
         </Container>
       </div>

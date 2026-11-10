@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
+import { CookiePreferencesButton } from "@/components/shared/cookie-preferences-button";
+import { getGtmId } from "@/config/analytics";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -12,11 +14,17 @@ export const metadata: Metadata = {
 
 /**
  * WJB_Conteudos_Incompletos_Implementacao_Claude.md, seção 16 — só descreve
- * as categorias de cookies que realmente existem no projeto (essenciais e,
- * quando um provider de analytics for confirmado, de análise). Nenhum
- * cookie de marketing está instalado, por isso essa categoria não aparece.
+ * as categorias de cookies que realmente existem no projeto.
+ */
+/*
+ * Fase 6 do plano comercial (2026-11-10): as seções sobre Google Analytics e
+ * Google Ads só aparecem quando o contêiner do GTM está configurado
+ * (`src/config/analytics.ts`) - antes disso o site não usa esses cookies e
+ * dizer o contrário seria falso. Texto operacional; revisão jurídica
+ * recomendada, como nas demais páginas legais.
  */
 export default function CookiesPage() {
+  const measurementActive = getGtmId() !== null;
   return (
     <Container className="py-12 sm:py-16">
       <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Cookies" }]} />
@@ -55,16 +63,31 @@ export default function CookiesPage() {
                 <p className="text-foreground mt-1">
                   Quando utilizados, ajudam a entender de forma agregada como o site é
                   acessado e quais páginas são mais utilizadas.
+                  {measurementActive
+                    ? " Usamos o Google Analytics, do Google, para esse fim."
+                    : null}
                 </p>
               </div>
+              {measurementActive ? (
+                <div>
+                  <h3 className="text-foreground font-medium">Cookies de publicidade</h3>
+                  <p className="text-foreground mt-1">
+                    Usamos o Google Ads, do Google, para medir quais anúncios levam
+                    pessoas a entrar em contato com a WJB e para exibir nossos anúncios
+                    a quem já visitou o site. Nenhum dado que identifique você, como
+                    nome, e-mail ou telefone, é enviado nesses cookies.
+                  </p>
+                </div>
+              ) : null}
             </div>
           </section>
 
           <section>
             <h2 className="text-foreground text-lg font-semibold">Consentimento</h2>
             <p className="text-foreground mt-2">
-              Quando houver cookies não essenciais sujeitos a consentimento, o site
-              deverá oferecer uma ferramenta para aceitar ou rejeitar preferências.
+              {measurementActive
+                ? "Cookies de análise e de publicidade só são ativados depois que você clica em \"Aceitar todos\" no aviso de cookies. Se você recusar, nenhum deles é usado."
+                : "Quando houver cookies não essenciais sujeitos a consentimento, o site deverá oferecer uma ferramenta para aceitar ou rejeitar preferências."}
             </p>
           </section>
 
@@ -73,10 +96,12 @@ export default function CookiesPage() {
               Como alterar escolhas
             </h2>
             <p className="text-foreground mt-2">
-              O usuário poderá alterar preferências pelo gerenciador de cookies
-              disponibilizado no site, quando aplicável, ou pelas configurações do
-              navegador.
+              Você pode rever sua escolha a qualquer momento pelo botão abaixo (também
+              disponível no rodapé de todas as páginas) ou pelas configurações do
+              navegador. Ao retirar o consentimento, os cookies do Google gravados
+              pelo site são apagados.
             </p>
+            <CookiePreferencesButton className="text-primary mt-3 font-medium underline" />
           </section>
 
           <section>

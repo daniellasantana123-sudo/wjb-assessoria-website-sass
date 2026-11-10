@@ -1,6 +1,6 @@
 "use client";
 
-import { hasAnalyticsConsent } from "@/lib/consent/cookie-consent";
+import { pushEvent } from "@/lib/analytics/datalayer";
 
 export type AssistantAnalyticsEvent =
   | "assistant_viewed"
@@ -13,18 +13,27 @@ export type AssistantAnalyticsEvent =
   | "assistant_closed";
 
 /**
- * Eventos do Assistente Virtual (prompt mestre, seção "ANALYTICS") - nunca
- * inclui nome, telefone, e-mail ou qualquer dado pessoal, só a chave do
- * serviço (ex.: "abrirEmpresa"). Mesmo padrão no-op condicionado a
- * consentimento de `plan-events.ts` - nenhum provider de analytics novo foi
- * adicionado, nenhum confirmado ainda pela WJB (seção 36 de Wjb-Website.md).
+ * Eventos do Assistente Virtual - nunca incluem nome, telefone, e-mail ou
+ * qualquer dado pessoal, só a chave do serviço (ex.: "abrirEmpresa").
+ *
+ * Desde a Fase 6 do plano comercial (2026-11-10) dois deles também viram
+ * eventos do contrato comum do `dataLayer`: abrir o painel é `chat_start` e
+ * escolher um serviço é `select_service`. Os demais seguem sem envio - eles
+ * existem para análise futura do funil do próprio assistente, e mandar todos
+ * para o GA4 só poluiria os relatórios. O clique no WhatsApp já é medido
+ * para o site inteiro em `GoogleTagManager`.
  */
 export function trackAssistantEvent(
   event: AssistantAnalyticsEvent,
   data?: Record<string, string | number | boolean>,
 ) {
   if (typeof window === "undefined") return;
-  if (!process.env.NEXT_PUBLIC_ANALYTICS_ID || !hasAnalyticsConsent()) return;
-  void event;
-  void data;
+  if (event === "assistant_opened") {
+    pushEvent("chat_start", { link_location: typeof data?.source === "string" ? data.source : "botao" });
+  } else if (event === "assistant_service_selected") {
+    pushEvent("select_service", {
+      service_id: typeof data?.service === "string" ? data.service : undefined,
+      link_location: "assistente",
+    });
+  }
 }

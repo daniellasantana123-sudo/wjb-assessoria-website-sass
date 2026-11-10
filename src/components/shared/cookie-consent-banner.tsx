@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { getGtmId } from "@/config/analytics";
 import {
   getServerConsentSnapshot,
   getStoredConsent,
@@ -20,6 +21,7 @@ export function CookieConsentBanner() {
   );
 
   if (consent !== null) return null;
+  const measurementActive = getGtmId() !== null;
 
   function handleChoice(choice: ConsentChoice) {
     storeConsent(choice);
@@ -35,7 +37,9 @@ export function CookieConsentBanner() {
         <p className="text-muted-foreground text-sm">
           Utilizamos cookies essenciais para o funcionamento do site e, com sua
           autorização, podemos utilizar tecnologias adicionais para melhorar a
-          experiência e entender o uso das páginas. Veja nossa{" "}
+          experiência e entender o uso das páginas
+          {measurementActive ? ", inclusive para medir nossos anúncios" : ""}. Veja
+          nossa{" "}
           <Link href="/cookies" className="text-primary underline underline-offset-2">
             Política de Cookies
           </Link>

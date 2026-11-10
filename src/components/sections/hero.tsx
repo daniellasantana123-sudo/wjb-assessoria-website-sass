@@ -147,7 +147,10 @@ function useDeferredSlides() {
 export function Hero() {
   const { ready: slidesReady, setApi } = useDeferredSlides();
   return (
-    <section className="border-border relative overflow-hidden border-b">
+    <section
+      data-analytics-location="home-hero"
+      className="border-border relative overflow-hidden border-b"
+    >
       {/*
        * Formas geométricas flutuantes (2026-09-15, a pedido do usuário —
        * "pensar como um especialista UI/UX", sem poluir a seção). Dois

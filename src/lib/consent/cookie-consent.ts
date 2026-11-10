@@ -1,4 +1,6 @@
-const STORAGE_KEY = "wjb-cookie-consent";
+import { CONSENT_STORAGE_KEY } from "@/lib/consent/consent-mode";
+
+const STORAGE_KEY = CONSENT_STORAGE_KEY;
 
 export type ConsentChoice = "accepted" | "declined";
 
@@ -24,6 +26,17 @@ export function subscribeConsent(listener: Listener) {
 export function storeConsent(choice: ConsentChoice) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(STORAGE_KEY, choice);
+  listeners.forEach((listener) => listener());
+}
+
+/**
+ * Apaga a escolha salva para o banner voltar a aparecer
+ * ("Preferências de cookies" no rodapé). Revogar tem de ser tão fácil quanto
+ * aceitar (LGPD, art. 8º, § 5º).
+ */
+export function clearConsent() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(STORAGE_KEY);
   listeners.forEach((listener) => listener());
 }
 

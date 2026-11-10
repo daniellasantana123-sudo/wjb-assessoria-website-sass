@@ -4,6 +4,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 
+import { pushEvent } from "@/lib/analytics/datalayer";
 import { getTrackingParams } from "@/lib/analytics/tracking";
 import type { NewsletterFormValues } from "@/lib/validation/lead";
 import { lazyResolver } from "@/lib/validation/lazy-resolver";
@@ -53,6 +54,15 @@ export function NewsletterForm() {
         }),
       });
       if (!response.ok) throw new Error("request failed");
+      const result = (await response.json().catch(() => null)) as {
+        persisted?: boolean;
+        leadId?: string | null;
+      } | null;
+      // Inscrição não é lead comercial: evento próprio, que não deve virar
+      // conversão no Google Ads.
+      if (result?.persisted && result.leadId) {
+        pushEvent("newsletter_signup", { event_id: result.leadId, form_id: "Newsletter" });
+      }
       setStatus("success");
       reset();
     } catch {

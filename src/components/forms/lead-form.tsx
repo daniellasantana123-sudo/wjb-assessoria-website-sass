@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useForm } from "react-hook-form";
 
-import { getTrackingParams } from "@/lib/analytics/tracking";
+import { pushEvent } from "@/lib/analytics/datalayer";
+import { getAttributionParams, getTrackingParams } from "@/lib/analytics/tracking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,6 +102,14 @@ export function LeadForm({
     },
   });
 
+  // `form_start`: uma vez por formulário montado, no primeiro foco real.
+  const formStarted = useRef(false);
+  function handleFormStart() {
+    if (formStarted.current) return;
+    formStarted.current = true;
+    pushEvent("form_start", { form_id: formContext });
+  }
+
   async function onSubmit(values: LeadFormValues) {
     setStatus("idle");
     try {
@@ -114,6 +123,22 @@ export function LeadForm({
         }),
       });
       if (!response.ok) throw new Error("request failed");
+      const result = (await response.json().catch(() => null)) as {
+        persisted?: boolean;
+        leadId?: string | null;
+      } | null;
+      // Conversão só quando o servidor confirma que o lead foi gravado
+      // (plano CRO): um 200 sem gravação não conta. `leadId` é um UUID
+      // gerado no servidor, sem dado pessoal, e serve de `event_id` para
+      // a deduplicação no GA4/Google Ads.
+      if (result?.persisted && result.leadId) {
+        pushEvent("generate_lead", {
+          event_id: result.leadId,
+          form_id: formContext,
+          service_name: values.serviceInterest,
+          ...getAttributionParams(),
+        });
+      }
       setStatus("success");
       setSubmissionId(crypto.randomUUID());
       reset({
@@ -145,6 +170,7 @@ export function LeadForm({
 
   return (
     <form
+      onFocusCapture={handleFormStart}
       onSubmit={handleSubmit(onSubmit)}
       noValidate
       className="flex flex-col gap-5"
