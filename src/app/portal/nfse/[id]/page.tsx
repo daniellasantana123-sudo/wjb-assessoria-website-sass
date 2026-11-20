@@ -58,8 +58,13 @@ export default async function PortalNfseDetailPage({
         <h1 className="text-foreground text-2xl font-semibold">
           Solicitação de NFS-e
         </h1>
-        <FiscalStatusBadge status={request.status} />
+        <FiscalStatusBadge status={request.status} simulated={request.simulatedReference !== null} />
       </div>
+      {request.simulatedReference ? (
+        <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm">
+          Resultado de <strong>simulação</strong> ({request.simulatedReference}): esta nota não foi emitida e não tem valor fiscal.
+        </p>
+      ) : null}
       {duplicada ? (
         <p
           role="status"

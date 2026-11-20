@@ -16,9 +16,9 @@ docker exec "$C" psql -q -U postgres -c "create database homolog" >/dev/null
 
 echo "== 1. Schema atual (shim do Supabase + migrations 0001 a 0023)"
 PSQL homolog < "$H/00_supabase_shim.sql"
-for f in $(ls $M/*.sql | grep -v 0024_); do PSQL homolog < "$f" >/dev/null; done
+for f in $(ls $M/*.sql | grep -v -e 0024_ -e 0025_); do PSQL homolog < "$f" >/dev/null; done
 PSQL homolog < "$H/01_seed_ficticio.sql" >/dev/null
-echo "   ok: $(ls $M/*.sql | grep -vc 0024_) migrations aplicadas"
+echo "   ok: $(ls $M/*.sql | grep -v -e 0024_ -e 0025_ | wc -l | tr -d ' ') migrations aplicadas"
 
 echo "== 2. Backup e teste de restauração (antes da 0024)"
 docker exec "$C" pg_dump -U postgres -Fc -f /tmp/backup_pre_0024.dump homolog
@@ -39,8 +39,9 @@ SCHEMA_SQL="select string_agg(table_name||'.'||column_name||':'||data_type, ',' 
   from information_schema.columns where table_schema='public' and table_name not like 'fiscal_%'"
 BEFORE=$(docker exec "$C" psql -tA -U postgres -d homolog -c "$SCHEMA_SQL")
 
-echo "== 3. Aplicando 0024"
+echo "== 3. Aplicando 0024 e 0025"
 PSQL homolog < "$M/0024_wjb_ai_fiscal_core.sql"
+PSQL homolog < "$M/0025_wjb_ai_fiscal_queue.sql"
 AFTER=$(docker exec "$C" psql -tA -U postgres -d homolog -c "$SCHEMA_SQL")
 [ "$BEFORE" = "$AFTER" ] && echo "   ok: nenhuma coluna de tabela existente mudou" || { echo "FALHA: tabelas existentes alteradas"; exit 1; }
 echo "   tabelas novas: $(docker exec "$C" psql -tA -U postgres -d homolog -c "select string_agg(table_name, ', ' order by table_name) from information_schema.tables where table_schema='public' and table_name like 'fiscal_%'")"
@@ -48,9 +49,12 @@ echo "   RLS ligada em: $(docker exec "$C" psql -tA -U postgres -d homolog -c "s
 
 echo "== 4. Testes de RLS, isolamento, permissões e integridade"
 PSQL homolog < "$H/02_testes_0024.sql" 2>&1 | sed -n 's/^.*NOTICE:  /   /p'
+echo "   0025: $(docker exec "$C" psql -tA -U postgres -d homolog -c "select count(*) from information_schema.columns where table_name='fiscal_requests' and column_name in ('attempt_count','next_attempt_at','last_error','needs_intervention')")/4 colunas novas"
 
-echo "== 5. Rollback da 0024 (no banco restaurado)"
+echo "== 5. Rollback da 0025 e da 0024 (no banco restaurado)"
 PSQL restore_check < "$M/0024_wjb_ai_fiscal_core.sql"
+PSQL restore_check < "$M/0025_wjb_ai_fiscal_queue.sql"
+PSQL restore_check < "$H/04_rollback_0025.sql"
 PSQL restore_check < "$H/03_rollback_0024.sql"
 R=$(docker exec "$C" psql -tA -U postgres -d restore_check -c "$COUNT_SQL")
 RS=$(docker exec "$C" psql -tA -U postgres -d restore_check -c "$SCHEMA_SQL")

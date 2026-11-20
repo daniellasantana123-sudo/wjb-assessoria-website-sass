@@ -3,9 +3,19 @@ import {
   FISCAL_STATUS_LABELS,
   FISCAL_STATUS_TONE,
 } from "@/lib/wjb-ai/fiscal/labels";
-import type { FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
+import { isOfficiallyAuthorized, type FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
 
-export function FiscalStatusBadge({ status }: { status: FiscalStatus }) {
+/** `simulated`: autorização vinda do conector simulado nunca aparece como nota real. */
+export function FiscalStatusBadge({
+  status,
+  simulated = false,
+}: {
+  status: FiscalStatus;
+  simulated?: boolean;
+}) {
+  if (simulated && isOfficiallyAuthorized(status)) {
+    return <Badge tone="warning">Autorizada em simulação</Badge>;
+  }
   return (
     <Badge tone={FISCAL_STATUS_TONE[status] ?? "info"}>
       {FISCAL_STATUS_LABELS[status] ?? status}

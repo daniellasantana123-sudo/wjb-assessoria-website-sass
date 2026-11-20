@@ -263,6 +263,10 @@ export interface Database {
           created_by: string | null;
           created_at: string;
           updated_at: string;
+          attempt_count: number;
+          next_attempt_at: string | null;
+          last_error: string | null;
+          needs_intervention: boolean;
         };
         Insert: {
           id?: string;
@@ -278,6 +282,10 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
+          attempt_count?: number;
+          next_attempt_at?: string | null;
+          last_error?: string | null;
+          needs_intervention?: boolean;
         };
         Update: Partial<Database["public"]["Tables"]["fiscal_requests"]["Insert"]>;
         Relationships: [];
@@ -290,6 +298,7 @@ export interface Database {
           from_status: string | null;
           to_status: string;
           actor_id: string | null;
+          actor_kind: string;
           reason: string | null;
           created_at: string;
         };
@@ -299,10 +308,68 @@ export interface Database {
           from_status?: string | null;
           to_status: string;
           actor_id?: string | null;
+          actor_kind?: string;
           reason?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["fiscal_request_events"]["Insert"]>;
+        Relationships: [];
+      };
+      fiscal_issuance_attempts: {
+        Row: {
+          id: string;
+          request_id: string;
+          tenant_id: string;
+          environment: string;
+          idempotency_key: string;
+          outcome: string;
+          official_reference: string | null;
+          rejection_code: string | null;
+          simulated: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          request_id: string;
+          tenant_id: string;
+          environment: string;
+          idempotency_key: string;
+          outcome: string;
+          official_reference?: string | null;
+          rejection_code?: string | null;
+          simulated: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["fiscal_issuance_attempts"]["Insert"]>;
+        Relationships: [];
+      };
+      fiscal_profile_approver_grants: {
+        Row: {
+          id: string;
+          profile_id: string;
+          tenant_id: string | null;
+          reason: string;
+          granted_by: string;
+          granted_at: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          revoke_reason: string | null;
+        };
+        Insert: { id?: string; profile_id: string; tenant_id?: string | null; reason: string; granted_by: string };
+        Update: Partial<Database["public"]["Tables"]["fiscal_profile_approver_grants"]["Insert"]>;
+        Relationships: [];
+      };
+      fiscal_profile_approvals: {
+        Row: {
+          id: string;
+          fiscal_profile_id: string;
+          tenant_id: string;
+          profile_version: number;
+          approved_by: string;
+          approved_at: string;
+          justification: string;
+        };
+        Insert: { id?: string; fiscal_profile_id: string; tenant_id: string; profile_version: number; approved_by: string; justification: string };
+        Update: Partial<Database["public"]["Tables"]["fiscal_profile_approvals"]["Insert"]>;
         Relationships: [];
       };
       fiscal_profiles: {
@@ -642,7 +709,15 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      can_approve_fiscal_profile: { Args: { check_tenant_id: string }; Returns: boolean };
+      grant_fiscal_profile_approver: {
+        Args: { p_profile_id: string; p_tenant_id: string | null; p_reason: string };
+        Returns: string;
+      };
+      revoke_fiscal_profile_approver: { Args: { p_grant_id: string; p_reason: string }; Returns: undefined };
+      approve_fiscal_profile: { Args: { p_fiscal_profile_id: string; p_justification: string }; Returns: undefined };
+    };
     Enums: {
       tenant_member_role: TenantMemberRole;
       staff_role: StaffRole;

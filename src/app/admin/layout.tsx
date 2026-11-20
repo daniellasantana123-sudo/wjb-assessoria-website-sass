@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { BookOpen, FileText } from "lucide-react";
 
 import { AppCredits } from "@/components/app-shell/app-credits";
 import { AppMobileNav } from "@/components/app-shell/app-mobile-nav";
@@ -8,6 +8,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import { Logo } from "@/components/navigation/logo";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 
 const roleLabels: Record<string, string> = {
   super_admin: "Super admin",
@@ -40,6 +41,16 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <AppSidebarNav area="admin" unreadCount={unreadCount} />
 
         <div className="border-border flex flex-col gap-3 border-t p-4">
+          {/* WJB AI (F3): link só aparece com o módulo ligado (WJB_AI_ENABLED). */}
+          {isWjbAiEnabled() ? (
+            <Link
+              href="/admin/nfse"
+              className="text-foreground hover:bg-muted focus-visible:ring-primary flex min-h-10 items-center gap-3 rounded-md px-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              <FileText aria-hidden="true" className="h-4.5 w-4.5 shrink-0" />
+              NFS-e (simulação)
+            </Link>
+          ) : null}
           {/* <a> e não <Link>: o manual é um route handler com documento próprio. */}
           <a
             href="/admin/manual"

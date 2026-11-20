@@ -11,7 +11,14 @@
 - **Sem backup** da produção até agora.
 - Nano -> Micro: análise pronta (20), **não autorizado**; só depois do incidente e do primeiro backup.
 
-## Homologação (20/11/2026) - ver 21
+## Homologação e Fase 3 (20/11/2026) - ver 21 e 22
+- Homologação real concluída: 0001-0025 aplicadas, backup verificável, 35/35 testes pela API, 13/13 E2E com login real.
+- Fase 3 implementada e testada só na homologação/staging.
+- **Pendente do proprietário:** apagar a chave secreta `default` (`…myoIzfFl`) do projeto de homologação, que foi exposta no chat.
+- **Próximas aprovações:** publicar a branch (módulo desligado), aplicar 0024+0025 em produção (depois do incidente resolvido e com backup), agendar a fila (GitHub Actions) quando houver ativação.
+- Técnico: link NFS-e no menu do celular do Admin; notificação ao cliente quando a revisão terminar; tela para o cliente corrigir pedido em DADOS_PENDENTES (hoje cria um novo).
+
+## Homologação (20/11/2026) - plano
 - Custo aprovado (≈ US$ 10/mês). Scripts prontos e testados localmente.
 - **Aguardando do proprietário:** criar `wjb-ai-homologacao` e o arquivo `.env.homolog.local`.
 

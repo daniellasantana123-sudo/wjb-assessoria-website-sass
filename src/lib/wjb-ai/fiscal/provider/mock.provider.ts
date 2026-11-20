@@ -26,7 +26,11 @@ export class MockFiscalProvider implements FiscalProvider {
   private sequence = 0;
   submissions = 0;
 
-  constructor(private readonly scenario: MockScenario = "autorizada") {}
+  constructor(
+    private readonly scenario: MockScenario = "autorizada",
+    /** Escolhe o cenário por pedido (usado na fila da homologação). */
+    private readonly scenarioFor?: (request: SubmissionRequest) => MockScenario,
+  ) {}
 
   async submitAuthorizedDocument(
     request: SubmissionRequest,
@@ -38,7 +42,8 @@ export class MockFiscalProvider implements FiscalProvider {
     this.sequence += 1;
     const officialId = `SIMULADO-${String(this.sequence).padStart(6, "0")}`;
 
-    if (this.scenario === "rejeitada") {
+    const scenario = this.scenarioFor?.(request) ?? this.scenario;
+    if (scenario === "rejeitada") {
       const outcome: SubmissionOutcome = {
         status: "REJEITADA",
         rejectionCode: "SIM-001",
@@ -55,7 +60,7 @@ export class MockFiscalProvider implements FiscalProvider {
       simulated: true,
     };
     this.results.set(request.idempotencyKey, authorized);
-    if (this.scenario === "indeterminado_depois_autorizada") {
+    if (scenario === "indeterminado_depois_autorizada") {
       return { status: "RESULTADO_INDETERMINADO", simulated: true };
     }
     return authorized;
@@ -70,4 +75,17 @@ export class MockFiscalProvider implements FiscalProvider {
   async getProviderHealth(): Promise<FiscalProviderHealth> {
     return { mode: "mock", simulated: true, available: true };
   }
+}
+
+/**
+ * Regra SÓ DE SIMULAÇÃO, para exercitar os três caminhos na homologação:
+ * centavos terminados em 13 = resposta indeterminada (depois autorizada na
+ * consulta); em 66 = rejeitada; qualquer outro = autorizada. Não tem nenhum
+ * significado fiscal e nunca é usada fora do conector simulado.
+ */
+export function scenarioByAmount(request: SubmissionRequest): MockScenario {
+  const cents = request.draft.amountCents % 100;
+  if (cents === 13) return "indeterminado_depois_autorizada";
+  if (cents === 66) return "rejeitada";
+  return "autorizada";
 }

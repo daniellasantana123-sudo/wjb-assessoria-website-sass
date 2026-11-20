@@ -34,3 +34,6 @@ Concluída. Ver 00 a 07. Veredito: GO COM RESTRIÇÕES para F1-F3 em mock; NO-GO
 **Arquivos existentes alterados (só adição):** `src/types/database.ts`, `src/lib/audit-labels.ts`.
 
 **Simulado / não validado:** nenhuma nota é emitida; o caminho aplicação -> PostgREST -> banco não foi exercitado (sem projeto Supabase de homologação); as telas foram testadas por renderização e tipos, não com login real.
+
+## Homologação real + F3 (20/11/2026)
+Ver 21 (homologação Supabase real) e 22 (Fase 3). Arquivos existentes alterados só por adição: `src/types/database.ts`, `src/lib/audit-labels.ts`, `src/app/admin/layout.tsx` (link condicionado ao módulo), `.gitignore`. Migrations 0024 e 0025 aplicadas **só** na homologação.

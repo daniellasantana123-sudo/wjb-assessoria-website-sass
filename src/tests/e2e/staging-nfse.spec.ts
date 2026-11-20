@@ -53,8 +53,10 @@ test("cliente solicita NFS-e: prévia, confirmação e andamento em revisão", a
   await page.getByRole("button", { name: "Confirmar e enviar solicitação" }).click();
   await page.waitForURL(/\/portal\/nfse\/[0-9a-f-]{36}/);
   requestUrl = new URL(page.url()).pathname;
-  await expect(page.getByText("Em revisão pelo contador").first()).toBeVisible();
-  await expect(page.getByText("Encaminhado para revisão do contador.")).toBeVisible();
+  // Revisão ou confirmação direta, conforme o perfil fiscal da empresa (a
+  // Fase 3 aprova um perfil para a Empresa A); os dois caminhos são válidos.
+  await expect(page.getByText(/Em revisão pelo contador|Confirmada, aguardando envio/).first()).toBeVisible();
+  await expect(page.getByText(/Encaminhado para revisão do contador\.|Cliente conferiu a prévia e confirmou\./)).toBeVisible();
   // Nenhuma afirmação de nota emitida (o aviso "nenhuma nota é emitida" é permitido).
   await expect(page.getByText(/nota (fiscal )?emitida com|nota emitida|foi emitida/i)).toHaveCount(0);
 

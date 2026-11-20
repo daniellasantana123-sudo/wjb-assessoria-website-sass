@@ -175,7 +175,7 @@ export interface FiscalRequestEvent {
 export async function getFiscalRequest(
   tenantId: string,
   requestId: string,
-): Promise<(FiscalRequestSummary & { events: FiscalRequestEvent[] }) | null> {
+): Promise<(FiscalRequestSummary & { events: FiscalRequestEvent[]; simulatedReference: string | null }) | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("fiscal_requests")
@@ -190,8 +190,17 @@ export async function getFiscalRequest(
     .eq("tenant_id", tenantId)
     .eq("request_id", requestId)
     .order("id", { ascending: true });
+  const { data: attempt } = await supabase
+    .from("fiscal_issuance_attempts")
+    .select("official_reference, simulated")
+    .eq("tenant_id", tenantId)
+    .eq("request_id", requestId)
+    .eq("outcome", "AUTORIZADA")
+    .limit(1)
+    .maybeSingle();
   return {
     ...toSummary(data),
+    simulatedReference: attempt?.simulated ? attempt.official_reference : null,
     events: (events ?? []).map((e) => ({
       fromStatus: e.from_status as FiscalStatus | null,
       toStatus: e.to_status as FiscalStatus,

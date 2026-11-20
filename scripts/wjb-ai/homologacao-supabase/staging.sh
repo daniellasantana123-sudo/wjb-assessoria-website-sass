@@ -16,12 +16,14 @@ export WJB_AI_ENABLED=true WJB_AI_FISCAL_MODE=mock SAAS_PUBLIC_ENABLED=true NEXT
 # Integrações externas desligadas no staging: G-Click em mock, sem e-mail, sem WhatsApp.
 unset GCLICK_REAL_INTEGRATION_ENABLED RESEND_API_KEY WHATSAPP_ACCESS_TOKEN || true
 export HOMOLOG_STAGING=1
+# Segredo só desta execução, para a rota agendada da fila simulada.
+export CRON_SECRET="$(openssl rand -hex 24)"
 
 pkill -f next-server 2>/dev/null || true
 npm run build > /tmp/wjb-staging-build.log 2>&1 || { echo "build falhou (ver /tmp/wjb-staging-build.log)"; exit 1; }
 (npx next start -p 3000 > /tmp/wjb-staging-start.log 2>&1 &)
 sleep 6
-npx playwright test src/tests/e2e/staging-nfse.spec.ts --reporter=line
+npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts --workers=1 --reporter=line
 status=$?
 pkill -f next-server 2>/dev/null || true
 echo "Lembrete: rode 'npm run build' de novo antes de testar contra produção (o build atual aponta para a homologação)."
