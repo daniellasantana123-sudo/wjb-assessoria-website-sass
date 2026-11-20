@@ -182,6 +182,52 @@ const vA = await A.from("fiscal_request_versions").select("id").eq("request_id",
 const vB = await B.from("fiscal_request_versions").select("id").eq("request_id", ins.data?.id);
 check((vA.data ?? []).length > 0 && (vB.data ?? []).length === 0, "T31 versões visíveis só para a empresa dona");
 
+// ---------- série, numeração e autorização de emissão (0027) ----------
+const serie = 1 + (Date.now() % 49000);
+const atSerie = await atend.rpc("configure_dps_series", { p_tenant_id: tenantIds.A, p_environment: "simulado", p_emitter_document: "00000000000191", p_series: serie });
+check(!!atSerie.error, "T32 atendimento não configura série da DPS", atSerie.error?.code);
+const prodSerie = await sa.rpc("configure_dps_series", { p_tenant_id: tenantIds.A, p_environment: "producao", p_emitter_document: "00000000000191", p_series: serie });
+check(!!prodSerie.error, "T33 série de produção bloqueada até para super_admin", prodSerie.error?.code);
+const okSerie = await contA.rpc("configure_dps_series", { p_tenant_id: tenantIds.A, p_environment: "simulado", p_emitter_document: "00000000000191", p_series: serie });
+check(!okSerie.error, "T34 contador com fiscal_profile.approve configura a série", okSerie.error?.message);
+const reqIds = [];
+for (let i = 0; i < 12; i++) {
+  const r = await admin.from("fiscal_requests").insert(newReq("A", "clienteA", `n-${run}-${i}`, { status: "AUTORIZADA_PARA_ENVIO" })).select("id").single();
+  reqIds.push(r.data?.id);
+}
+const userAlloc = await cont.rpc("allocate_dps_number", { p_request_id: reqIds[0], p_environment: "simulado" });
+check(!!userAlloc.error, "T35 usuário logado não executa a numeração (só o servidor)", userAlloc.error?.code);
+const calls = [...reqIds.map((id) => admin.rpc("allocate_dps_number", { p_request_id: id, p_environment: "simulado" })),
+  ...Array.from({ length: 6 }, () => admin.rpc("allocate_dps_number", { p_request_id: reqIds[0], p_environment: "simulado" }))];
+const results = await Promise.all(calls);
+const nums = results.slice(0, 12).map((r) => Number(r.data?.[0]?.number));
+const repeats = results.slice(12).map((r) => Number(r.data?.[0]?.number));
+check(results.every((r) => !r.error) && new Set(nums).size === 12 && Math.min(...nums) === 1 && Math.max(...nums) === 12,
+  "T36 18 chamadas simultâneas pela API: 12 pedidos com números 1 a 12, sem repetição", results.find((r) => r.error)?.error?.message ?? nums.join(","));
+check(repeats.every((n) => n === nums[0]), "T37 repetições do mesmo pedido devolvem o MESMO número", repeats.join(","));
+// Limpeza: os pedidos de numeração não podem ficar na fila simulada (eles
+// ocupariam o lote do processamento usado pelos E2E). Números primeiro (FK).
+const numberedKeys = (await admin.from("fiscal_requests").select("id").like("idempotency_key", "n-%")).data?.map((r) => r.id) ?? [];
+if (numberedKeys.length) {
+  await admin.from("fiscal_dps_numbers").delete().in("request_id", numberedKeys);
+  await admin.from("fiscal_request_events").delete().in("request_id", numberedKeys);
+  await admin.from("fiscal_requests").delete().in("id", numberedKeys);
+}
+const left = await admin.from("fiscal_requests").select("id").like("idempotency_key", "n-%");
+check((left.data ?? []).length === 0, "T37b pedidos de teste da numeração removidos da fila");
+const seenB = await B.from("fiscal_dps_numbers").select("request_id");
+check((seenB.data ?? []).length === 0, "T38 empresa B não vê a numeração da empresa A");
+const grant = await cont.from("fiscal_authorization_grants").insert({ tenant_id: tenantIds.A, kind: "procuracao", emission_model: "wjb_procuracao", scope: "Emissão de NFS-e (fictício)", valid_until: "2027-11-20", evidence_reference: "Pasta fictícia", certificate_holder_document: "00000000000272", registered_by: ids.contador }).select("id").single();
+check(!grant.error, "T39 equipe registra procuração (modelo A)", grant.error?.message);
+const pem = await cont.from("fiscal_authorization_grants").insert({ tenant_id: tenantIds.A, kind: "procuracao", scope: "x", valid_until: "2027-01-01", certificate_vault_reference: "-----BEGIN PRIVATE KEY-----" });
+check(!!pem.error, "T40 banco recusa chave colada no lugar da referência ao cofre", pem.error?.code);
+const del = await cont.from("fiscal_authorization_grants").delete().eq("id", grant.data?.id).select("id");
+check(!!del.error || (del.data ?? []).length === 0, "T41 autorização não pode ser apagada", del.error?.code);
+const rev = await cont.from("fiscal_authorization_grants").update({ revoked_at: new Date().toISOString(), revoked_by: ids.contador, revoke_reason: "Cliente revogou (fictício)" }).eq("id", grant.data?.id).select("status").single();
+check(rev.data?.status === "revoked", "T42 revogação com motivo muda o status", rev.error?.message);
+const back = await cont.from("fiscal_authorization_grants").update({ revoked_at: null, status: "active" }).eq("id", grant.data?.id).select("id");
+check(!!back.error, "T43 autorização revogada não volta a valer", back.error?.code);
+
 console.log(`\n${failures === 0 ? "Homologação pela API concluída sem falhas." : `${failures} FALHA(S).`}`);
 console.log("Credenciais de teste em .env.homolog.users.local (fora do Git).");
 process.exit(failures ? 1 : 0);

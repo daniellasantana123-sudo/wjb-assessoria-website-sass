@@ -40,7 +40,14 @@ export interface AgentContext {
   loadAuthorizationGrant: (
     tenantId: string,
   ) => Promise<AuthorizationGrant | null>;
+  /** Checklist do cadastro fiscal (Fase 5); só status, sem dado do certificado. */
+  loadEmissionReadiness?: (tenantId: string) => Promise<EmissionReadiness>;
   today: string;
+}
+
+export interface EmissionReadiness {
+  ready: boolean;
+  items: { key: string; status: "ok" | "pendente" | "bloqueado" | "atencao" }[];
 }
 
 export interface AgentAuditEntry {
@@ -82,6 +89,7 @@ export class DisabledLlmProvider implements LlmProvider {
 export const TOOL_INPUTS = {
   get_authenticated_client_context: z.object({}).strict(),
   get_approved_fiscal_profile: z.object({}).strict(),
+  check_emission_readiness: z.object({}).strict(),
   get_request_status: z.object({ requestId: z.string().uuid() }).strict(),
   extract_invoice_intent: z
     .object({ text: z.string().min(1).max(4000) })
@@ -295,4 +303,163 @@ export async function runIntakePipeline(
     );
   }
   return { kind: "ready_for_client_confirmation", policy: v.policy! };
+}
+
+export interface SimulationStep {
+  agentId:
+    | "atendimento"
+    | "cadastro"
+    | "fiscal"
+    | "validacao"
+    | "supervisao"
+    | "auditoria";
+  outcome: string;
+}
+export type SimulationResult = {
+  outcome:
+    | "fora_do_fluxo"
+    | "cadastro_incompleto"
+    | "dados_faltando"
+    | "revisao_humana"
+    | "pronto_para_confirmacao";
+  steps: SimulationStep[];
+  /** Pendências do cadastro (só as chaves, para a equipe). */
+  blockedReadiness: string[];
+  simulated: true;
+};
+
+/**
+ * Fluxo completo dos 6 agentes em SIMULAÇÃO (Fase 5): Atendimento recebe,
+ * Cadastro identifica a empresa autorizada e confere a prontidão fiscal,
+ * Fiscal organiza os dados, Validação aplica as regras determinísticas,
+ * Supervisão trata exceções e Auditoria registra o resultado. Nunca grava
+ * pedido, nunca transmite e nunca usa modelo de IA.
+ */
+export async function runSimulationFlow(
+  text: string,
+  ctx: AgentContext,
+  sink: AgentAuditSink,
+): Promise<SimulationResult> {
+  const steps: SimulationStep[] = [];
+  let blockedReadiness: string[] = [];
+  const finish = async (
+    outcome: SimulationResult["outcome"],
+  ): Promise<SimulationResult> => {
+    await runTool(
+      "auditoria",
+      "record_agent_event",
+      { event: `simulacao_${outcome}` },
+      ctx,
+      { record_agent_event: async () => ({}) },
+      sink,
+    );
+    steps.push({ agentId: "auditoria", outcome: `registrado: ${outcome}` });
+    return { outcome, steps, blockedReadiness, simulated: true };
+  };
+
+  // 1. Atendimento
+  const isInvoiceRequest = /\b(nota|nfs-?e|nota fiscal)\b/i.test(text);
+  steps.push({
+    agentId: "atendimento",
+    outcome: isInvoiceRequest ? "pedido de NFS-e" : "fora do fluxo de NFS-e",
+  });
+  if (!isInvoiceRequest) {
+    await runTool(
+      "atendimento",
+      "create_human_review_task",
+      { reason: "Pedido fora do fluxo de NFS-e." },
+      ctx,
+      { create_human_review_task: async () => ({ queued: true }) },
+      sink,
+    );
+    return finish("fora_do_fluxo");
+  }
+
+  // 2. Cadastro: empresa só da sessão + prontidão do cadastro fiscal.
+  await runTool(
+    "cadastro",
+    "get_authenticated_client_context",
+    {},
+    ctx,
+    {
+      get_authenticated_client_context: async (c) => ({
+        tenantId: c.tenant.id,
+        role: c.tenant.role,
+      }),
+    },
+    sink,
+  );
+  const readiness = await runTool(
+    "cadastro",
+    "check_emission_readiness",
+    {},
+    ctx,
+    {
+      check_emission_readiness: async (c) =>
+        c.loadEmissionReadiness
+          ? c.loadEmissionReadiness(c.tenant.id)
+          : {
+              ready: false,
+              items: [{ key: "cadastro_valido", status: "bloqueado" }],
+            },
+    },
+    sink,
+  );
+  const r = readiness.ok
+    ? (readiness.output as EmissionReadiness)
+    : { ready: false, items: [] };
+  blockedReadiness = r.items
+    .filter((i) => i.status === "bloqueado" || i.status === "pendente")
+    .map((i) => i.key);
+  steps.push({
+    agentId: "cadastro",
+    outcome: r.ready
+      ? "empresa autorizada e cadastro completo"
+      : "cadastro fiscal incompleto",
+  });
+  if (!r.ready) {
+    await runTool(
+      "supervisao",
+      "create_human_review_task",
+      {
+        reason: `Cadastro fiscal pendente: ${blockedReadiness.join(", ") || "indisponível"}.`,
+      },
+      ctx,
+      { create_human_review_task: async () => ({ queued: true }) },
+      sink,
+    );
+    steps.push({
+      agentId: "supervisao",
+      outcome: "encaminhado ao contador (cadastro)",
+    });
+    return finish("cadastro_incompleto");
+  }
+
+  // 3-5. Fiscal, Validação e Supervisão (reaproveita o pipeline determinístico).
+  const intake = await runIntakePipeline(text, ctx, sink);
+  steps.push({
+    agentId: "fiscal",
+    outcome: "dados organizados por regras fixas",
+  });
+  if (intake.kind === "missing_fields") {
+    steps.push({
+      agentId: "validacao",
+      outcome: `faltam: ${intake.missing.map((m) => m.field).join(", ")}`,
+    });
+    return finish("dados_faltando");
+  }
+  if (intake.kind === "faq_or_human") return finish("fora_do_fluxo");
+  steps.push({
+    agentId: "validacao",
+    outcome: `política: ${intake.policy.decision}`,
+  });
+  if (intake.policy.decision !== "READY_FOR_CONFIRMATION") {
+    steps.push({
+      agentId: "supervisao",
+      outcome: "exceção encaminhada à revisão humana",
+    });
+    return finish("revisao_humana");
+  }
+  steps.push({ agentId: "supervisao", outcome: "sem exceções" });
+  return finish("pronto_para_confirmacao");
 }

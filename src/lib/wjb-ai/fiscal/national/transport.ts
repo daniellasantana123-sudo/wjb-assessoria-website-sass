@@ -17,12 +17,35 @@ export interface SefinEmitResult {
   errors?: { code: string; message: string }[];
 }
 
+/**
+ * Quem está do outro lado da conexão mTLS. O certificado da conexão e o da
+ * assinatura podem ser da WJB quando há procuração (FAQ 17.7).
+ */
+export interface SefinCallContext {
+  /** CNPJ/CPF do titular do certificado (OtherName). */
+  certificateHolderDocument: string;
+}
+
 export interface SefinTransport {
   readonly environment: "simulado" | "producao_restrita" | "producao";
   /** Corpo: XML da DPS assinado, compactado em GZip e codificado em Base64. */
-  emit(dpsXmlGzipBase64: string, dpsId: string): Promise<SefinEmitResult>;
-  dpsExists(dpsId: string): Promise<boolean>;
-  accessKeyForDps(dpsId: string): Promise<string | null>;
+  emit(
+    dpsXmlGzipBase64: string,
+    dpsId: string,
+    context: SefinCallContext,
+  ): Promise<SefinEmitResult>;
+  /** HEAD /dps/{id}: aberto a qualquer certificado válido. */
+  dpsExists(dpsId: string, context: SefinCallContext): Promise<boolean>;
+  /**
+   * GET /dps/{id}: só devolve a chave se o titular do certificado for ator da
+   * nota (Manual API v1.2, 1.4.2; FAQ 26.4). Com procuração, NÃO está
+   * confirmado se a SEFIN trata o procurador como ator: `null` deve virar
+   * conciliação, nunca reenvio.
+   */
+  accessKeyForDps(
+    dpsId: string,
+    context: SefinCallContext,
+  ): Promise<string | null>;
 }
 
 export class TransportNotAvailableError extends Error {}

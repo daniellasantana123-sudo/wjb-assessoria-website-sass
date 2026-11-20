@@ -435,6 +435,16 @@ export interface Database {
           certificate_vault_reference: string | null;
           registered_by: string | null;
           created_at: string;
+          emission_model: string | null;
+          certificate_holder_document: string | null;
+          certificate_valid_from: string | null;
+          certificate_valid_until: string | null;
+          certificate_fingerprint_sha256: string | null;
+          certificate_kind: string | null;
+          certificate_requirements_confirmed: boolean;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          revoke_reason: string | null;
         };
         Insert: {
           id?: string;
@@ -446,8 +456,49 @@ export interface Database {
           evidence_reference?: string | null;
           certificate_vault_reference?: string | null;
           registered_by?: string | null;
+          emission_model?: string | null;
+          certificate_holder_document?: string | null;
+          certificate_valid_from?: string | null;
+          certificate_valid_until?: string | null;
+          certificate_fingerprint_sha256?: string | null;
+          certificate_kind?: string | null;
+          certificate_requirements_confirmed?: boolean;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          revoke_reason?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["fiscal_authorization_grants"]["Insert"]>;
+        Relationships: [];
+      };
+      fiscal_dps_series: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          environment: string;
+          emitter_document: string;
+          series: number;
+          last_number: number;
+          active: boolean;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      fiscal_dps_numbers: {
+        Row: {
+          request_id: string;
+          tenant_id: string;
+          series_id: string;
+          environment: string;
+          emitter_document: string;
+          series: number;
+          number: number;
+          allocated_at: string;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
         Relationships: [];
       };
       leads: {
@@ -740,6 +791,14 @@ export interface Database {
       };
       revoke_fiscal_profile_approver: { Args: { p_grant_id: string; p_reason: string }; Returns: undefined };
       approve_fiscal_profile: { Args: { p_fiscal_profile_id: string; p_justification: string }; Returns: undefined };
+      configure_dps_series: {
+        Args: { p_tenant_id: string; p_environment: string; p_emitter_document: string; p_series: number };
+        Returns: string;
+      };
+      allocate_dps_number: {
+        Args: { p_request_id: string; p_environment: string };
+        Returns: { series: number; number: number; emitter_document: string }[];
+      };
     };
     Enums: {
       tenant_member_role: TenantMemberRole;

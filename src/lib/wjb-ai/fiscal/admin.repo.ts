@@ -2,6 +2,13 @@ import "server-only";
 
 import { createClient } from "@/lib/db/supabase/server";
 import type { NormalizedNfseDraft } from "@/lib/wjb-ai/fiscal/draft";
+import { evaluateEmitterAuthorization } from "@/lib/wjb-ai/fiscal/emitter-authorization";
+import { resolveLayout } from "@/lib/wjb-ai/fiscal/national/layouts";
+import { evaluateFiscalReadiness } from "@/lib/wjb-ai/fiscal/profile-settings";
+import {
+  getWjbCertificateMetadata,
+  toAuthorizationRecord,
+} from "@/lib/wjb-ai/fiscal/readiness.repo";
 import type { FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
 
 /**
@@ -230,39 +237,76 @@ export async function getAdminRequest(id: string) {
   };
 }
 
-export async function listFiscalSetup() {
+export async function listFiscalSetup(today: string) {
   const supabase = await createClient();
-  const [{ data: tenants }, { data: profiles }, { data: grants }] =
-    await Promise.all([
-      supabase.from("tenants").select("id, name, cnpj, status").order("name"),
-      supabase
-        .from("fiscal_profiles")
-        .select(
-          "id, tenant_id, version, status, municipality_ibge_code, max_amount_cents_without_review, approved_by, approved_at, approval_justification, created_at",
-        )
-        .order("version", { ascending: false }),
-      supabase
-        .from("fiscal_authorization_grants")
-        .select(
-          "id, tenant_id, kind, scope, status, valid_until, evidence_reference",
-        )
-        .order("valid_until", { ascending: false }),
-    ]);
+  const [
+    { data: tenants },
+    { data: profiles },
+    { data: grants },
+    { data: series },
+  ] = await Promise.all([
+    supabase.from("tenants").select("id, name, cnpj, status").order("name"),
+    supabase
+      .from("fiscal_profiles")
+      .select(
+        "id, tenant_id, version, status, municipality_ibge_code, max_amount_cents_without_review, service_settings, approved_by, approved_at, approval_justification, created_at",
+      )
+      .order("version", { ascending: false }),
+    supabase
+      .from("fiscal_authorization_grants")
+      .select(
+        "id, tenant_id, kind, emission_model, scope, status, valid_until, evidence_reference, revoked_at, revoke_reason, certificate_holder_document, certificate_valid_from, certificate_valid_until, certificate_fingerprint_sha256, certificate_vault_reference, certificate_kind, certificate_requirements_confirmed",
+      )
+      .order("valid_until", { ascending: false }),
+    supabase
+      .from("fiscal_dps_series")
+      .select(
+        "tenant_id, environment, series, last_number, emitter_document, active",
+      )
+      .eq("active", true),
+  ]);
   const names = await namesFor(
     (profiles ?? []).map((p) => p.approved_by ?? ""),
   );
-  return (tenants ?? []).map((t) => ({
-    ...t,
-    profiles: (profiles ?? [])
-      .filter((p) => p.tenant_id === t.id)
-      .map((p) => ({
+  const layout = resolveLayout("producao_restrita", today);
+  const wjbCertificate = getWjbCertificateMetadata();
+  return (tenants ?? []).map((t) => {
+    const tenantProfiles = (profiles ?? []).filter((p) => p.tenant_id === t.id);
+    const tenantGrants = (grants ?? []).filter((g) => g.tenant_id === t.id);
+    const tenantSeries = (series ?? []).filter((x) => x.tenant_id === t.id);
+    const approved =
+      tenantProfiles.find((p) => p.status === "approved") ?? null;
+    const tenantDocument = (t.cnpj ?? "")
+      .toUpperCase()
+      .replace(/[^0-9A-Z]/g, "");
+    const readiness = evaluateFiscalReadiness({
+      profileStatus: approved ? "approved" : null,
+      rawSettings: approved?.service_settings ?? null,
+      tenantDocument,
+      authorization: evaluateEmitterAuthorization({
+        tenantDocument,
+        grants: tenantGrants.map(toAuthorizationRecord),
+        wjbCertificate,
+        today,
+      }),
+      layout,
+      seriesConfigured:
+        tenantSeries.find((x) => x.environment === "producao_restrita")
+          ?.series ?? null,
+    });
+    return {
+      ...t,
+      profiles: tenantProfiles.map((p) => ({
         ...p,
         approvedByName: p.approved_by
           ? (names.get(p.approved_by) ?? "—")
           : null,
       })),
-    grants: (grants ?? []).filter((g) => g.tenant_id === t.id),
-  }));
+      grants: tenantGrants,
+      series: tenantSeries,
+      readiness,
+    };
+  });
 }
 
 export async function listApproverGrants() {

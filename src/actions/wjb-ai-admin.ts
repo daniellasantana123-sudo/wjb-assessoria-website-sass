@@ -14,6 +14,11 @@ import {
   planReview,
   type ReviewDecision,
 } from "@/lib/wjb-ai/fiscal/review";
+import {
+  parseAuthorizationForm,
+  parseFiscalSettingsForm,
+} from "@/lib/wjb-ai/fiscal/profile-form";
+import { looksLikeSecret } from "@/lib/wjb-ai/fiscal/secret-guard";
 import type { FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
 import {
   hasWjbAiPermission,
@@ -50,16 +55,14 @@ async function audit(
   metadata: Record<string, unknown>,
 ) {
   const supabase = await createClient();
-  await supabase
-    .from("audit_log")
-    .insert({
-      actor_id: session.userId,
-      tenant_id: tenantId,
-      action,
-      entity,
-      entity_id: entityId,
-      metadata,
-    });
+  await supabase.from("audit_log").insert({
+    actor_id: session.userId,
+    tenant_id: tenantId,
+    action,
+    entity,
+    entity_id: entityId,
+    metadata,
+  });
 }
 
 /** Aplica passos de estado: atualização com a RLS da equipe + evento gravado pelo servidor. */
@@ -326,48 +329,153 @@ export async function registerAuthorizationAction(
 ): Promise<AdminActionState> {
   const session = await guard("fiscal.profile.manage");
   if (isState(session)) return session;
-  const kind = String(formData.get("kind"));
-  if (
-    !["procuracao", "certificado_proprio", "consentimento_assistido"].includes(
-      kind,
-    )
-  )
-    return { error: "Tipo inválido." };
-  const scope = String(formData.get("scope") ?? "").trim();
-  const validUntil = String(formData.get("validUntil") ?? "");
-  const evidence = String(formData.get("evidence") ?? "").trim();
-  if (scope.length < 5) return { error: "Descreva o escopo da autorização." };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(validUntil))
-    return { error: "Informe a validade." };
-  if (!evidence)
-    return {
-      error:
-        "Informe onde está guardada a evidência (nunca o arquivo ou a senha).",
-    };
+  const parsed = parseAuthorizationForm(formData);
+  if (!parsed.ok) return { error: parsed.error };
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("fiscal_authorization_grants")
     .insert({
       tenant_id: tenantId,
-      kind,
-      scope,
-      valid_until: validUntil,
-      evidence_reference: evidence,
+      ...parsed.value,
       registered_by: session.userId,
     })
     .select("id")
     .single();
   if (error || !data) return { error: "Não foi possível registrar." };
+  // Auditoria sem dado do certificado: só tipo, modelo e validade.
   await audit(
     session,
     tenantId,
     "fiscal.authorization_registered",
     "fiscal_authorization_grant",
     data.id,
-    { kind, valid_until: validUntil },
+    {
+      kind: parsed.value.kind,
+      emission_model: parsed.value.emission_model,
+      valid_until: parsed.value.valid_until,
+    },
   );
   revalidatePath("/admin/nfse/perfis");
   return { ok: "Autorização registrada." };
+}
+
+export async function revokeAuthorizationAction(
+  grantId: string,
+  _prev: AdminActionState | undefined,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await guard("fiscal.profile.manage");
+  if (isState(session)) return session;
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (reason.length < 10)
+    return { error: "Explique o motivo da revogação (mínimo 10 caracteres)." };
+  if (looksLikeSecret(reason))
+    return { error: "O motivo não pode conter segredos." };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("fiscal_authorization_grants")
+    .update({
+      revoked_at: new Date().toISOString(),
+      revoked_by: session.userId,
+      revoke_reason: reason,
+    })
+    .eq("id", grantId)
+    .is("revoked_at", null)
+    .select("id, tenant_id")
+    .maybeSingle();
+  if (error || !data)
+    return { error: "Autorização não encontrada ou já revogada." };
+  await audit(
+    session,
+    data.tenant_id,
+    "fiscal.authorization_revoked",
+    "fiscal_authorization_grant",
+    grantId,
+    { reason },
+  );
+  revalidatePath("/admin/nfse/perfis");
+  return { ok: "Autorização revogada. Ela não volta a valer." };
+}
+
+export async function saveFiscalSettingsAction(
+  profileId: string,
+  _prev: AdminActionState | undefined,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await guard("fiscal.profile.manage");
+  if (isState(session)) return session;
+  const parsed = parseFiscalSettingsForm(formData);
+  if (!parsed.ok) return { error: parsed.error };
+  const supabase = await createClient();
+  // RLS: só rascunho pode ser editado; aprovado é imutável.
+  const { data, error } = await supabase
+    .from("fiscal_profiles")
+    .update({
+      service_settings: parsed.settings as unknown as Record<string, unknown>,
+      municipality_ibge_code: parsed.settings.emitter.municipalityIbge,
+    })
+    .eq("id", profileId)
+    .eq("status", "draft")
+    .select("id, tenant_id, version")
+    .maybeSingle();
+  if (error || !data)
+    return {
+      error: "Só um rascunho de perfil pode receber o cadastro fiscal.",
+    };
+  await audit(
+    session,
+    data.tenant_id,
+    "fiscal.profile_settings_saved",
+    "fiscal_profile",
+    data.id,
+    { version: data.version, enquadramento: parsed.settings.enquadramento },
+  );
+  revalidatePath("/admin/nfse/perfis");
+  return { ok: `Cadastro fiscal salvo no rascunho versão ${data.version}.` };
+}
+
+export async function configureDpsSeriesAction(
+  tenantId: string,
+  _prev: AdminActionState | undefined,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await guard("fiscal.review");
+  if (isState(session)) return session;
+  const environment = String(formData.get("environment") ?? "");
+  if (environment !== "simulado" && environment !== "producao_restrita")
+    return { error: "Ambiente não liberado nesta fase." };
+  const series = Number(formData.get("series"));
+  if (!Number.isInteger(series) || series < 1 || series > 49999)
+    return {
+      error: "A série da DPS pela API vai de 1 a 49999 (FAQ NFS-e 18.1).",
+    };
+  const document = String(formData.get("emitterDocument") ?? "").replace(
+    /\D/g,
+    "",
+  );
+  if (!/^(\d{11}|\d{14})$/.test(document))
+    return { error: "Informe o CPF/CNPJ do emitente (só números)." };
+  const supabase = await createClient();
+  // A checagem decisiva é do banco: contador com fiscal_profile.approve ou super_admin.
+  const { error } = await supabase.rpc("configure_dps_series", {
+    p_tenant_id: tenantId,
+    p_environment: environment,
+    p_emitter_document: document,
+    p_series: series,
+  });
+  if (error)
+    return {
+      error:
+        error.code === "42501"
+          ? "Só contador com fiscal_profile.approve para a empresa (ou super admin) configura a série."
+          : error.code === "23505"
+            ? "Esta série já foi usada por este emitente neste ambiente. Escolha outra."
+            : error.message,
+    };
+  revalidatePath("/admin/nfse/perfis");
+  return {
+    ok: `Série ${String(series).padStart(5, "0")} ativa em ${environment}.`,
+  };
 }
 
 export async function grantApproverAction(

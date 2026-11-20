@@ -56,3 +56,15 @@
 - Aprovação de perfil só por função no banco: nem editando a tabela direto nem sendo super_admin dá para aprovar.
 - Homologação local em Postgres 17 com camada mínima do Supabase, enquanto não houver projeto Supabase de homologação.
 - Os 14 papéis seguem executados em sequência por um agente; sem parecer humano independente.
+
+## Atualização da Fase 5 (20/11/2026)
+Resolvido em homologação: cadastro fiscal completo e checklist de prontidão (doc 27); modelos A e B de emissão com revogação definitiva (doc 26); numeração persistente e concorrente da DPS (0027); leiautes versionados por ambiente e vigência com validação contra os XSD oficiais (doc 25); fluxo dos seis agentes em simulação com Auditoria.
+
+**Decisões da WJB para o primeiro teste oficial** (checklist completo no doc 25, seção 7):
+1. Autorização expressa para acessar a produção restrita.
+2. Cofre de certificados (recomendação: gerenciador de segredos para a homologação; doc 26).
+3. e-CNPJ A1 da WJB e procuração eletrônica de uma empresa de teste no Portal de Serviços da RFB.
+4. Contador: cadastro fiscal da empresa de teste e decisão sobre IBS/CBS.
+5. Avaliação prévia de IA externa, se e quando a WJB quiser usar modelo (doc 28).
+
+**Técnicas, dependem do certificado:** ler swagger da SEFIN/ADN; confirmar algoritmo de assinatura; implementar assinador ICP-Brasil e transporte mTLS; guardar o XML da NFS-e em armazenamento protegido; ligar o conector nacional à fila só depois do teste.

@@ -49,6 +49,35 @@ test("contador sem concessão não consegue aprovar perfil", async ({ browser })
   await expect(draft.getByText("Você não tem a permissão fiscal_profile.approve para esta empresa.")).toBeVisible();
 });
 
+test("contador preenche o cadastro fiscal completo no rascunho e vê a prontidão", async ({ browser }) => {
+  const page = await login(browser, "CONTADOR");
+  await page.goto("/admin/nfse/perfis");
+  const a = tenantSection(page, "Empresa Ficticia A");
+  await expect(a.getByText("Prontidão para emitir")).toBeVisible();
+  const draft = a.getByRole("listitem").filter({ hasText: "Rascunho" }).first();
+  await draft.locator("summary", { hasText: "Preencher cadastro fiscal" }).click();
+  await draft.getByLabel("Enquadramento").selectOption("SIMPLES_ME_EPP");
+  await draft.getByLabel("Emitente: CPF/CNPJ").fill("00000000000191");
+  await draft.getByLabel("Município emissor (IBGE, 7 dígitos)").fill("3550308");
+  await draft.getByLabel(/^Código de tributação nacional/).fill("010101");
+  await draft.getByLabel("Local da prestação (IBGE, 7 dígitos)").fill("3550308");
+  await draft.getByLabel("Situação perante o Simples (opSimpNac)").selectOption("3");
+  await draft.getByLabel("Regime especial (regEspTrib)").selectOption("0");
+  await draft.getByLabel("Tributação do ISSQN (tribISSQN)").selectOption("1");
+  await draft.getByLabel("Retenção do ISSQN (tpRetISSQN)").selectOption("1");
+  await draft.getByLabel("IBS/CBS na DPS").selectOption("nao_informar");
+  await draft.getByLabel("Justificativa da decisão de IBS/CBS").fill("Grupo opcional hoje; decisão fictícia do contador.");
+  await draft.getByLabel("Série da DPS (1 a 49999)").fill("70000");
+  await draft.getByRole("button", { name: "Salvar cadastro fiscal" }).click();
+  // Série fora da faixa do canal API é recusada com mensagem clara.
+  await expect(draft.getByRole("alert")).toContainText("Série da DPS (1 a 49999)");
+  // O erro não apaga o que já foi preenchido: só a série é corrigida.
+  await expect(draft.getByLabel("Código de tributação nacional (cTribNac, 6 dígitos)")).toHaveValue("010101");
+  await draft.getByLabel("Série da DPS (1 a 49999)").fill("1");
+  await draft.getByRole("button", { name: "Salvar cadastro fiscal" }).click();
+  await expect(a.getByText(/Cadastro fiscal salvo no rascunho versão/)).toBeVisible();
+});
+
 test("contador autorizado aprova o perfil e registra a autorização de emissão", async ({ browser }) => {
   const page = await login(browser, "CONTADOR");
   await page.goto("/admin/nfse/perfis");
@@ -60,11 +89,15 @@ test("contador autorizado aprova o perfil e registra a autorização de emissão
     tenantSection(page, "Empresa Ficticia A").getByText(new RegExp(`Aprovado por Contador Autorizado .*\\(E2E ${run}\\)`)),
   ).toBeVisible();
   const a = tenantSection(page, "Empresa Ficticia A");
-  await a.getByLabel("Válida até").fill("2027-12-31");
+  await a.locator("summary", { hasText: "Registrar autorização" }).click();
+  await a.getByLabel("Autorização válida até").fill("2027-12-31");
   await a.getByLabel("Escopo").fill("Emissão de NFS-e de serviços (fictícia)");
   await a.getByLabel("Onde está a evidência").fill("Pasta fictícia de homologação");
+  await a.getByLabel("CNPJ/CPF do titular do certificado").fill("00000000000272");
   await a.getByRole("button", { name: "Registrar autorização" }).click();
   await expect(a.getByText("Autorização registrada.")).toBeVisible();
+  // Modelo A sem certificado da WJB no cofre: a prontidão mostra o bloqueio.
+  await expect(a.getByText(/certificado da WJB não cadastrado no cofre/).first()).toBeVisible();
 });
 
 async function request(page: Page, amount: string, ref: string) {

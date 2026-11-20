@@ -33,6 +33,13 @@ export const TOOLS = {
       "Perfil fiscal aprovado da empresa da sessão (limites, versão).",
     returnsPersonalData: false,
   },
+  check_emission_readiness: {
+    name: "check_emission_readiness",
+    effect: "read",
+    description:
+      "Checklist determinístico do cadastro fiscal (habilitação, autorização, certificado, serviço, ISSQN, IBS/CBS, série). Devolve só status, nunca dados do certificado.",
+    returnsPersonalData: false,
+  },
   get_request_status: {
     name: "get_request_status",
     effect: "read",
@@ -108,7 +115,11 @@ export const AGENTS: AgentContract[] = [
     id: "cadastro",
     name: "Cadastro",
     usesLlm: false,
-    tools: ["get_authenticated_client_context", "get_approved_fiscal_profile"],
+    tools: [
+      "get_authenticated_client_context",
+      "get_approved_fiscal_profile",
+      "check_emission_readiness",
+    ],
     never: ["ler outra empresa", "aceitar empresa vinda do modelo"],
   },
   {

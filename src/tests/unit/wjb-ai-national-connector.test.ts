@@ -16,6 +16,11 @@ import {
   InMemoryDpsNumberAllocator,
   NationalNFSeProvider,
 } from "@/lib/wjb-ai/fiscal/national/provider";
+import {
+  LAYOUT_CONTRACTS,
+  resolveLayout,
+} from "@/lib/wjb-ai/fiscal/national/layouts";
+import { SimulatedDpsSigner } from "@/lib/wjb-ai/fiscal/national/signing";
 import { SimulatedSefinTransport } from "@/lib/wjb-ai/fiscal/national/simulated-transport";
 import {
   createMtlsSefinTransport,
@@ -55,18 +60,26 @@ const draft = {
   },
 };
 
-function setup() {
+const PROD = resolveLayout("producao", "2026-11-20");
+const WJB_CNPJ = "99888777000155"; // fictício
+
+function setup(opts: { holder?: string } = {}) {
   const transport = new SimulatedSefinTransport();
   const allocator = new InMemoryDpsNumberAllocator(1);
   const provider = new NationalNFSeProvider({
     transport,
     allocator,
+    signer: new SimulatedDpsSigner(),
     emitterFor: async () => emitter,
     parametersFor: async () => params,
+    signerContextFor: async () => ({
+      certificateHolderDocument: opts.holder ?? emitter.document,
+    }),
     now: () => new Date("2026-11-20T12:00:00-03:00"),
   });
   return { transport, allocator, provider };
 }
+const ctxEmitter = { certificateHolderDocument: emitter.document };
 
 describe("identificador da DPS (Anexo I v1.01, regra 139 / E0004)", () => {
   it("tem 45 posições: DPS + município + tipo + inscrição + série + número", () => {
@@ -120,14 +133,15 @@ describe("identificador da DPS (Anexo I v1.01, regra 139 / E0004)", () => {
 describe("montagem da DPS", () => {
   const base = {
     dpsId: buildDpsId({ ...emitter, series: 1, number: 1 }),
-    environment: "homologacao" as const,
+    layout: PROD,
+    environment: "producao_restrita" as const,
     series: 1,
     number: 1,
-    issuedAt: "2026-11-20T12:00:00-03:00",
+    issuedAt: new Date("2026-11-20T12:00:00-03:00"),
     emitter,
     draft,
   };
-  it("usa os grupos oficiais e tpAmb 2 (homologação)", () => {
+  it("usa os grupos oficiais e tpAmb 2 (produção restrita)", () => {
     const xml = buildDpsXml({ ...base, params });
     for (const el of [
       "<infDPS Id=",
@@ -152,7 +166,7 @@ describe("montagem da DPS", () => {
     );
     expect(() =>
       buildDpsXml({ ...base, params: { ...params, cTribNac: "123" } }),
-    ).toThrow(/6 dígitos/);
+    ).toThrow(/domínio oficial/);
   });
   it("grupo IBS/CBS só com implementação completa e decisão do contador", () => {
     expect(() =>
@@ -210,11 +224,23 @@ describe("conector nacional contra o transporte simulado", () => {
     // Simula outra instância que já emitiu esta DPS sem o nosso registro de consulta.
     const dpsId = buildDpsId({ ...emitter, ...n });
     const { gzipSync } = await import("node:zlib");
-    await transport.emit(
-      gzipSync(Buffer.from(`<DPS><infDPS Id="${dpsId}"/></DPS>`)).toString(
-        "base64",
-      ),
+    const signed = await new SimulatedDpsSigner().sign(
+      buildDpsXml({
+        dpsId,
+        layout: PROD,
+        environment: "producao_restrita",
+        ...n,
+        issuedAt: new Date(),
+        emitter,
+        draft,
+        params,
+      }),
       dpsId,
+    );
+    await transport.emit(
+      gzipSync(Buffer.from(signed)).toString("base64"),
+      dpsId,
+      ctxEmitter,
     );
     transport.dpsExists = async () => false; // consulta prévia "falha" e o envio recebe E0014
     const out = await provider.submitAuthorizedDocument({
@@ -237,9 +263,9 @@ describe("conector nacional contra o transporte simulado", () => {
     const { provider, transport } = setup();
     let body = "";
     const original = transport.emit.bind(transport);
-    transport.emit = async (b, id) => {
+    transport.emit = async (b, id, c) => {
       body = b;
-      return original(b, id);
+      return original(b, id, c);
     };
     await provider.submitAuthorizedDocument({
       tenantId: "t-a",
@@ -295,5 +321,190 @@ describe("fila + conector nacional simulado", () => {
     });
     expect(status).toBe("AUTORIZADA");
     expect(transport.emitCalls).toBe(1);
+  });
+});
+
+describe("Fase 5: assinatura, procuração e regras oficiais no conector simulado", () => {
+  it("DPS sai assinada (enveloped, logo depois de infDPS) e a assinatura detecta adulteração", async () => {
+    const xml = buildDpsXml({
+      dpsId: buildDpsId({ ...emitter, series: 1, number: 7 }),
+      layout: PROD,
+      environment: "producao_restrita",
+      series: 1,
+      number: 7,
+      issuedAt: new Date("2026-11-20T12:00:00-03:00"),
+      emitter,
+      draft,
+      params,
+    });
+    const signed = await new SimulatedDpsSigner().sign(
+      xml,
+      buildDpsId({ ...emitter, series: 1, number: 7 }),
+    );
+    expect(signed).toMatch(
+      /<\/infDPS><Signature xmlns="http:\/\/www.w3.org\/2000\/09\/xmldsig#">/,
+    );
+    expect(signed).toContain('<Reference URI="#DPS');
+    expect(SimulatedDpsSigner.verify(signed)).toBe(true);
+    expect(SimulatedDpsSigner.verify(signed.replace("250.00", "2500.00"))).toBe(
+      false,
+    );
+    expect(
+      Buffer.from(
+        signed.match(/<SignatureValue>([^<]+)/)![1],
+        "base64",
+      ).toString(),
+    ).toMatch(/^SIMULADO:/);
+  });
+
+  it("modelo A sem procuração na RFB: E0718 (rejeitada, sem nota)", async () => {
+    const { provider } = setup({ holder: WJB_CNPJ });
+    const out = await provider.submitAuthorizedDocument({
+      tenantId: "t-a",
+      idempotencyKey: "kA",
+      draft,
+    });
+    expect(out).toMatchObject({ status: "REJEITADA", rejectionCode: "E0718" });
+  });
+
+  it("modelo A com procuração: autorizada; consulta GET sem tratar procurador como ator fica INDETERMINADA, nunca reenvia", async () => {
+    const { provider, transport } = setup({ holder: WJB_CNPJ });
+    transport.procuracoes.add(`${emitter.document}>${WJB_CNPJ}`);
+    transport.failNextEmitWithTimeout = true;
+    const first = await provider.submitAuthorizedDocument({
+      tenantId: "t-a",
+      idempotencyKey: "kA",
+      draft,
+    });
+    expect(first.status).toBe("RESULTADO_INDETERMINADO");
+    // HEAD diz que existe; GET nega a chave ao procurador (regra não confirmada).
+    expect((await provider.getSubmissionStatus("kA", "t-a"))?.status).toBe(
+      "RESULTADO_INDETERMINADO",
+    );
+    const again = await provider.submitAuthorizedDocument({
+      tenantId: "t-a",
+      idempotencyKey: "kA",
+      draft,
+    });
+    expect(again.status).toBe("RESULTADO_INDETERMINADO");
+    expect(transport.emitCalls).toBe(1);
+    transport.procuradorIsActor = true;
+    expect((await provider.getSubmissionStatus("kA", "t-a"))?.status).toBe(
+      "AUTORIZADA",
+    );
+  });
+
+  it("procuração revogada na RFB depois do cadastro: E0718 na próxima emissão", async () => {
+    const { provider, transport } = setup({ holder: WJB_CNPJ });
+    transport.procuracoes.add(`${emitter.document}>${WJB_CNPJ}`);
+    expect(
+      (
+        await provider.submitAuthorizedDocument({
+          tenantId: "t-a",
+          idempotencyKey: "k1",
+          draft,
+        })
+      ).status,
+    ).toBe("AUTORIZADA");
+    transport.procuracoes.clear();
+    const out = await provider.submitAuthorizedDocument({
+      tenantId: "t-a",
+      idempotencyKey: "k2",
+      draft,
+    });
+    expect(out).toMatchObject({ status: "REJEITADA", rejectionCode: "E0718" });
+  });
+
+  it("série fora da faixa do canal API é recusada antes de enviar (E0010 evitado)", async () => {
+    const transport = new SimulatedSefinTransport();
+    const provider = new NationalNFSeProvider({
+      transport,
+      allocator: new InMemoryDpsNumberAllocator(70000),
+      signer: new SimulatedDpsSigner(),
+      emitterFor: async () => emitter,
+      parametersFor: async () => params,
+      signerContextFor: async () => ctxEmitter,
+      now: () => new Date("2026-11-20T12:00:00-03:00"),
+    });
+    await expect(
+      provider.submitAuthorizedDocument({
+        tenantId: "t-a",
+        idempotencyKey: "k1",
+        draft,
+      }),
+    ).rejects.toThrow(/faixa do canal API/);
+    expect(transport.emitCalls).toBe(0);
+  });
+
+  it("DPS sem assinatura é rejeitada pelo simulador (E0717)", async () => {
+    const transport = new SimulatedSefinTransport();
+    const dpsId = buildDpsId({ ...emitter, series: 1, number: 1 });
+    const xml = buildDpsXml({
+      dpsId,
+      layout: PROD,
+      environment: "producao_restrita",
+      series: 1,
+      number: 1,
+      issuedAt: new Date(),
+      emitter,
+      draft,
+      params,
+    });
+    const { gzipSync } = await import("node:zlib");
+    const out = await transport.emit(
+      gzipSync(Buffer.from(xml)).toString("base64"),
+      dpsId,
+      ctxEmitter,
+    );
+    expect(out.errors?.[0]?.code).toBe("E0717");
+  });
+
+  it("CNPJ alfanumérico: recusado no leiaute de produção, aceito no de produção restrita (NT 009)", () => {
+    const restrita = resolveLayout("producao_restrita", "2026-11-20");
+    const alnum = {
+      ...emitter,
+      document: "12ABC34501DE35",
+      series: 1,
+      number: 1,
+    };
+    expect(() => buildDpsId(alnum, PROD)).toThrow(/alfanumérico/);
+    expect(buildDpsId(alnum, restrita)).toMatch(/^DPS3550308212ABC34501DE35/);
+  });
+});
+
+describe("versionamento dos leiautes por ambiente e vigência", () => {
+  it("produção usa o pacote v1.01 de 09/02/2026; NT 009 não vale em produção sem data oficial", () => {
+    expect(resolveLayout("producao", "2026-11-20").id).toBe(
+      "producao-v1.01-20260209",
+    );
+    expect(resolveLayout("producao", "2027-06-01").id).toBe(
+      "producao-v1.01-20260209",
+    );
+  });
+  it("produção restrita usa a NT 009 só a partir de 20/10/2026", () => {
+    expect(resolveLayout("producao_restrita", "2026-10-19").id).toBe(
+      "producao-v1.01-20260209",
+    );
+    expect(resolveLayout("producao_restrita", "2026-10-20").id).toBe(
+      "producao-restrita-nt009-r1-20261020",
+    );
+  });
+  it("uma vigência futura publicada só é aplicada a partir da data", () => {
+    const future = LAYOUT_CONTRACTS.map((c) =>
+      c.id === "producao-restrita-nt009-r1-20261020"
+        ? { ...c, validFrom: { ...c.validFrom, producao: "2026-12-01" } }
+        : c,
+    );
+    expect(resolveLayout("producao", "2026-11-30", future).id).toBe(
+      "producao-v1.01-20260209",
+    );
+    expect(resolveLayout("producao", "2026-12-01", future).id).toBe(
+      "producao-restrita-nt009-r1-20261020",
+    );
+  });
+  it("sem leiaute vigente, recusa", () => {
+    expect(() => resolveLayout("producao", "2026-01-01")).toThrow(
+      /Nenhum leiaute/,
+    );
   });
 });
