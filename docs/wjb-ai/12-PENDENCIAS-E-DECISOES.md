@@ -6,10 +6,15 @@
 - Aprovação de perfil fiscal: papel `contador` + permissão granular `fiscal_profile.approve`, concedida e revogada por super_admin, nunca automática. Feito no banco.
 - Desenvolvimento com dados fictícios; nenhum certificado real; nenhum envio a provedor de IA.
 
+## Fase A (20/11/2026) - ver 18
+- Supabase Pro confirmado; o projeto de produção já está na organização Pro.
+- **Aguardando:** aprovação do custo do projeto `wjb-ai-homologacao` (≈ US$ 10/mês, fora do Spend Cap) e sua criação no painel.
+- **Atenção:** banco de produção em "coming up" durante a auditoria; não foi tocado.
+
 ## Pendentes - dependem da WJB
 1. Aprovar a aplicação da 0024 em produção.
 2. Aprovar a publicação do código da F2 (telas do Portal, desligadas).
-3. Contratar o plano pago do Supabase e criar um projeto Supabase de homologação (ver 16).
+3. ~~Contratar o plano pago do Supabase~~ (feito em 20/11). Criar o projeto `wjb-ai-homologacao` (ver 18).
 4. Escolher a opção de cofre de certificados (ver 15).
 5. Provedor de LLM: contrato, retenção, RIPD (ver 14).
 6. Contador: matriz de enquadramento e limite por nota de cada cliente.
