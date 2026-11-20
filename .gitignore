@@ -31,3 +31,6 @@ LOG_imapsync/
 
 # estado local do Supabase CLI (criado por `npx supabase`) - nao versionar
 supabase/.temp/
+
+# Backups e usuários de teste da homologação WJB AI (nunca versionar)
+.homolog-backups/

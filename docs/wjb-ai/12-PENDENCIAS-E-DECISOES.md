@@ -6,6 +6,15 @@
 - Aprovação de perfil fiscal: papel `contador` + permissão granular `fiscal_profile.approve`, concedida e revogada por super_admin, nunca automática. Feito no banco.
 - Desenvolvimento com dados fictícios; nenhum certificado real; nenhum envio a provedor de IA.
 
+## Produção (20/11/2026) - ver 19 e 20
+- **Incidente:** banco de produção não sobe; papéis internos do Supabase sem senha e esquema do Realtime incompleto. Não vem do código da WJB. **Ação do proprietário: chamado ao suporte do Supabase** (texto pronto no 19). Nenhuma ação feita na produção.
+- **Sem backup** da produção até agora.
+- Nano -> Micro: análise pronta (20), **não autorizado**; só depois do incidente e do primeiro backup.
+
+## Homologação (20/11/2026) - ver 21
+- Custo aprovado (≈ US$ 10/mês). Scripts prontos e testados localmente.
+- **Aguardando do proprietário:** criar `wjb-ai-homologacao` e o arquivo `.env.homolog.local`.
+
 ## Fase A (20/11/2026) - ver 18
 - Supabase Pro confirmado; o projeto de produção já está na organização Pro.
 - **Aguardando:** aprovação do custo do projeto `wjb-ai-homologacao` (≈ US$ 10/mês, fora do Spend Cap) e sua criação no painel.

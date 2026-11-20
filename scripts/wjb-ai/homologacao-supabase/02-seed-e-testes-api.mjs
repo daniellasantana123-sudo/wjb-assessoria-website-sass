@@ -1,0 +1,160 @@
+// Homologação REAL: usuários fictícios no Supabase Auth de homologação e
+// testes de RLS/permissões pela API (PostgREST), com JWT de verdade.
+// Senhas de teste são geradas aqui e gravadas só em .env.homolog.users.local
+// (ignorado pelo Git); nunca aparecem na saída.
+// Uso: node scripts/wjb-ai/homologacao-supabase/02-seed-e-testes-api.mjs
+import { randomBytes } from "node:crypto";
+import { existsSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+import { createClient } from "@supabase/supabase-js";
+
+import { loadHomologEnv, parseEnvFile, projectRef, ROOT } from "./env.mjs";
+
+const env = loadHomologEnv({ needDb: false });
+const URL_ = env.HOMOLOG_SUPABASE_URL;
+const admin = createClient(URL_, env.HOMOLOG_SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+const USERS_FILE = path.join(ROOT, ".env.homolog.users.local");
+console.log(`Projeto de homologação: ${projectRef(env)}\n`);
+
+const PEOPLE = {
+  clienteA: { email: "cliente.a@exemplo.test", name: "Cliente A (ficticio)" },
+  clienteB: { email: "cliente.b@exemplo.test", name: "Cliente B (ficticio)" },
+  clienteAB: { email: "cliente.ab@exemplo.test", name: "Cliente das duas empresas" },
+  contador: { email: "contador.autorizado@exemplo.test", name: "Contador Autorizado", staff: "contador" },
+  contadorSem: { email: "contador.sem@exemplo.test", name: "Contador Sem Permissao", staff: "contador" },
+  contadorA: { email: "contador.so.a@exemplo.test", name: "Contador So A", staff: "contador" },
+  atendimento: { email: "atendimento@exemplo.test", name: "Atendimento", staff: "atendimento" },
+  superadmin: { email: "superadmin@exemplo.test", name: "Super Admin", staff: "super_admin" },
+};
+const TENANTS = { A: "Empresa Ficticia A", B: "Empresa Ficticia B" };
+
+// ---------- seed idempotente ----------
+const saved = existsSync(USERS_FILE) ? parseEnvFile(USERS_FILE) : {};
+const ids = {};
+const passwords = {};
+const { data: list } = await admin.auth.admin.listUsers({ perPage: 200 });
+for (const [key, p] of Object.entries(PEOPLE)) {
+  const envKey = `HOMOLOG_PW_${key.toUpperCase()}`;
+  passwords[key] = saved[envKey] ?? randomBytes(18).toString("base64url");
+  const existing = list.users.find((u) => u.email === p.email);
+  if (existing) {
+    ids[key] = existing.id;
+    await admin.auth.admin.updateUserById(existing.id, { password: passwords[key] });
+  } else {
+    const { data, error } = await admin.auth.admin.createUser({
+      email: p.email, password: passwords[key], email_confirm: true, user_metadata: { full_name: p.name },
+    });
+    if (error) throw new Error(`createUser ${p.email}: ${error.message}`);
+    ids[key] = data.user.id;
+  }
+  if (p.staff) {
+    const { error } = await admin.from("profiles").update({ is_wjb_staff: true, staff_role: p.staff, status: "active" }).eq("id", ids[key]);
+    if (error) throw new Error(`perfil ${key}: ${error.message}`);
+  }
+}
+writeFileSync(USERS_FILE, Object.entries(PEOPLE).map(([k, p]) => `HOMOLOG_USER_${k.toUpperCase()}=${p.email}\nHOMOLOG_PW_${k.toUpperCase()}=${passwords[k]}`).join("\n") + "\n", { mode: 0o600 });
+
+const tenantIds = {};
+for (const [k, name] of Object.entries(TENANTS)) {
+  const { data: found } = await admin.from("tenants").select("id").eq("name", name).maybeSingle();
+  tenantIds[k] = found?.id ?? (await admin.from("tenants").insert({ name }).select("id").single()).data.id;
+}
+for (const [person, tenant] of [["clienteA", "A"], ["clienteB", "B"], ["clienteAB", "A"], ["clienteAB", "B"]]) {
+  await admin.from("tenant_members").upsert({ tenant_id: tenantIds[tenant], profile_id: ids[person], role: "owner" }, { onConflict: "tenant_id,profile_id" });
+}
+console.log("Seed fictício pronto: 8 usuários, 2 empresas.\n");
+
+// ---------- helpers ----------
+async function as(key) {
+  const c = createClient(URL_, env.HOMOLOG_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+  const { error } = await c.auth.signInWithPassword({ email: PEOPLE[key].email, password: passwords[key] });
+  if (error) throw new Error(`login ${key}: ${error.message}`);
+  return c;
+}
+const anon = createClient(URL_, env.HOMOLOG_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+let failures = 0;
+const check = (ok, label, detail = "") => {
+  if (!ok) failures++;
+  console.log(`${ok ? "OK   " : "FALHA"} ${label}${detail ? ` (${detail})` : ""}`);
+};
+const run = Date.now().toString(36);
+const draft = { serviceDescription: "Servico ficticio", amountCents: 8000, competence: "2026-11", taker: { document: "52998224725", documentKind: "CPF", name: "Tomador Ficticio" } };
+const newReq = (tenant, creator, key, extra = {}) => ({ tenant_id: tenantIds[tenant], created_by: ids[creator], idempotency_key: key, draft_snapshot: draft, draft_hash: key, ...extra });
+
+const A = await as("clienteA"), B = await as("clienteB");
+const atend = await as("atendimento"), cont = await as("contador"), contSem = await as("contadorSem"), contA = await as("contadorA"), sa = await as("superadmin");
+
+// ---------- pedidos: criação, leitura, alteração ----------
+const ins = await A.from("fiscal_requests").insert(newReq("A", "clienteA", `a-${run}`)).select("id").single();
+check(!ins.error, "T01 cliente A cria pedido na própria empresa (Auth + PostgREST)", ins.error?.message);
+await B.from("fiscal_requests").insert(newReq("B", "clienteB", `b-${run}`));
+const readA = await A.from("fiscal_requests").select("tenant_id");
+check(readA.data?.every((r) => r.tenant_id === tenantIds.A) && readA.data.length > 0, "T02 cliente A só lê pedidos da empresa A");
+const crossB = await A.from("fiscal_requests").select("id").eq("tenant_id", tenantIds.B);
+check(crossB.data?.length === 0, "T03 consulta direta da empresa B por A volta vazia");
+const insB = await A.from("fiscal_requests").insert(newReq("B", "clienteA", `x-${run}`));
+check(!!insB.error, "T04 cliente A não cria pedido na empresa B", insB.error?.code);
+const forged = await A.from("fiscal_requests").insert(newReq("A", "clienteA", `f-${run}`, { status: "AUTORIZADA" }));
+check(!!forged.error, "T05 cliente não cria pedido já AUTORIZADA", forged.error?.code);
+const imperson = await A.from("fiscal_requests").insert(newReq("A", "clienteB", `i-${run}`));
+check(!!imperson.error, "T06 cliente não cria pedido em nome de outra pessoa", imperson.error?.code);
+const upd = await A.from("fiscal_requests").update({ status: "CONFIRMADA" }).eq("id", ins.data?.id).select("id");
+check((upd.data ?? []).length === 0, "T07 cliente não altera o próprio pedido");
+const ev = await A.from("fiscal_request_events").insert({ request_id: ins.data?.id, tenant_id: tenantIds.A, to_status: "AUTORIZADA" });
+check(!!ev.error, "T08 cliente não grava evento", ev.error?.code);
+const dup = await A.from("fiscal_requests").insert(newReq("A", "clienteA", `a-${run}`));
+check(dup.error?.code === "23505", "T09 mesma chave na mesma empresa é recusada (idempotência)", dup.error?.code);
+const conc = await Promise.all(Array.from({ length: 5 }, () => A.from("fiscal_requests").insert(newReq("A", "clienteA", `c-${run}`))));
+check(conc.filter((r) => !r.error).length === 1, "T10 5 envios simultâneos iguais geram 1 pedido", `${conc.filter((r) => !r.error).length} gravado(s)`);
+const anonRead = await anon.from("fiscal_requests").select("id");
+check((anonRead.data ?? []).length === 0, "T11 visitante sem login não lê pedidos");
+
+// ---------- equipe ----------
+const toReview = await atend.from("fiscal_requests").update({ status: "REVISAO_HUMANA" }).eq("id", ins.data?.id).select("id");
+check(toReview.data?.length === 1, "T12 equipe move pedido para REVISAO_HUMANA");
+const forge = await atend.from("fiscal_requests").update({ status: "AUTORIZADA" }).eq("id", ins.data?.id).select("id");
+check(!!forge.error || (forge.data ?? []).length === 0, "T13 equipe não marca AUTORIZADA", forge.error?.code);
+const att = await atend.from("fiscal_issuance_attempts").insert({ request_id: ins.data?.id, tenant_id: tenantIds.A, environment: "mock", idempotency_key: `a-${run}`, outcome: "AUTORIZADA", simulated: true });
+check(!!att.error, "T14 equipe não grava tentativa de envio", att.error?.code);
+
+// ---------- fiscal_profile.approve ----------
+const prof = await admin.from("fiscal_profiles").insert({ tenant_id: tenantIds.A, version: Date.now() % 100000, created_by: ids.contador }).select("id").single();
+const profB = await admin.from("fiscal_profiles").insert({ tenant_id: tenantIds.B, version: Date.now() % 100000, created_by: ids.contador }).select("id").single();
+await admin.from("fiscal_profile_approver_grants").update({ revoked_at: new Date().toISOString(), revoke_reason: "reinicio do teste" }).is("revoked_at", null);
+const noGrant = await contSem.rpc("approve_fiscal_profile", { p_fiscal_profile_id: prof.data.id, p_justification: "Tentativa sem concessao" });
+check(!!noGrant.error, "T15 contador sem concessão não aprova", noGrant.error?.code);
+const direct = await contSem.from("fiscal_profiles").update({ status: "approved" }).eq("id", prof.data.id).select("id");
+check(!!direct.error || (direct.data ?? []).length === 0, "T16 aprovar editando a tabela é bloqueado");
+const self = await cont.rpc("grant_fiscal_profile_approver", { p_profile_id: ids.contador, p_tenant_id: null, p_reason: "Autoconcessao indevida" });
+check(!!self.error, "T17 contador não concede permissão a si mesmo", self.error?.code);
+const toAtend = await sa.rpc("grant_fiscal_profile_approver", { p_profile_id: ids.atendimento, p_tenant_id: null, p_reason: "Atendimento nao pode" });
+check(!!toAtend.error, "T18 permissão não vai para Atendimento", toAtend.error?.code);
+const g1 = await sa.rpc("grant_fiscal_profile_approver", { p_profile_id: ids.contador, p_tenant_id: null, p_reason: "Contador responsavel pela carteira" });
+const g2 = await sa.rpc("grant_fiscal_profile_approver", { p_profile_id: ids.contadorA, p_tenant_id: tenantIds.A, p_reason: "Contador somente da empresa A" });
+check(!g1.error && !g2.error, "T19 super_admin concede (geral e só empresa A)", g1.error?.message ?? g2.error?.message);
+const saApprove = await sa.rpc("approve_fiscal_profile", { p_fiscal_profile_id: prof.data.id, p_justification: "Super admin tentando aprovar" });
+check(!!saApprove.error, "T20 super_admin concede, mas não aprova", saApprove.error?.code);
+const scope = await contA.rpc("approve_fiscal_profile", { p_fiscal_profile_id: profB.data.id, p_justification: "Fora do escopo da concessao" });
+check(!!scope.error, "T21 concessão da empresa A não aprova a empresa B", scope.error?.code);
+const short = await cont.rpc("approve_fiscal_profile", { p_fiscal_profile_id: prof.data.id, p_justification: "curta" });
+check(!!short.error, "T22 aprovação exige justificativa", short.error?.code);
+const ok = await cont.rpc("approve_fiscal_profile", { p_fiscal_profile_id: prof.data.id, p_justification: "Conferido com documentos ficticios" });
+check(!ok.error, "T23 contador autorizado aprova com justificativa", ok.error?.message);
+const hist = await admin.from("fiscal_profile_approvals").select("approved_by, justification").eq("fiscal_profile_id", prof.data.id);
+check(hist.data?.[0]?.approved_by === ids.contador, "T24 histórico registra quem aprovou e a justificativa");
+const aud = await admin.from("audit_log").select("id").eq("action", "fiscal.profile_approved").eq("entity_id", prof.data.id);
+check(aud.data?.length === 1, "T25 aprovação gravada no audit_log");
+const immut = await cont.from("fiscal_profiles").update({ max_amount_cents_without_review: 1 }).eq("id", prof.data.id).select("id");
+check((immut.data ?? []).length === 0, "T26 perfil aprovado é imutável");
+const clientSees = await A.from("fiscal_profile_approver_grants").select("id");
+check((clientSees.data ?? []).length === 0, "T27 cliente não enxerga concessões");
+await sa.rpc("revoke_fiscal_profile_approver", { p_grant_id: g1.data, p_reason: "Revogacao de teste" });
+const after = await cont.rpc("can_approve_fiscal_profile", { check_tenant_id: tenantIds.A });
+check(after.data === false, "T28 revogação retira a permissão na hora");
+const grantByContador = await contA.rpc("revoke_fiscal_profile_approver", { p_grant_id: g2.data, p_reason: "Contador tentando revogar" });
+check(!!grantByContador.error, "T29 só super_admin revoga", grantByContador.error?.code);
+
+console.log(`\n${failures === 0 ? "Homologação pela API concluída sem falhas." : `${failures} FALHA(S).`}`);
+console.log("Credenciais de teste em .env.homolog.users.local (fora do Git).");
+process.exit(failures ? 1 : 0);
