@@ -85,6 +85,25 @@ const newReq = (tenant, creator, key, extra = {}) => ({ tenant_id: tenantIds[ten
 const A = await as("clienteA"), B = await as("clienteB");
 const atend = await as("atendimento"), cont = await as("contador"), contSem = await as("contadorSem"), contA = await as("contadorA"), sa = await as("superadmin");
 
+// ---------- regressão: tabelas que já existiam ----------
+for (const t of ["A", "B"]) {
+  const { data: has } = await admin.from("obligations").select("id").eq("tenant_id", tenantIds[t]).limit(1);
+  if (!has?.length) await admin.from("obligations").insert({ tenant_id: tenantIds[t], title: `DAS ficticio ${t}`, due_date: "2026-12-20" });
+}
+const tA = await A.from("tenants").select("id");
+check(tA.data?.length === 1 && tA.data[0].id === tenantIds.A, "R01 cliente A só enxerga a própria empresa (tenants)");
+const oA = await A.from("obligations").select("tenant_id");
+check(oA.data?.length > 0 && oA.data.every((o) => o.tenant_id === tenantIds.A), "R02 obrigações isoladas por empresa");
+const pB = await A.from("profiles").select("id").eq("id", ids.clienteB);
+check((pB.data ?? []).length === 0, "R03 cliente A não lê o perfil do cliente B");
+const selfPromote = await A.from("profiles").update({ is_wjb_staff: true, staff_role: "super_admin" }).eq("id", ids.clienteA);
+check(!!selfPromote.error, "R04 cliente não se autopromove a super_admin (0022)", selfPromote.error?.code);
+// Sem .select(): o visitante grava, mas não pode ler de volta (igual ao site).
+const lead = await anon.from("leads").insert({ name: "Lead Ficticio", email: `lead-${Date.now()}@exemplo.test`, form_context: "homologacao" });
+check(!lead.error, "R05 visitante consegue gravar um lead (formulário do site)", lead.error?.code);
+const leadsRead = await anon.from("leads").select("id");
+check((leadsRead.data ?? []).length === 0, "R06 visitante não lê leads");
+
 // ---------- pedidos: criação, leitura, alteração ----------
 const ins = await A.from("fiscal_requests").insert(newReq("A", "clienteA", `a-${run}`)).select("id").single();
 check(!ins.error, "T01 cliente A cria pedido na própria empresa (Auth + PostgREST)", ins.error?.message);

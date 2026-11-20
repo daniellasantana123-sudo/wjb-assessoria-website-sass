@@ -55,7 +55,8 @@ test("cliente solicita NFS-e: prévia, confirmação e andamento em revisão", a
   requestUrl = new URL(page.url()).pathname;
   await expect(page.getByText("Em revisão pelo contador").first()).toBeVisible();
   await expect(page.getByText("Encaminhado para revisão do contador.")).toBeVisible();
-  await expect(page.getByText(/emitid/i)).toHaveCount(0);
+  // Nenhuma afirmação de nota emitida (o aviso "nenhuma nota é emitida" é permitido).
+  await expect(page.getByText(/nota (fiscal )?emitida com|nota emitida|foi emitida/i)).toHaveCount(0);
 
   await page.goto("/portal/nfse");
   await expect(page.getByText("Serviço fictício de homologação").first()).toBeVisible();

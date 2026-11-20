@@ -24,6 +24,8 @@ FATAL  password authentication failed for user "postgres"
 ERROR  relation "realtime.subscription" does not exist
 ```
 
+> **Correção (20/11, mesmo dia):** o erro `realtime.subscription does not exist` também aparece num projeto recém-criado durante o provisionamento (ver 21), então sozinho não indica falha. A evidência relevante continua sendo os papéis internos sem senha.
+
 ## 2. O que as evidências mostram
 - Os **papéis internos do próprio Supabase** (`supabase_admin`, `postgres`) estão **sem senha** no banco, e o esquema interno do Realtime está incompleto. Os serviços da plataforma não conseguem se conectar, por isso o projeto não sai de "Coming up".
 - **Nenhuma migration do projeto altera papéis, senhas ou o esquema `realtime`** (verificado por busca nas 23 migrations). O problema não vem do código da WJB.

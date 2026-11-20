@@ -35,12 +35,28 @@ export const nfseDraftSchema = z
       ),
     taker: z
       .object({
-        document: z.string().trim().min(11).max(18),
-        name: z.string().trim().min(2).max(200),
-        email: z.string().trim().email().optional(),
+        document: z
+          .string()
+          .trim()
+          .min(11, "Informe o CPF ou CNPJ do tomador.")
+          .max(18, "CPF ou CNPJ longo demais."),
+        name: z
+          .string()
+          .trim()
+          .min(2, "Informe o nome ou a razão social do tomador.")
+          .max(200, "Nome longo demais."),
+        email: z
+          .string()
+          .trim()
+          .email("E-mail do tomador inválido.")
+          .optional(),
       })
       .strict(),
-    sourceReference: z.string().trim().max(100).optional(),
+    sourceReference: z
+      .string()
+      .trim()
+      .max(100, "Referência longa demais.")
+      .optional(),
   })
   .strict();
 

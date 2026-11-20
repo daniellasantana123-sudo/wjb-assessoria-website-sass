@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   previewNfseAction,
@@ -72,6 +72,24 @@ export function NfseRequestForm({
     undefined,
   );
   const state = submitState ?? previewState;
+  // Campos controlados: no React 19 a ação do formulário limpa os campos não
+  // controlados ao terminar, e o "Confirmar" seguia com o formulário vazio
+  // (achado no teste com login real, 20/11/2026).
+  const [values, setValues] = useState({
+    serviceDescription: "",
+    grossAmount: "",
+    competence: defaultCompetence,
+    takerDocument: "",
+    takerName: "",
+    takerEmail: "",
+    sourceReference: "",
+  });
+  const bind = (name: keyof typeof values) => ({
+    name,
+    value: values[name],
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setValues((v) => ({ ...v, [name]: e.target.value })),
+  });
   const preview = previewState?.preview;
 
   return (
@@ -85,7 +103,7 @@ export function NfseRequestForm({
       >
         <Textarea
           id="serviceDescription"
-          name="serviceDescription"
+          {...bind("serviceDescription")}
           rows={3}
           required
           aria-describedby="serviceDescription-erro"
@@ -102,7 +120,7 @@ export function NfseRequestForm({
         >
           <Input
             id="grossAmount"
-            name="grossAmount"
+            {...bind("grossAmount")}
             inputMode="decimal"
             required
             aria-describedby="grossAmount-erro"
@@ -115,9 +133,9 @@ export function NfseRequestForm({
         >
           <Input
             id="competence"
-            name="competence"
+            {...bind("competence")}
             type="month"
-            defaultValue={defaultCompetence}
+
             required
           />
         </Field>
@@ -131,7 +149,7 @@ export function NfseRequestForm({
           <Field id="takerDocument" label="CPF ou CNPJ" state={state}>
             <Input
               id="takerDocument"
-              name="takerDocument"
+              {...bind("takerDocument")}
               required
               autoComplete="off"
               aria-describedby="takerDocument-erro"
@@ -140,7 +158,7 @@ export function NfseRequestForm({
           <Field id="takerName" label="Nome ou razão social" state={state}>
             <Input
               id="takerName"
-              name="takerName"
+              {...bind("takerName")}
               required
               aria-describedby="takerName-erro"
             />
@@ -151,7 +169,7 @@ export function NfseRequestForm({
           label="E-mail do tomador (opcional)"
           state={state}
         >
-          <Input id="takerEmail" name="takerEmail" type="email" />
+          <Input id="takerEmail" {...bind("takerEmail")} type="email" />
         </Field>
       </fieldset>
 
@@ -161,7 +179,11 @@ export function NfseRequestForm({
         hint="Use para diferenciar dois serviços iguais, por exemplo o número do pedido."
         state={state}
       >
-        <Input id="sourceReference" name="sourceReference" maxLength={100} />
+        <Input
+          id="sourceReference"
+          {...bind("sourceReference")}
+          maxLength={100}
+        />
       </Field>
 
       {state?.error ? (

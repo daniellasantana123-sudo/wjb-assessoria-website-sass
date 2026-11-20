@@ -43,7 +43,12 @@ try {
   const target = `postgresql://postgres:${pw}@${name}:5432/postgres`;
   run(target, 'psql "$PGURL" -q -v ON_ERROR_STOP=1', SHIM);
   run(target, `psql "$PGURL" -q -v ON_ERROR_STOP=1 -c "\\copy auth.users (id, email, raw_user_meta_data) from '/backup/${dump}.users.csv' csv"`);
-  run(target, `pg_restore -d "$PGURL" --no-owner --no-privileges /backup/${dump} 2>/dev/null || true`);
+  // `pg_attver` é parâmetro interno de coluna do Postgres do Supabase; um
+  // Postgres padrão não o reconhece e recusaria o bloco inteiro da tabela.
+  // Só essas linhas são removidas; qualquer outro erro reprova o teste.
+  run(target, `pg_restore -f - --no-owner --no-privileges /backup/${dump} | sed '/SET (pg_attver=/d' | psql "$PGURL" -q 2>/backup/${dump}.restore.log >/dev/null || true`);
+  const errors = readFileSync(path.join(BACKUPS, `${dump}.restore.log`), "utf8").split("\n").filter((l) => /ERROR/.test(l) && !/schema "public" already exists/.test(l));
+  if (errors.length) throw new Error(`FALHA: ${errors.length} erro(s) na restauração (ver .homolog-backups/${dump}.restore.log)`);
   const restored = run(target, `psql "$PGURL" -tA -c "${COUNT.replace(/"/g, '\\"')}"`).trim();
   console.log(`2. Original:   ${original}`);
   console.log(`   Restaurado: ${restored}`);
