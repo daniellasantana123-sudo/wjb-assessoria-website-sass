@@ -39,6 +39,8 @@ export interface FiscalProvider {
   /** Consulta antes de reenviar: resposta ambígua nunca vira reenvio cego. */
   getSubmissionStatus(
     idempotencyKey: string,
+    /** Empresa do pedido: o conector nacional precisa dela para montar o id da DPS. */
+    tenantId?: string,
   ): Promise<SubmissionOutcome | null>;
   getProviderHealth(): Promise<FiscalProviderHealth>;
 }

@@ -2,7 +2,10 @@ import {
   getFiscalProviderMode,
   isFiscalProductionAllowed,
 } from "@/lib/wjb-ai/config";
-import { MockFiscalProvider, scenarioByAmount } from "@/lib/wjb-ai/fiscal/provider/mock.provider";
+import {
+  MockFiscalProvider,
+  scenarioByAmount,
+} from "@/lib/wjb-ai/fiscal/provider/mock.provider";
 import {
   FiscalProviderUnavailableError,
   type FiscalProvider,
@@ -15,7 +18,8 @@ import {
  */
 export function getFiscalProvider(): FiscalProvider {
   const mode = getFiscalProviderMode();
-  if (mode === "mock") return new MockFiscalProvider("autorizada", scenarioByAmount);
+  if (mode === "mock")
+    return new MockFiscalProvider("autorizada", scenarioByAmount);
   if (mode === "producao" && !isFiscalProductionAllowed()) {
     throw new FiscalProviderUnavailableError("Emissão em produção bloqueada.");
   }
@@ -24,5 +28,8 @@ export function getFiscalProvider(): FiscalProvider {
   );
 }
 
-export { MockFiscalProvider, scenarioByAmount } from "@/lib/wjb-ai/fiscal/provider/mock.provider";
+export {
+  MockFiscalProvider,
+  scenarioByAmount,
+} from "@/lib/wjb-ai/fiscal/provider/mock.provider";
 export type * from "@/lib/wjb-ai/fiscal/provider/types";

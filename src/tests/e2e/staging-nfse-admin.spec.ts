@@ -133,3 +133,40 @@ test("cliente vê autorizada EM SIMULAÇÃO, sem valor fiscal, e a rejeição", 
   await page.goto(`/portal/nfse/${reviewId}`);
   await expect(page.getByText("Rejeitada").first()).toBeVisible();
 });
+
+let correctionId = "";
+test("contador pede correção: cliente recebe aviso, corrige o mesmo pedido e o histórico é mantido", async ({ browser }) => {
+  const client = await login(browser, "CLIENTEA");
+  correctionId = await request(client, "2.000,00", `f3-corr-${run}`);
+  await expect(client.getByText("Em revisão pelo contador").first()).toBeVisible();
+
+  const staff = await login(browser, "CONTADOR");
+  await staff.goto(`/admin/nfse/${correctionId}`);
+  await staff.getByLabel("Decisão").selectOption("request_data");
+  await staff.getByLabel("Observação (obrigatória para pedir correção ou bloquear; o cliente vê)").fill("Informe o e-mail do tomador fictício");
+  await staff.getByRole("button", { name: "Registrar decisão" }).click();
+  await expect(staff.getByText("Correção pedida: Informe o e-mail do tomador fictício")).toBeVisible();
+
+  await client.goto("/portal/notificacoes");
+  await expect(client.getByText(/A WJB pediu uma correção na sua solicitação de NFS-e\. Motivo: Informe o e-mail do tomador fictício/).first()).toBeVisible();
+
+  await client.goto(`/portal/nfse/${correctionId}`);
+  await client.getByRole("link", { name: "Corrigir solicitação" }).click();
+  await expect(client.getByText("Correção pedida: Informe o e-mail do tomador fictício")).toBeVisible();
+  await expect(client.getByLabel("Nome ou razão social")).toHaveValue("Tomador Fictício");
+  await client.getByLabel("E-mail do tomador (opcional)").fill("tomador@exemplo.test");
+  await client.getByRole("button", { name: "Ver prévia" }).click();
+  await client.getByRole("button", { name: "Confirmar correção" }).click();
+  await client.waitForURL(new RegExp(`/portal/nfse/${correctionId}\\?corrigida=1`));
+  await expect(client.getByText("Correção registrada. A versão anterior foi guardada no histórico.")).toBeVisible();
+  await expect(client.getByText(/foi corrigida 1 vez/)).toBeVisible();
+  // O histórico completo continua: pedido original, correção pedida e nova triagem.
+  await expect(client.getByText("Encaminhado para revisão do contador.").first()).toBeVisible();
+  await expect(client.getByText("Cliente corrigiu os dados pedidos pelo contador.")).toBeVisible();
+});
+
+test("menu do Admin mostra NFS-e só com o módulo ligado", async ({ browser }) => {
+  const staff = await login(browser, "ATENDIMENTO");
+  await staff.goto("/admin");
+  await expect(staff.getByRole("navigation", { name: "Navegação do Admin" }).getByRole("link", { name: "NFS-e (simulação)" })).toBeVisible();
+});

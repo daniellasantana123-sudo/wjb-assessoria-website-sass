@@ -3,7 +3,10 @@ import {
   FISCAL_STATUS_LABELS,
   FISCAL_STATUS_TONE,
 } from "@/lib/wjb-ai/fiscal/labels";
-import { isOfficiallyAuthorized, type FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
+import {
+  isOfficiallyAuthorized,
+  type FiscalStatus,
+} from "@/lib/wjb-ai/fiscal/status";
 
 /** `simulated`: autorização vinda do conector simulado nunca aparece como nota real. */
 export function FiscalStatusBadge({

@@ -9,7 +9,7 @@ import { CircleHelp, Menu, X } from "lucide-react";
 import { Logo } from "@/components/navigation/logo";
 import { appAreas, type AppArea } from "@/components/app-shell/app-areas";
 import { AppCredits } from "@/components/app-shell/app-credits";
-import { isNavItemActive } from "@/config/portal-nav";
+import { isNavItemActive, visibleNavItems } from "@/config/portal-nav";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,9 +21,12 @@ export function AppMobileNav({
   area,
   unreadCount = 0,
   organizationSwitcher,
+  enabledFeatures = [],
 }: {
   area: AppArea;
   unreadCount?: number;
+  /** Módulos ligados cujos itens de menu devem aparecer. */
+  enabledFeatures?: string[];
   /**
    * Seletor de empresa - antes só existia na sidebar de desktop, então
    * abaixo de 1024px quem tinha duas empresas não conseguia trocar.
@@ -129,7 +132,7 @@ export function AppMobileNav({
               </div>
 
               <nav aria-label={config.navLabel} className="flex flex-1 flex-col gap-1 px-3 py-4">
-                {config.items.map((item) => {
+                {visibleNavItems(config.items, enabledFeatures).map((item) => {
                   const active = isNavItemActive(activeHref, item.href, config.rootHref);
                   return (
                     <Link

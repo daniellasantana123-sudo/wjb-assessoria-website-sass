@@ -7,7 +7,10 @@ import type {
   ApprovedFiscalProfile,
   AuthorizationGrant,
 } from "@/lib/wjb-ai/fiscal/policy";
-import type { FiscalRequestRepo } from "@/lib/wjb-ai/fiscal/requests";
+import type {
+  CorrectionRepo,
+  FiscalRequestRepo,
+} from "@/lib/wjb-ai/fiscal/requests";
 import type { FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
 
 /**
@@ -175,7 +178,13 @@ export interface FiscalRequestEvent {
 export async function getFiscalRequest(
   tenantId: string,
   requestId: string,
-): Promise<(FiscalRequestSummary & { events: FiscalRequestEvent[]; simulatedReference: string | null }) | null> {
+): Promise<
+  | (FiscalRequestSummary & {
+      events: FiscalRequestEvent[];
+      simulatedReference: string | null;
+    })
+  | null
+> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("fiscal_requests")
@@ -208,4 +217,118 @@ export async function getFiscalRequest(
       createdAt: e.created_at,
     })),
   };
+}
+
+/**
+ * Correção de pedido devolvido. Leitura com a RLS do usuário (garante a
+ * empresa); gravação pelo servidor: guarda a versão anterior, troca o
+ * rascunho só se o pedido ainda estiver em DADOS_PENDENTES e registra os
+ * eventos. Se a troca falhar, a versão recém-gravada é desfeita.
+ */
+export function createSupabaseCorrectionRepo(): CorrectionRepo {
+  const base = createSupabaseFiscalRepo();
+  return {
+    loadApprovedProfile: base.loadApprovedProfile,
+    loadActiveGrant: base.loadActiveGrant,
+    async loadForCorrection(tenantId, requestId) {
+      const supabase = await createClient();
+      const { data } = await supabase
+        .from("fiscal_requests")
+        .select("status, draft_snapshot, draft_hash")
+        .eq("tenant_id", tenantId)
+        .eq("id", requestId)
+        .maybeSingle();
+      return data
+        ? {
+            status: data.status as FiscalStatus,
+            draft: data.draft_snapshot as unknown as NormalizedNfseDraft,
+            draftHash: data.draft_hash,
+          }
+        : null;
+    },
+    async applyCorrection(i) {
+      if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) return "conflict";
+      const admin = createAdminClient();
+      const { count } = await admin
+        .from("fiscal_request_versions")
+        .select("id", { count: "exact", head: true })
+        .eq("request_id", i.requestId);
+      const { data: version, error: vError } = await admin
+        .from("fiscal_request_versions")
+        .insert({
+          request_id: i.requestId,
+          tenant_id: i.tenantId,
+          version: (count ?? 0) + 1,
+          draft_snapshot: i.previous.draft as unknown as Record<
+            string,
+            unknown
+          >,
+          draft_hash: i.previous.draftHash,
+          replaced_by: i.actorId,
+        })
+        .select("id")
+        .single();
+      if (vError || !version) return "conflict";
+      const { data: updated, error } = await admin
+        .from("fiscal_requests")
+        .update({
+          draft_snapshot: i.draft as unknown as Record<string, unknown>,
+          draft_hash: i.idempotencyKey,
+          idempotency_key: i.idempotencyKey,
+          status: i.steps[i.steps.length - 1].to,
+          policy_decision: i.decision,
+          policy_reasons: i.reasons,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", i.requestId)
+        .eq("tenant_id", i.tenantId)
+        .eq("status", "DADOS_PENDENTES")
+        .select("id");
+      if (error || !updated?.length) {
+        await admin
+          .from("fiscal_request_versions")
+          .delete()
+          .eq("id", version.id);
+        return error?.code === "23505" ? "duplicate" : "conflict";
+      }
+      await admin.from("fiscal_request_events").insert(
+        i.steps.map((s) => ({
+          request_id: i.requestId,
+          tenant_id: i.tenantId,
+          from_status: s.from,
+          to_status: s.to,
+          actor_id: i.actorId,
+          actor_kind: "user",
+          reason: s.reason,
+        })),
+      );
+      const supabase = await createClient();
+      await supabase.from("audit_log").insert({
+        actor_id: i.actorId,
+        tenant_id: i.tenantId,
+        action: "fiscal.request_corrected",
+        entity: "fiscal_request",
+        entity_id: i.requestId,
+        metadata: {
+          version: (count ?? 0) + 1,
+          status: i.steps[i.steps.length - 1].to,
+        },
+      });
+      return "ok";
+    },
+  };
+}
+
+/** Quantas versões anteriores o pedido tem (correções). */
+export async function countRequestVersions(
+  tenantId: string,
+  requestId: string,
+): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("fiscal_request_versions")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", tenantId)
+    .eq("request_id", requestId);
+  return count ?? 0;
 }

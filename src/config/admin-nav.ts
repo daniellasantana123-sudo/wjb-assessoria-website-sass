@@ -2,6 +2,7 @@ import {
   Bell,
   Building2,
   Contact,
+  FileText,
   LayoutDashboard,
   LifeBuoy,
   MessageCircle,
@@ -25,6 +26,8 @@ export const adminNavItems: PortalNavItem[] = [
   { href: "/admin/mensagens", label: "Mensagens", icon: MessageCircle },
   { href: "/admin/notificacoes", label: "Notificações", icon: Bell },
   { href: "/admin/leads", label: "Leads", icon: Contact },
+  // WJB AI: só com o módulo ligado e para quem tem leitura fiscal (ver admin/layout.tsx).
+  { href: "/admin/nfse", label: "NFS-e (simulação)", icon: FileText, feature: "wjb_ai" },
   { href: "/admin/usuarios", label: "Usuários", icon: Users },
   { href: "/admin/integracoes", label: "Integrações", icon: Plug },
   { href: "/admin/logs", label: "Logs", icon: ScrollText },

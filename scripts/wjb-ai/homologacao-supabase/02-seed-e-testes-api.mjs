@@ -174,6 +174,14 @@ check(after.data === false, "T28 revogação retira a permissão na hora");
 const grantByContador = await contA.rpc("revoke_fiscal_profile_approver", { p_grant_id: g2.data, p_reason: "Contador tentando revogar" });
 check(!!grantByContador.error, "T29 só super_admin revoga", grantByContador.error?.code);
 
+// ---------- versões (0026) ----------
+const vIns = await A.from("fiscal_request_versions").insert({ request_id: ins.data?.id, tenant_id: tenantIds.A, version: 99, draft_snapshot: draft, draft_hash: "x" });
+check(!!vIns.error, "T30 cliente não grava versão de pedido (só o servidor)", vIns.error?.code);
+await admin.from("fiscal_request_versions").insert({ request_id: ins.data?.id, tenant_id: tenantIds.A, version: Date.now() % 100000, draft_snapshot: draft, draft_hash: "h" });
+const vA = await A.from("fiscal_request_versions").select("id").eq("request_id", ins.data?.id);
+const vB = await B.from("fiscal_request_versions").select("id").eq("request_id", ins.data?.id);
+check((vA.data ?? []).length > 0 && (vB.data ?? []).length === 0, "T31 versões visíveis só para a empresa dona");
+
 console.log(`\n${failures === 0 ? "Homologação pela API concluída sem falhas." : `${failures} FALHA(S).`}`);
 console.log("Credenciais de teste em .env.homolog.users.local (fora do Git).");
 process.exit(failures ? 1 : 0);

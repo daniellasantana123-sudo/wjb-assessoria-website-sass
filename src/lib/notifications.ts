@@ -7,6 +7,10 @@ import { renderNotificationEmail } from "@/integrations/email/templates";
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import {
+  buildFiscalNotice,
+  type FiscalNoticeKind,
+} from "@/lib/wjb-ai/fiscal/notices";
+import {
   buildObligationNotice,
   type ObligationNoticeKind,
   type ObligationRef,
@@ -37,7 +41,9 @@ export type NotificationType =
   | "message.sent"
   | "obligation.created"
   | "obligation.completed"
-  | "obligation.due_soon";
+  | "obligation.due_soon"
+  | "fiscal_request.reviewed"
+  | "fiscal_request.processed";
 
 const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   invitation: "Você foi convidado(a)",
@@ -53,6 +59,8 @@ const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   "obligation.created": "Nova obrigação",
   "obligation.completed": "Obrigação concluída",
   "obligation.due_soon": "Obrigação perto do vencimento",
+  "fiscal_request.reviewed": "Solicitação de NFS-e revisada",
+  "fiscal_request.processed": "Solicitação de NFS-e processada",
 };
 
 interface NotificationRecipient {
@@ -129,14 +137,22 @@ async function dispatchNotification({
         emailAdapter.send({
           to: recipient.email as string,
           subject: `WJB Assessoria Contábil - ${title}`,
-          html: renderNotificationEmail({ title, body, ctaLabel, ctaUrl: absoluteLink }),
+          html: renderNotificationEmail({
+            title,
+            body,
+            ctaLabel,
+            ctaUrl: absoluteLink,
+          }),
           text: `${body}\n\n${ctaLabel}: ${absoluteLink}`,
         }),
       ),
   );
   for (const result of results) {
     if (result.status === "rejected") {
-      console.error("[notifications] falha ao enviar e-mail de notificação:", result.reason);
+      console.error(
+        "[notifications] falha ao enviar e-mail de notificação:",
+        result.reason,
+      );
     }
   }
 }
@@ -156,11 +172,14 @@ async function resolveCounterpartRecipients(
       .select("profile_id, status, profiles(email, status)")
       .eq("tenant_id", tenantId);
     recipients = (data ?? []).flatMap((row) => {
-      const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      const profile = Array.isArray(row.profiles)
+        ? row.profiles[0]
+        : row.profiles;
       // Quem foi suspenso (da empresa ou da conta) não recebe mais nada sobre
       // ela - senão continuaria vendo assunto de chamado e nome de documento
       // por e-mail depois de ter o acesso cortado.
-      if (row.status === "suspended" || profile?.status === "suspended") return [];
+      if (row.status === "suspended" || profile?.status === "suspended")
+        return [];
       return [{ id: row.profile_id, email: profile?.email ?? null }];
     });
   } else {
@@ -199,7 +218,12 @@ export async function notifyTicketOrMessageEvent({
   adminLink: string;
 }) {
   const admin = createAdminClient();
-  const recipients = await resolveCounterpartRecipients(admin, tenantId, actorId, actorIsStaff);
+  const recipients = await resolveCounterpartRecipients(
+    admin,
+    tenantId,
+    actorId,
+    actorIsStaff,
+  );
 
   await dispatchNotification({
     recipients,
@@ -230,7 +254,12 @@ export async function notifyDocumentAvailable({
   category: "documento" | "guia";
 }) {
   const admin = createAdminClient();
-  const recipients = await resolveCounterpartRecipients(admin, tenantId, actorId, actorIsStaff);
+  const recipients = await resolveCounterpartRecipients(
+    admin,
+    tenantId,
+    actorId,
+    actorIsStaff,
+  );
 
   const label = category === "guia" ? "Guia" : "Documento";
   const link = actorIsStaff
@@ -376,7 +405,12 @@ export async function notifyObligationEvent({
 }) {
   if (obligations.length === 0) return;
   const admin = createAdminClient();
-  const recipients = await resolveCounterpartRecipients(admin, tenantId, actorId ?? "", true);
+  const recipients = await resolveCounterpartRecipients(
+    admin,
+    tenantId,
+    actorId ?? "",
+    true,
+  );
   const { body, link } = buildObligationNotice(kind, obligations);
   const type: NotificationType =
     kind === "created"
@@ -392,6 +426,42 @@ export async function notifyObligationEvent({
     body,
     link,
     metadataSanitized: { count: obligations.length, ...metadata },
+    ctaLabel: "Ver no Portal",
+  });
+}
+
+/**
+ * Aviso aos membros da empresa sobre a solicitação de NFS-e (WJB AI, F3).
+ * `actorId` nulo = processamento automático da fila.
+ */
+export async function notifyFiscalRequestEvent({
+  tenantId,
+  actorId,
+  requestId,
+  kind,
+  note,
+}: {
+  tenantId: string;
+  actorId: string | null;
+  requestId: string;
+  kind: FiscalNoticeKind;
+  note?: string;
+}) {
+  const admin = createAdminClient();
+  const recipients = await resolveCounterpartRecipients(
+    admin,
+    tenantId,
+    actorId ?? "",
+    true,
+  );
+  const notice = buildFiscalNotice(kind, requestId, note);
+  await dispatchNotification({
+    recipients,
+    tenantId,
+    type: notice.type,
+    body: notice.body,
+    link: notice.link,
+    metadataSanitized: { kind, request_id: requestId },
     ctaLabel: "Ver no Portal",
   });
 }
@@ -417,7 +487,9 @@ export async function listNotifications(): Promise<NotificationItem[]> {
 
   const { data } = await supabase
     .from("notifications")
-    .select("id, type, title, body, link, metadata_sanitized, read_at, created_at")
+    .select(
+      "id, type, title, body, link, metadata_sanitized, read_at, created_at",
+    )
     .eq("recipient_id", user.id)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -459,9 +531,15 @@ export async function getUnreadNotificationCount(): Promise<number> {
  * garante isolamento: um `id` de notificação de outra pessoa simplesmente
  * não retorna nada.
  */
-export async function markNotificationAsReadAndGetLink(id: string): Promise<string | null> {
+export async function markNotificationAsReadAndGetLink(
+  id: string,
+): Promise<string | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from("notifications").select("link").eq("id", id).maybeSingle();
+  const { data } = await supabase
+    .from("notifications")
+    .select("link")
+    .eq("id", id)
+    .maybeSingle();
 
   if (!data) return null;
 

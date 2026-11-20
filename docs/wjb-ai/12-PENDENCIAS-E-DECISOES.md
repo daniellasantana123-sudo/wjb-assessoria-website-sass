@@ -11,6 +11,13 @@
 - **Sem backup** da produção até agora.
 - Nano -> Micro: análise pronta (20), **não autorizado**; só depois do incidente e do primeiro backup.
 
+## Fase 3 concluída e Fase 4 iniciada (20/11/2026) - ver 23 e 24
+- Chave exposta revogada (401), nova em uso, Git/docs/logs sem credenciais.
+- Menu NFS-e no Admin (desktop e celular, só com módulo ligado e permissão), avisos ao cliente, correção do mesmo pedido com versões (0026).
+- Fase 4: documentação oficial analisada; conector SEFIN Nacional em modo simulado com 14 testes de contrato; estrutura de execução dos 6 agentes sem IA.
+- **Decisões para a homologação oficial:** ver doc 24, seção 6 (certificado de teste e cofre, quem emite, parametrização do contador, série da DPS, autorização).
+- Técnico: sequência persistente do número da DPS (migration), armazenamento protegido do XML da NFS-e, ligar o conector nacional na fila só após homologação; desligar chaves Legacy da homologação (proprietário).
+
 ## Homologação e Fase 3 (20/11/2026) - ver 21 e 22
 - Homologação real concluída: 0001-0025 aplicadas, backup verificável, 35/35 testes pela API, 13/13 E2E com login real.
 - Fase 3 implementada e testada só na homologação/staging.

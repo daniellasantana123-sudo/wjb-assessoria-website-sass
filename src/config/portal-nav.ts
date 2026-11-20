@@ -17,6 +17,13 @@ export interface PortalNavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** Item de um módulo ligado por interruptor; só aparece quando o layout o habilita. */
+  feature?: "wjb_ai";
+}
+
+/** Filtra itens de módulos desligados (ex.: NFS-e do WJB AI). */
+export function visibleNavItems(items: PortalNavItem[], enabledFeatures: readonly string[] = []) {
+  return items.filter((item) => !item.feature || enabledFeatures.includes(item.feature));
 }
 
 /** Itens da sidebar do Portal do Cliente — mesma ordem do antigo grid de navCards em /portal. */

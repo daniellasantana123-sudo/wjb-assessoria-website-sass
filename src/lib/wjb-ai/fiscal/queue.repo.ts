@@ -1,20 +1,28 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/db/supabase/admin";
+import { notifyFiscalRequestEvent } from "@/lib/notifications";
 import type { NormalizedNfseDraft } from "@/lib/wjb-ai/fiscal/draft";
 import type { QueueJob, QueueRepo } from "@/lib/wjb-ai/fiscal/queue";
 import type { FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
 
-const QUEUE_STATES: FiscalStatus[] = ["AUTORIZADA_PARA_ENVIO", "CONCILIACAO_OFICIAL"];
+const QUEUE_STATES: FiscalStatus[] = [
+  "AUTORIZADA_PARA_ENVIO",
+  "CONCILIACAO_OFICIAL",
+];
 
 /** Repositório da fila: só o servidor (service role) escreve. */
-export function createSupabaseQueueRepo(environment: "mock" | "homologacao" | "producao"): QueueRepo {
+export function createSupabaseQueueRepo(
+  environment: "mock" | "homologacao" | "producao",
+): QueueRepo {
   const admin = createAdminClient();
   return {
     async claimDue(now, limit) {
       const { data } = await admin
         .from("fiscal_requests")
-        .select("id, tenant_id, status, idempotency_key, draft_snapshot, attempt_count, next_attempt_at")
+        .select(
+          "id, tenant_id, status, idempotency_key, draft_snapshot, attempt_count, next_attempt_at",
+        )
         .in("status", QUEUE_STATES)
         .eq("needs_intervention", false)
         .or(`next_attempt_at.is.null,next_attempt_at.lte.${now.toISOString()}`)
@@ -58,8 +66,10 @@ export function createSupabaseQueueRepo(environment: "mock" | "homologacao" | "p
         environment,
         idempotency_key: job.idempotencyKey,
         outcome: outcome.status,
-        official_reference: outcome.status === "AUTORIZADA" ? outcome.officialId : null,
-        rejection_code: outcome.status === "REJEITADA" ? outcome.rejectionCode : null,
+        official_reference:
+          outcome.status === "AUTORIZADA" ? outcome.officialId : null,
+        rejection_code:
+          outcome.status === "REJEITADA" ? outcome.rejectionCode : null,
         simulated: outcome.simulated,
       });
     },
@@ -71,6 +81,19 @@ export function createSupabaseQueueRepo(environment: "mock" | "homologacao" | "p
         .eq("request_id", job.id)
         .eq("outcome", "AUTORIZADA");
       return (count ?? 0) > 0;
+    },
+
+    async notifyOutcome(job, outcome, simulated) {
+      if (!simulated) return; // Resultado oficial terá aviso próprio quando houver conector real.
+      await notifyFiscalRequestEvent({
+        tenantId: job.tenantId,
+        actorId: null,
+        requestId: job.id,
+        kind:
+          outcome === "AUTORIZADA"
+            ? "authorized_simulated"
+            : "rejected_simulated",
+      });
     },
 
     async scheduleRetry(job, attemptCount, nextAttemptAt, error, intervention) {

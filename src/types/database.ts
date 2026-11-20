@@ -372,6 +372,29 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["fiscal_profile_approvals"]["Insert"]>;
         Relationships: [];
       };
+      fiscal_request_versions: {
+        Row: {
+          id: string;
+          request_id: string;
+          tenant_id: string;
+          version: number;
+          draft_snapshot: Record<string, unknown>;
+          draft_hash: string;
+          replaced_by: string | null;
+          replaced_at: string;
+        };
+        Insert: {
+          id?: string;
+          request_id: string;
+          tenant_id: string;
+          version: number;
+          draft_snapshot: Record<string, unknown>;
+          draft_hash: string;
+          replaced_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["fiscal_request_versions"]["Insert"]>;
+        Relationships: [];
+      };
       fiscal_profiles: {
         Row: {
           id: string;

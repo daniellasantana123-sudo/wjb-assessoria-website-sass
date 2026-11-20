@@ -47,6 +47,7 @@ export const auditActionLabels: Record<string, string> = {
   "fiscal.intervention_released": "Solicitação devolvida à fila de envio",
   "fiscal.profile_created": "Rascunho de perfil fiscal criado",
   "fiscal.authorization_registered": "Autorização de emissão registrada",
+  "fiscal.request_corrected": "Solicitação de NFS-e corrigida pelo cliente",
   "ticket.created": "Chamado aberto",
   "ticket.replied": "Resposta em chamado",
   "ticket.status_changed": "Status do chamado alterado",

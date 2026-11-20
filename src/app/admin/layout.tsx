@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, FileText } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 import { AppCredits } from "@/components/app-shell/app-credits";
 import { AppMobileNav } from "@/components/app-shell/app-mobile-nav";
@@ -9,6 +9,7 @@ import { Logo } from "@/components/navigation/logo";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
+import { hasWjbAiPermission } from "@/lib/wjb-ai/permissions";
 
 const roleLabels: Record<string, string> = {
   super_admin: "Super admin",
@@ -27,6 +28,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const unreadCount = await getUnreadNotificationCount();
   const who = session.fullName ?? session.email;
   const role = session.staffRole ? roleLabels[session.staffRole] ?? session.staffRole : null;
+  // Item "NFS-e" só com o módulo ligado e para quem pode ler pedidos fiscais.
+  const enabledFeatures =
+    isWjbAiEnabled() && hasWjbAiPermission(session, "fiscal.request.read") ? ["wjb_ai"] : [];
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
@@ -38,19 +42,9 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </span>
         </div>
 
-        <AppSidebarNav area="admin" unreadCount={unreadCount} />
+        <AppSidebarNav area="admin" unreadCount={unreadCount} enabledFeatures={enabledFeatures} />
 
         <div className="border-border flex flex-col gap-3 border-t p-4">
-          {/* WJB AI (F3): link só aparece com o módulo ligado (WJB_AI_ENABLED). */}
-          {isWjbAiEnabled() ? (
-            <Link
-              href="/admin/nfse"
-              className="text-foreground hover:bg-muted focus-visible:ring-primary flex min-h-10 items-center gap-3 rounded-md px-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            >
-              <FileText aria-hidden="true" className="h-4.5 w-4.5 shrink-0" />
-              NFS-e (simulação)
-            </Link>
-          ) : null}
           {/* <a> e não <Link>: o manual é um route handler com documento próprio. */}
           <a
             href="/admin/manual"
@@ -80,7 +74,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
       <header className="border-border bg-background sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 lg:hidden">
         <div className="flex items-center gap-2">
-          <AppMobileNav area="admin" unreadCount={unreadCount} />
+          <AppMobileNav area="admin" unreadCount={unreadCount} enabledFeatures={enabledFeatures} />
           <Logo href="/admin" className="h-8 w-auto" />
         </div>
         <LogoutButton />

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { appAreas, type AppArea } from "@/components/app-shell/app-areas";
-import { isNavItemActive } from "@/config/portal-nav";
+import { isNavItemActive, visibleNavItems } from "@/config/portal-nav";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,13 +13,21 @@ import { cn } from "@/lib/utils";
  * novo ao navegar, então o item ativo calculado lá (via header
  * `x-pathname`) ficava preso na primeira página aberta (revisão 2026-09-30).
  */
-export function AppSidebarNav({ area, unreadCount }: { area: AppArea; unreadCount: number }) {
+export function AppSidebarNav({
+  area,
+  unreadCount,
+  enabledFeatures = [],
+}: {
+  area: AppArea;
+  unreadCount: number;
+  enabledFeatures?: string[];
+}) {
   const pathname = usePathname();
   const config = appAreas[area];
 
   return (
     <nav aria-label={config.navLabel} className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4">
-      {config.items.map((item) => {
+      {visibleNavItems(config.items, enabledFeatures).map((item) => {
         const active = isNavItemActive(pathname, item.href, config.rootHref);
         return (
           <Link

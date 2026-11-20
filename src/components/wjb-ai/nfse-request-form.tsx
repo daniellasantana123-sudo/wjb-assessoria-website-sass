@@ -56,34 +56,56 @@ function Field({
   );
 }
 
+export interface NfseFormInitial {
+  serviceDescription: string;
+  grossAmount: string;
+  competence: string;
+  takerDocument: string;
+  takerName: string;
+  takerEmail: string;
+  sourceReference: string;
+}
+
 export function NfseRequestForm({
   tenantId,
   defaultCompetence,
+  initial,
+  submitAction = submitNfseAction,
+  confirmLabel = "Confirmar e enviar solicitação",
 }: {
   tenantId: string;
   defaultCompetence: string;
+  /** Valores iniciais (correção de pedido devolvido). */
+  initial?: NfseFormInitial;
+  submitAction?: (
+    prev: NfseFormState | undefined,
+    formData: FormData,
+  ) => Promise<NfseFormState>;
+  confirmLabel?: string;
 }) {
   const [previewState, previewAction, previewing] = useActionState(
     previewNfseAction,
     undefined,
   );
-  const [submitState, submitAction, submitting] = useActionState(
-    submitNfseAction,
+  const [submitState, submitFormAction, submitting] = useActionState(
+    submitAction,
     undefined,
   );
   const state = submitState ?? previewState;
   // Campos controlados: no React 19 a ação do formulário limpa os campos não
   // controlados ao terminar, e o "Confirmar" seguia com o formulário vazio
   // (achado no teste com login real, 20/11/2026).
-  const [values, setValues] = useState({
-    serviceDescription: "",
-    grossAmount: "",
-    competence: defaultCompetence,
-    takerDocument: "",
-    takerName: "",
-    takerEmail: "",
-    sourceReference: "",
-  });
+  const [values, setValues] = useState<NfseFormInitial>(
+    initial ?? {
+      serviceDescription: "",
+      grossAmount: "",
+      competence: defaultCompetence,
+      takerDocument: "",
+      takerName: "",
+      takerEmail: "",
+      sourceReference: "",
+    },
+  );
   const bind = (name: keyof typeof values) => ({
     name,
     value: values[name],
@@ -251,11 +273,11 @@ export function NfseRequestForm({
           <Button
             type="submit"
             variant="cta"
-            formAction={submitAction}
+            formAction={submitFormAction}
             disabled={previewing || submitting}
             className="self-start"
           >
-            {submitting ? "Registrando..." : "Confirmar e enviar solicitação"}
+            {submitting ? "Registrando..." : confirmLabel}
           </Button>
         </section>
       ) : null}

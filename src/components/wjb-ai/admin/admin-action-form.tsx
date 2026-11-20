@@ -17,7 +17,10 @@ export function AdminActionForm({
   variant = "primary",
   children,
 }: {
-  action: (prev: AdminActionState | undefined, formData: FormData) => Promise<AdminActionState>;
+  action: (
+    prev: AdminActionState | undefined,
+    formData: FormData,
+  ) => Promise<AdminActionState>;
   submitLabel: string;
   pendingLabel?: string;
   variant?: "primary" | "outline" | "cta";
@@ -31,8 +34,16 @@ export function AdminActionForm({
         <Button type="submit" size="sm" variant={variant} disabled={pending}>
           {pending ? pendingLabel : submitLabel}
         </Button>
-        {state?.error ? <p role="alert" className="text-danger text-sm">{state.error}</p> : null}
-        {state?.ok ? <p role="status" className="text-success text-sm">{state.ok}</p> : null}
+        {state?.error ? (
+          <p role="alert" className="text-danger text-sm">
+            {state.error}
+          </p>
+        ) : null}
+        {state?.ok ? (
+          <p role="status" className="text-success text-sm">
+            {state.ok}
+          </p>
+        ) : null}
       </div>
     </form>
   );

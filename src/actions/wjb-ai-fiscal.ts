@@ -9,8 +9,14 @@ import { getActiveTenant } from "@/lib/tenant";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import { nfseBodyFromForm } from "@/lib/wjb-ai/fiscal/form";
 import { previewFiscalDraft } from "@/lib/wjb-ai/fiscal/preview";
-import { submitFiscalRequest } from "@/lib/wjb-ai/fiscal/requests";
-import { createSupabaseFiscalRepo } from "@/lib/wjb-ai/fiscal/requests.repo";
+import {
+  correctFiscalRequest,
+  submitFiscalRequest,
+} from "@/lib/wjb-ai/fiscal/requests";
+import {
+  createSupabaseCorrectionRepo,
+  createSupabaseFiscalRepo,
+} from "@/lib/wjb-ai/fiscal/requests.repo";
 
 export interface NfseFormState {
   error?: string;
@@ -95,4 +101,30 @@ export async function submitNfseAction(
   redirect(
     `/portal/nfse/${result.requestId}${result.duplicate ? "?duplicada=1" : ""}`,
   );
+}
+
+/** Correção de um pedido devolvido (DADOS_PENDENTES), mantendo o histórico. */
+export async function correctNfseAction(
+  requestId: string,
+  _prev: NfseFormState | undefined,
+  formData: FormData,
+): Promise<NfseFormState> {
+  if (!isWjbAiEnabled()) return { error: "Recurso indisponível." };
+  const session = await requireSession();
+  if (isRateLimited(`wjb-ai:submit:${session.userId}`))
+    return { error: "Muitas tentativas. Aguarde um minuto." };
+  const tenant = session.isWjbStaff
+    ? null
+    : await getActiveTenant(session.userId);
+  const result = await correctFiscalRequest({
+    session,
+    tenant,
+    expectedTenantId: String(formData.get("expectedTenantId") ?? ""),
+    requestId,
+    body: nfseBodyFromForm(formData),
+    today: toIsoDate(new Date()),
+    repo: createSupabaseCorrectionRepo(),
+  });
+  if (!result.ok) return { error: result.error, fields: result.fields };
+  redirect(`/portal/nfse/${requestId}?corrigida=1`);
 }

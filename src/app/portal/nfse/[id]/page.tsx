@@ -15,7 +15,13 @@ import {
   POLICY_REASON_LABELS,
   type PolicyReason,
 } from "@/lib/wjb-ai/fiscal/policy";
-import { getFiscalRequest } from "@/lib/wjb-ai/fiscal/requests.repo";
+import Link from "next/link";
+
+import { buttonVariants } from "@/components/ui/button";
+import {
+  countRequestVersions,
+  getFiscalRequest,
+} from "@/lib/wjb-ai/fiscal/requests.repo";
 
 export const metadata: Metadata = {
   title: "Solicitação de NFS-e",
@@ -30,7 +36,7 @@ export default async function PortalNfseDetailPage({
 }: PageProps<"/portal/nfse/[id]">) {
   if (!isWjbAiEnabled()) notFound();
   const { id } = await params;
-  const { duplicada } = await searchParams;
+  const { duplicada, corrigida } = await searchParams;
   if (!UUID.test(id)) notFound();
   const session = await requireSession();
   if (session.isWjbStaff) notFound();
@@ -38,6 +44,7 @@ export default async function PortalNfseDetailPage({
   // Busca sempre restrita à empresa ativa: pedido de outra empresa = 404.
   const request = tenant ? await getFiscalRequest(tenant.id, id) : null;
   if (!request) notFound();
+  const versions = tenant ? await countRequestVersions(tenant.id, id) : 0;
   const d = request.draft;
   const date = (iso: string) =>
     new Date(iso).toLocaleString("pt-BR", {
@@ -58,11 +65,18 @@ export default async function PortalNfseDetailPage({
         <h1 className="text-foreground text-2xl font-semibold">
           Solicitação de NFS-e
         </h1>
-        <FiscalStatusBadge status={request.status} simulated={request.simulatedReference !== null} />
+        <FiscalStatusBadge
+          status={request.status}
+          simulated={request.simulatedReference !== null}
+        />
       </div>
       {request.simulatedReference ? (
-        <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm">
-          Resultado de <strong>simulação</strong> ({request.simulatedReference}): esta nota não foi emitida e não tem valor fiscal.
+        <p
+          role="status"
+          className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm"
+        >
+          Resultado de <strong>simulação</strong> ({request.simulatedReference}
+          ): esta nota não foi emitida e não tem valor fiscal.
         </p>
       ) : null}
       {duplicada ? (
@@ -72,6 +86,34 @@ export default async function PortalNfseDetailPage({
         >
           Esta solicitação já tinha sido registrada. Nenhum pedido novo foi
           criado.
+        </p>
+      ) : null}
+      {corrigida ? (
+        <p
+          role="status"
+          className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm"
+        >
+          Correção registrada. A versão anterior foi guardada no histórico.
+        </p>
+      ) : null}
+      {request.status === "DADOS_PENDENTES" ? (
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-foreground text-sm">
+            A WJB pediu uma correção nesta solicitação.
+          </p>
+          <Link
+            href={`/portal/nfse/${request.id}/corrigir`}
+            className={buttonVariants({ variant: "cta", size: "sm" })}
+          >
+            Corrigir solicitação
+          </Link>
+        </div>
+      ) : null}
+      {versions > 0 ? (
+        <p className="text-muted-foreground text-sm">
+          Esta solicitação foi corrigida {versions}{" "}
+          {versions === 1 ? "vez" : "vezes"}; as versões anteriores ficam
+          guardadas.
         </p>
       ) : null}
       <SimulationNotice />
