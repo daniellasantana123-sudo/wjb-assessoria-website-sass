@@ -11,4 +11,8 @@
 | Isolamento | empresa A não lê B; consultas usam só a empresa da sessão | idem |
 | Rota | 404 desligada (sem consultar sessão); empresa resolvida pela sessão; documento mascarado | `src/tests/integration/wjb-ai-preview-api.test.ts` |
 
-Pendentes: RLS real da 0024 com dois usuários sintéticos (depois de aplicada em banco de teste), concorrência no banco, prompt injection, carga com dados sintéticos.
+| Registro da solicitação | revisão sem perfil; confirmada com perfil válido (nunca autorizada); repetido devolve o existente; falha de transição fica Recebida; empresa trocada é recusada; grava só na empresa da sessão | `src/tests/unit/wjb-ai-requests.test.ts` |
+| Formulário | todos os campos com rótulo; confirmar só após prévia; empresa só como conferência | `src/tests/unit/wjb-ai-nfse-form.test.tsx` |
+| Banco (0024) | 38 verificações de RLS, isolamento, permissão de aprovação, integridade e regressão; backup/restauração; rollback | `scripts/wjb-ai/homologacao/` (resultado em 17) |
+
+Pendentes: caminho completo aplicação -> PostgREST -> banco num projeto Supabase de homologação; RLS real da 0024 com dois usuários sintéticos (depois de aplicada em banco de teste), concorrência no banco, prompt injection, carga com dados sintéticos.

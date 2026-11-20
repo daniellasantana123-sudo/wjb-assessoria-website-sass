@@ -248,6 +248,118 @@ export interface Database {
           },
         ];
       };
+      fiscal_requests: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          document_type: string;
+          status: string;
+          idempotency_key: string;
+          draft_snapshot: Record<string, unknown>;
+          draft_hash: string;
+          policy_decision: string | null;
+          policy_reasons: string[];
+          channel: string;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          tenant_id: string;
+          document_type?: string;
+          status?: string;
+          idempotency_key: string;
+          draft_snapshot: Record<string, unknown>;
+          draft_hash: string;
+          policy_decision?: string | null;
+          policy_reasons?: string[];
+          channel?: string;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["fiscal_requests"]["Insert"]>;
+        Relationships: [];
+      };
+      fiscal_request_events: {
+        Row: {
+          id: number;
+          request_id: string;
+          tenant_id: string;
+          from_status: string | null;
+          to_status: string;
+          actor_id: string | null;
+          reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          request_id: string;
+          tenant_id: string;
+          from_status?: string | null;
+          to_status: string;
+          actor_id?: string | null;
+          reason?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["fiscal_request_events"]["Insert"]>;
+        Relationships: [];
+      };
+      fiscal_profiles: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          version: number;
+          status: string;
+          municipality_ibge_code: string | null;
+          service_settings: Record<string, unknown>;
+          max_amount_cents_without_review: number;
+          approved_by: string | null;
+          approved_at: string | null;
+          approval_justification: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          tenant_id: string;
+          version?: number;
+          status?: string;
+          municipality_ibge_code?: string | null;
+          service_settings?: Record<string, unknown>;
+          max_amount_cents_without_review?: number;
+          created_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["fiscal_profiles"]["Insert"]>;
+        Relationships: [];
+      };
+      fiscal_authorization_grants: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          kind: string;
+          scope: string;
+          status: string;
+          valid_until: string;
+          evidence_reference: string | null;
+          certificate_vault_reference: string | null;
+          registered_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          tenant_id: string;
+          kind: string;
+          scope: string;
+          status?: string;
+          valid_until: string;
+          evidence_reference?: string | null;
+          certificate_vault_reference?: string | null;
+          registered_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["fiscal_authorization_grants"]["Insert"]>;
+        Relationships: [];
+      };
       leads: {
         Row: {
           id: string;
