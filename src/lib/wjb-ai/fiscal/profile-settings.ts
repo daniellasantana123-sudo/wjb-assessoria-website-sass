@@ -6,6 +6,10 @@ import {
   type FiscalParameters,
 } from "@/lib/wjb-ai/fiscal/national/dps-xml";
 import {
+  checkRegimeAndAliquota,
+  formatAliquota,
+} from "@/lib/wjb-ai/fiscal/aliquota-rules";
+import {
   isApiSeries,
   type LayoutContract,
 } from "@/lib/wjb-ai/fiscal/national/layouts";
@@ -60,6 +64,12 @@ export const fiscalProfileSettingsSchema = z
         cTribNac: z.string().regex(FISCAL_DOMAINS.cTribNac),
         cNBS: z.string().regex(digits(9)).nullable(),
         cLocPrestacao: z.string().regex(FISCAL_DOMAINS.cLocPrestacao),
+        /** Convênio do município de incidência "Ativo" no Sistema Nacional (conferido pelo contador). */
+        convenioMunicipioAtivo: z.boolean(),
+        convenioConferidoEm: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .nullable(),
       })
       .strict(),
     taxes: z
@@ -69,6 +79,18 @@ export const fiscalProfileSettingsSchema = z
         opSimpNac: z.string().regex(FISCAL_DOMAINS.opSimpNac),
         regEspTrib: z.string().regex(FISCAL_DOMAINS.regEspTrib),
         indTotTrib: z.string().regex(FISCAL_DOMAINS.indTotTrib),
+        /** TSRegimeApuracaoSimpNac: só para ME/EPP (opSimpNac 3). */
+        regApTribSN: z.enum(["1", "2", "3"]).nullable(),
+        /** Alíquota do ISSQN em %, definida pelo contador; a regra oficial diz se é exigida. */
+        pAliq: z
+          .number()
+          .min(0)
+          .max(5)
+          .refine(
+            (v) => /^\d(\.\d{1,2})?$/.test(String(v)),
+            "até 2 casas decimais",
+          )
+          .nullable(),
       })
       .strict(),
     /** Decisão expressa sobre o grupo IBSCBS (opcional hoje; se informado, completo). */
@@ -99,6 +121,11 @@ const FIELD_LABELS: Record<string, string> = {
   "taxes.opSimpNac": "Situação perante o Simples",
   "taxes.regEspTrib": "Regime especial",
   "taxes.indTotTrib": "Indicador de tributos",
+  "taxes.regApTribSN": "Regime de apuração no Simples",
+  "taxes.pAliq": "Alíquota do ISSQN (0 a 5%)",
+  "service.convenioMunicipioAtivo":
+    "Situação do convênio do município de incidência",
+  "service.convenioConferidoEm": "Data da conferência do convênio",
   "ibsCbs.decision": "Decisão sobre IBS/CBS",
   "ibsCbs.justification": "Justificativa de IBS/CBS (mínimo 10 caracteres)",
   dpsSeries: "Série da DPS (1 a 49999)",
@@ -141,6 +168,8 @@ export function toFiscalParameters(s: FiscalProfileSettings): FiscalParameters {
     opSimpNac: s.taxes.opSimpNac,
     regEspTrib: s.taxes.regEspTrib,
     indTotTrib: s.taxes.indTotTrib,
+    regApTribSN: s.taxes.regApTribSN ?? undefined,
+    pAliq: s.taxes.pAliq === null ? undefined : formatAliquota(s.taxes.pAliq),
     ibsCbs: { informar: s.ibsCbs.decision === "informar" },
   };
 }
@@ -156,6 +185,7 @@ export interface ReadinessItem {
     | "servico"
     | "local_prestacao"
     | "issqn_regime"
+    | "aliquota"
     | "ibs_cbs"
     | "serie";
   label: string;
@@ -320,6 +350,31 @@ export function evaluateFiscalReadiness(input: {
           ? "Operação tributável, ISSQN não retido."
           : "ISSQN retido: cada nota passa por revisão do contador.",
       );
+    const aliqIssues = checkRegimeAndAliquota(
+      {
+        opSimpNac: s.taxes.opSimpNac as "1" | "2" | "3",
+        regApTribSN: s.taxes.regApTribSN,
+        regEspTrib: s.taxes.regEspTrib,
+        tribISSQN: s.taxes.tribISSQN,
+        tpRetISSQN: s.taxes.tpRetISSQN,
+        convenioMunicipioAtivo: s.service.convenioMunicipioAtivo,
+      },
+      s.taxes.pAliq,
+    );
+    push(
+      "aliquota",
+      "Regime e alíquota (regras oficiais do Anexo I)",
+      aliqIssues.length
+        ? "bloqueado"
+        : s.service.convenioConferidoEm
+          ? "ok"
+          : "pendente",
+      aliqIssues.length
+        ? aliqIssues.map((x) => `${x.code}: ${x.message}`).join(" ")
+        : s.service.convenioConferidoEm
+          ? `Coerente com as regras E0595-E0640 (convênio ${s.service.convenioMunicipioAtivo ? "ativo" : "não ativo"}, conferido em ${s.service.convenioConferidoEm}).`
+          : "Regras coerentes, mas a situação do convênio do município ainda não foi conferida pelo contador.",
+    );
     push(
       "ibs_cbs",
       "IBS/CBS",

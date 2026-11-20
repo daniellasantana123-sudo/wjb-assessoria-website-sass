@@ -224,13 +224,21 @@ const settings: FiscalProfileSettings = {
     municipalityIbge: "3550308",
     habilitacaoConfirmadaEm: "2026-11-18",
   },
-  service: { cTribNac: "010101", cNBS: null, cLocPrestacao: "3550308" },
+  service: {
+    cTribNac: "010101",
+    cNBS: null,
+    cLocPrestacao: "3550308",
+    convenioMunicipioAtivo: true,
+    convenioConferidoEm: "2026-11-18",
+  },
   taxes: {
     tribISSQN: "1",
     tpRetISSQN: "1",
     opSimpNac: "3",
     regEspTrib: "0",
     indTotTrib: "0",
+    regApTribSN: "1",
+    pAliq: null,
   },
   ibsCbs: {
     decision: "nao_informar",
@@ -400,6 +408,10 @@ describe("formulários do Admin e proteção de credenciais", () => {
     ibsCbsDecision: "nao_informar",
     ibsCbsJustification: "Decisão fictícia do contador",
     dpsSeries: "1",
+    regApTribSN: "1",
+    pAliq: "",
+    convenioMunicipioAtivo: "sim",
+    convenioConferidoEm: "2026-11-18",
   };
   it("cadastro fiscal válido vira settings tipado", () => {
     const r = parseFiscalSettingsForm(fd(base));

@@ -273,7 +273,7 @@ describe("conector nacional contra o transporte simulado", () => {
       draft,
     });
     expect(gunzipSync(Buffer.from(body, "base64")).toString("utf8")).toMatch(
-      /^<DPS /,
+      /^<\?xml version="1.0" encoding="UTF-8"\?><DPS /,
     );
   });
 

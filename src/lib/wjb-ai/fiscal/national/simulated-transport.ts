@@ -1,6 +1,7 @@
 import { gunzipSync } from "node:zlib";
 
 import { SimulatedDpsSigner } from "@/lib/wjb-ai/fiscal/national/signing";
+import { verifyXmlSignature } from "@/lib/wjb-ai/fiscal/national/xmldsig";
 import type {
   SefinCallContext,
   SefinEmitResult,
@@ -34,6 +35,8 @@ export class SimulatedSefinTransport implements SefinTransport {
   /** Procurações eletrônicas "cadastradas na RFB": `${outorgante}>${procurador}`. */
   readonly procuracoes = new Set<string>();
   procuradorIsActor = false;
+  /** Perfil da última assinatura XMLDSig real verificada (para os testes). */
+  lastSignatureProfile: string | null = null;
 
   private reject(code: string, message: string): SefinEmitResult {
     return {
@@ -67,10 +70,23 @@ export class SimulatedSefinTransport implements SefinTransport {
         "E0010",
         "Série não pertence à faixa do tipo de emissor",
       );
+    if (!/^<\?xml version="1\.0" encoding="UTF-8"\?>/.test(xml))
+      return this.reject("E1229", "XML não está utilizando codificação UTF8");
+    if (/<\/?[A-Za-z_][\w.-]*:/.test(xml) || /\sxmlns:/.test(xml))
+      return this.reject("E1228", "Uso de prefixo de namespace não permitido");
     if (!xml.includes("<Signature"))
       return this.reject("E0717", "Assinatura obrigatória");
-    if (!SimulatedDpsSigner.verify(xml))
-      return this.reject("E0714", "Assinatura inválida");
+    // Assinatura simulada (marcador SIMULADO) ou XMLDSig real verificada de verdade.
+    const simulatedSig = SimulatedDpsSigner.verify(xml);
+    if (!simulatedSig) {
+      const check = verifyXmlSignature(xml);
+      if (!check.valid)
+        return this.reject(
+          check.code ?? "E0714",
+          check.reason ?? "Assinatura inválida",
+        );
+      this.lastSignatureProfile = check.profile ?? null;
+    }
     const emitter = xml.match(/<prest><(?:CNPJ|CPF)>([^<]+)<\//)?.[1] ?? "";
     const taker = xml.match(/<toma><(?:CNPJ|CPF)>([^<]+)<\//)?.[1] ?? "";
     const holder = context.certificateHolderDocument;

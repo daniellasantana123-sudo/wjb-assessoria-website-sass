@@ -1,5 +1,11 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
+import {
+  signXml,
+  type SignatureProfile,
+  type SigningMaterial,
+} from "@/lib/wjb-ai/fiscal/national/xmldsig";
+
 /**
  * Assinatura da DPS (Fase 5).
  *
@@ -107,4 +113,23 @@ export class SimulatedDpsSigner implements DpsSigner {
 /** Assinador real: só depois do cofre, do certificado e da autorização da WJB. */
 export function createIcpBrasilSigner(): DpsSigner {
   throw new SignerNotAvailableError();
+}
+
+/**
+ * Assinador XMLDSig real (Fase 6). Só recebe a chave dentro de
+ * `withMaterial`, que no servidor é `useCertificate` (autorização conferida
+ * na hora + trilha de uso). `simulated` continua verdadeiro enquanto o
+ * material vier do cofre de TESTE: um certificado de teste nunca gera nota.
+ */
+export class XmlDsigDpsSigner implements DpsSigner {
+  constructor(
+    private readonly withMaterial: <T>(
+      fn: (m: SigningMaterial) => Promise<T>,
+    ) => Promise<T>,
+    readonly simulated: boolean,
+    private readonly profile: SignatureProfile = "rsa-sha1",
+  ) {}
+  async sign(xml: string, refId: string): Promise<string> {
+    return this.withMaterial(async (m) => signXml(xml, refId, m, this.profile));
+  }
 }

@@ -90,6 +90,12 @@ export const TOOL_INPUTS = {
   get_authenticated_client_context: z.object({}).strict(),
   get_approved_fiscal_profile: z.object({}).strict(),
   check_emission_readiness: z.object({}).strict(),
+  explain_rejection: z
+    .object({
+      code: z.string().regex(/^E\d{4}$/),
+      layoutId: z.string().min(3).max(80),
+    })
+    .strict(),
   get_request_status: z.object({ requestId: z.string().uuid() }).strict(),
   extract_invoice_intent: z
     .object({ text: z.string().min(1).max(4000) })
@@ -463,3 +469,11 @@ export async function runSimulationFlow(
   steps.push({ agentId: "supervisao", outcome: "sem exceções" });
   return finish("pronto_para_confirmacao");
 }
+
+/** Handler padrão de `explain_rejection`: só o catálogo oficial. */
+export const explainRejectionHandler: ToolHandler = async (_ctx, input) => {
+  const { explainRejection } =
+    await import("@/lib/wjb-ai/fiscal/national/rejection-catalog");
+  const i = input as { code: string; layoutId: string };
+  return explainRejection(i.code, i.layoutId);
+};

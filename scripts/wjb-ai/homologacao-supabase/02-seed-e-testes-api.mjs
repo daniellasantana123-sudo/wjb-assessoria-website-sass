@@ -228,6 +228,21 @@ check(rev.data?.status === "revoked", "T42 revogação com motivo muda o status"
 const back = await cont.from("fiscal_authorization_grants").update({ revoked_at: null, status: "active" }).eq("id", grant.data?.id).select("id");
 check(!!back.error, "T43 autorização revogada não volta a valer", back.error?.code);
 
+// ---------- trilha de uso do certificado (0028) ----------
+const useIns = await admin.from("fiscal_certificate_usage").insert({ tenant_id: tenantIds.A, purpose: "assinatura", environment: "simulado", outcome: "ok", certificate_fingerprint: "c".repeat(64) }).select("id").single();
+check(!useIns.error, "T44 servidor registra uso do certificado", useIns.error?.message);
+const staffIns = await cont.from("fiscal_certificate_usage").insert({ tenant_id: tenantIds.A, purpose: "assinatura", environment: "simulado", outcome: "ok" });
+check(!!staffIns.error, "T45 equipe não grava na trilha (só o servidor)", staffIns.error?.code);
+const useUpd = await admin.from("fiscal_certificate_usage").update({ outcome: "negado" }).eq("id", useIns.data?.id);
+check(!!useUpd.error, "T46 nem o servidor altera a trilha", useUpd.error?.code);
+const useDel = await admin.from("fiscal_certificate_usage").delete().eq("id", useIns.data?.id);
+check(!!useDel.error, "T47 nem o servidor apaga a trilha", useDel.error?.code);
+const staffSees = await cont.from("fiscal_certificate_usage").select("id").eq("id", useIns.data?.id);
+const clientSees2 = await A.from("fiscal_certificate_usage").select("id");
+check((staffSees.data ?? []).length === 1 && (clientSees2.data ?? []).length === 0, "T48 só a equipe lê a trilha");
+const secretReason = await admin.from("fiscal_certificate_usage").insert({ tenant_id: tenantIds.A, purpose: "mtls", environment: "simulado", outcome: "erro", reason: "password=123" });
+check(!!secretReason.error, "T49 motivo da trilha não aceita senha", secretReason.error?.code);
+
 console.log(`\n${failures === 0 ? "Homologação pela API concluída sem falhas." : `${failures} FALHA(S).`}`);
 console.log("Credenciais de teste em .env.homolog.users.local (fora do Git).");
 process.exit(failures ? 1 : 0);

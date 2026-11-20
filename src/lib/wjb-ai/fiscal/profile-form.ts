@@ -40,6 +40,13 @@ export function parseFiscalSettingsForm(
       cTribNac: str(fd, "cTribNac"),
       cNBS: str(fd, "cNBS") || null,
       cLocPrestacao: str(fd, "cLocPrestacao"),
+      convenioMunicipioAtivo:
+        str(fd, "convenioMunicipioAtivo") === "sim"
+          ? true
+          : str(fd, "convenioMunicipioAtivo") === "nao"
+            ? false
+            : undefined,
+      convenioConferidoEm: str(fd, "convenioConferidoEm") || null,
     },
     taxes: {
       tribISSQN: str(fd, "tribISSQN"),
@@ -47,6 +54,10 @@ export function parseFiscalSettingsForm(
       opSimpNac: str(fd, "opSimpNac"),
       regEspTrib: str(fd, "regEspTrib"),
       indTotTrib: "0", // domínio oficial de valor único (TSTipoIndTotTrib)
+      regApTribSN: str(fd, "regApTribSN") || null,
+      pAliq: str(fd, "pAliq")
+        ? Number(str(fd, "pAliq").replace(",", "."))
+        : null,
     },
     ibsCbs: {
       decision: str(fd, "ibsCbsDecision"),

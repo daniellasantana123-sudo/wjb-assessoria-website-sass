@@ -23,6 +23,8 @@ export interface FiscalParameters {
   opSimpNac?: string; // TSOpSimpNac: 1-3
   regEspTrib?: string; // TSRegEspTrib: 0-6, 9
   indTotTrib?: string; // TSTipoIndTotTrib: 0
+  regApTribSN?: string; // TSRegimeApuracaoSimpNac: 1-3, só ME/EPP
+  pAliq?: string; // TSDec1V2: alíquota do ISSQN quando a regra oficial exige
   ibsCbs?: { informar: boolean }; // grupo IBSCBS: só com decisão expressa
 }
 
@@ -58,6 +60,10 @@ export function missingFiscalParameters(p: FiscalParameters): string[] {
     if (!v) missing.push(k);
     else if (!re.test(v)) missing.push(`${k} (valor fora do domínio oficial)`);
   }
+  if (p.regApTribSN && !/^[1-3]$/.test(p.regApTribSN))
+    missing.push("regApTribSN (fora do domínio oficial)");
+  if (p.pAliq && !/^(0|[0-9](\.[0-9]{2})?)$/.test(p.pAliq))
+    missing.push("pAliq (formato oficial 0.00)");
   if (p.ibsCbs?.informar)
     missing.push(
       "IBSCBS (grupo completo ainda não implementado; decisão do contador pendente)",
@@ -106,6 +112,8 @@ export function buildDpsXml(input: {
   const d = input.draft;
   const valor = (d.amountCents / 100).toFixed(2);
   return [
+    // Manual Integrado 6.1.1 e Anexo I (E1229): declaração única com UTF-8.
+    `<?xml version="1.0" encoding="UTF-8"?>`,
     `<DPS xmlns="${input.layout.namespace}" versao="${input.layout.dpsVersion}">`,
     `<infDPS Id="${esc(input.dpsId)}">`,
     tag("tpAmb", input.environment === "producao" ? "1" : "2"),
@@ -119,10 +127,10 @@ export function buildDpsXml(input: {
     // um valor só (0 = NFS-e regular): não é decisão tributária.
     input.layout.rules.finNFSeLocation === "infDPS" ? tag("finNFSe", "0") : "",
     tag("cLocEmi", input.emitter.municipalityIbge),
-    `<prest>${tag(input.emitter.documentKind, input.emitter.document)}<regTrib>${tag("opSimpNac", p.opSimpNac!)}${tag("regEspTrib", p.regEspTrib!)}</regTrib></prest>`,
+    `<prest>${tag(input.emitter.documentKind, input.emitter.document)}<regTrib>${tag("opSimpNac", p.opSimpNac!)}${p.regApTribSN ? tag("regApTribSN", p.regApTribSN) : ""}${tag("regEspTrib", p.regEspTrib!)}</regTrib></prest>`,
     `<toma>${tag(d.taker.documentKind, d.taker.document)}${tag("xNome", d.taker.name)}${d.taker.email ? tag("email", d.taker.email) : ""}</toma>`,
     `<serv><locPrest>${tag("cLocPrestacao", p.cLocPrestacao!)}</locPrest><cServ>${tag("cTribNac", p.cTribNac!)}${tag("xDescServ", d.serviceDescription)}</cServ></serv>`,
-    `<valores><vServPrest>${tag("vServ", valor)}</vServPrest><trib><tribMun>${tag("tribISSQN", p.tribISSQN!)}${tag("tpRetISSQN", p.tpRetISSQN!)}</tribMun><totTrib>${tag("indTotTrib", p.indTotTrib!)}</totTrib></trib></valores>`,
+    `<valores><vServPrest>${tag("vServ", valor)}</vServPrest><trib><tribMun>${tag("tribISSQN", p.tribISSQN!)}${tag("tpRetISSQN", p.tpRetISSQN!)}${p.pAliq ? tag("pAliq", p.pAliq) : ""}</tribMun><totTrib>${tag("indTotTrib", p.indTotTrib!)}</totTrib></trib></valores>`,
     `</infDPS>`,
     `</DPS>`,
   ].join("");

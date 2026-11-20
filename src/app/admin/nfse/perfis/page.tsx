@@ -81,6 +81,11 @@ const RET_ISSQN = {
   "2": "2 - Retido pelo tomador",
   "3": "3 - Retido pelo intermediário",
 };
+const REG_AP = {
+  "1": "1 - Federais e municipal pelo SN",
+  "2": "2 - Federais pelo SN, ISSQN por fora",
+  "3": "3 - Federais e municipal por fora do SN",
+};
 const REG_ESP = {
   "0": "0 - Nenhum",
   "1": "1 - Ato cooperado",
@@ -263,6 +268,57 @@ function SettingsFields({
         >
           <Options map={RET_ISSQN} />
         </Select>
+      </Field>
+      <Field
+        id={`rap-${id}`}
+        label="Regime de apuração no Simples (regApTribSN)"
+        hint="Só para ME/EPP (opSimpNac 3). Deixe vazio nos demais."
+      >
+        <Select
+          id={`rap-${id}`}
+          name="regApTribSN"
+          defaultValue={s?.taxes.regApTribSN ?? ""}
+        >
+          <Options map={REG_AP} empty="Não se aplica" />
+        </Select>
+      </Field>
+      <Field
+        id={`conv-${id}`}
+        label="Convênio do município de incidência no Sistema Nacional"
+        hint="Define se a alíquota é exigida (Anexo I, regras E0617 a E0640)."
+      >
+        <Select
+          id={`conv-${id}`}
+          name="convenioMunicipioAtivo"
+          defaultValue={
+            s ? (s.service.convenioMunicipioAtivo ? "sim" : "nao") : ""
+          }
+          required
+        >
+          <option value="">Selecione</option>
+          <option value="sim">Ativo</option>
+          <option value="nao">Não ativo</option>
+        </Select>
+      </Field>
+      <Field id={`convd-${id}`} label="Convênio conferido em">
+        <Input
+          id={`convd-${id}`}
+          name="convenioConferidoEm"
+          type="date"
+          defaultValue={s?.service.convenioConferidoEm ?? ""}
+        />
+      </Field>
+      <Field
+        id={`aliq-${id}`}
+        label="Alíquota do ISSQN (%)"
+        hint="Só quando a regra oficial exige; o checklist avisa. Ex.: 2,00"
+      >
+        <Input
+          id={`aliq-${id}`}
+          name="pAliq"
+          inputMode="decimal"
+          defaultValue={s?.taxes.pAliq ?? ""}
+        />
       </Field>
       <Field id={`ibs-${id}`} label="IBS/CBS na DPS">
         <Select

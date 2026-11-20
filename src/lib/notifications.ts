@@ -43,7 +43,8 @@ export type NotificationType =
   | "obligation.completed"
   | "obligation.due_soon"
   | "fiscal_request.reviewed"
-  | "fiscal_request.processed";
+  | "fiscal_request.processed"
+  | "fiscal_alert";
 
 const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   invitation: "Você foi convidado(a)",
@@ -61,6 +62,7 @@ const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   "obligation.due_soon": "Obrigação perto do vencimento",
   "fiscal_request.reviewed": "Solicitação de NFS-e revisada",
   "fiscal_request.processed": "Solicitação de NFS-e processada",
+  fiscal_alert: "Alerta da emissão fiscal",
 };
 
 interface NotificationRecipient {
@@ -463,6 +465,36 @@ export async function notifyFiscalRequestEvent({
     link: notice.link,
     metadataSanitized: { kind, request_id: requestId },
     ctaLabel: "Ver no Portal",
+  });
+}
+
+/**
+ * Alertas da emissão fiscal (WJB AI, Fase 6): contadores e super admin,
+ * só in-app, só contagens (nenhum dado de cliente no texto).
+ */
+export async function notifyFiscalAlerts({
+  critical,
+  total,
+}: {
+  critical: number;
+  total: number;
+}) {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("id, email, status, staff_role")
+    .eq("is_wjb_staff", true)
+    .in("staff_role", ["contador", "super_admin"]);
+  const recipients: NotificationRecipient[] = (data ?? [])
+    .filter((row) => row.status !== "suspended")
+    .map((row) => ({ id: row.id, email: row.email }));
+  await dispatchNotification({
+    recipients,
+    tenantId: null,
+    type: "fiscal_alert",
+    body: `${critical} alerta(s) crítico(s) na emissão de NFS-e (${total} no total). Veja o painel de NFS-e.`,
+    link: "/admin/nfse",
+    sendEmail: false,
   });
 }
 

@@ -68,3 +68,8 @@ Resolvido em homologação: cadastro fiscal completo e checklist de prontidão (
 5. Avaliação prévia de IA externa, se e quando a WJB quiser usar modelo (doc 28).
 
 **Técnicas, dependem do certificado:** ler swagger da SEFIN/ADN; confirmar algoritmo de assinatura; implementar assinador ICP-Brasil e transporte mTLS; guardar o XML da NFS-e em armazenamento protegido; ligar o conector nacional à fila só depois do teste.
+
+## Atualização da Fase 6 (20/11/2026)
+Resolvido em homologação: assinatura XMLDSig real (RSA-SHA1, C14N) verificada de forma independente; leitura dos requisitos do certificado; cofre por interface e uso do certificado com trilha imutável (0028); regras oficiais de alíquota e regime; catálogo oficial de rejeições; alertas.
+
+**Decisões da WJB** (doc 30, seção 6, e checklist do doc 29, seção 11): cofre; e-CNPJ A1 da WJB; autorização da primeira conexão (só leitura do swagger e consulta); agendamento das rotinas de fila e alertas.

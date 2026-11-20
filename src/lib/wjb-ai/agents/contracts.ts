@@ -40,6 +40,13 @@ export const TOOLS = {
       "Checklist determinístico do cadastro fiscal (habilitação, autorização, certificado, serviço, ISSQN, IBS/CBS, série). Devolve só status, nunca dados do certificado.",
     returnsPersonalData: false,
   },
+  explain_rejection: {
+    name: "explain_rejection",
+    effect: "read",
+    description:
+      "Mensagem OFICIAL de um código de rejeição (catálogo extraído do Anexo I). Código fora do catálogo é dito como tal; nunca inventa explicação.",
+    returnsPersonalData: false,
+  },
   get_request_status: {
     name: "get_request_status",
     effect: "read",
@@ -103,6 +110,7 @@ export const AGENTS: AgentContract[] = [
     tools: [
       "get_authenticated_client_context",
       "get_request_status",
+      "explain_rejection",
       "create_human_review_task",
       "record_agent_event",
     ],
@@ -144,7 +152,11 @@ export const AGENTS: AgentContract[] = [
     id: "supervisao",
     name: "Supervisão",
     usesLlm: false,
-    tools: ["create_human_review_task", "get_request_status"],
+    tools: [
+      "create_human_review_task",
+      "get_request_status",
+      "explain_rejection",
+    ],
     never: ["aprovar no lugar do contador"],
   },
   {

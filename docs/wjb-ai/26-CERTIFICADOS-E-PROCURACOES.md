@@ -1,5 +1,7 @@
 # 26 - Arquitetura de certificados digitais e procurações
 
+**Atualização da Fase 6:** o algoritmo oficial documentado é RSA-SHA1 (Manual Integrado 6.1.4), o que exclui o AWS KMS para a DPS. Plano consolidado no doc 30.
+
 **Status:** proposta para decisão da WJB. Nenhum certificado foi solicitado, comprado ou instalado; nenhum serviço foi contratado. Complementa o doc 15 com o que a documentação oficial confirmou na Fase 5.
 
 ## 1. Os dois modelos aprovados

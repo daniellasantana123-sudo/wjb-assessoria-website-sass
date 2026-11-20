@@ -65,6 +65,9 @@ test("contador preenche o cadastro fiscal completo no rascunho e vê a prontidã
   await draft.getByLabel("Regime especial (regEspTrib)").selectOption("0");
   await draft.getByLabel("Tributação do ISSQN (tribISSQN)").selectOption("1");
   await draft.getByLabel("Retenção do ISSQN (tpRetISSQN)").selectOption("1");
+  await draft.getByLabel("Regime de apuração no Simples (regApTribSN)").selectOption("1");
+  await draft.getByLabel("Convênio do município de incidência no Sistema Nacional").selectOption("sim");
+  await draft.getByLabel("Convênio conferido em").fill("2026-11-18");
   await draft.getByLabel("IBS/CBS na DPS").selectOption("nao_informar");
   await draft.getByLabel("Justificativa da decisão de IBS/CBS").fill("Grupo opcional hoje; decisão fictícia do contador.");
   await draft.getByLabel("Série da DPS (1 a 49999)").fill("70000");
@@ -202,4 +205,15 @@ test("menu do Admin mostra NFS-e só com o módulo ligado", async ({ browser }) 
   const staff = await login(browser, "ATENDIMENTO");
   await staff.goto("/admin");
   await expect(staff.getByRole("navigation", { name: "Navegação do Admin" }).getByRole("link", { name: "NFS-e (simulação)" })).toBeVisible();
+});
+
+test("rotina de alertas exige o segredo e responde só contagens", async ({ request: api }) => {
+  const denied = await api.post("/api/wjb-ai/cron/alertas", { headers: { authorization: "Bearer errado" } });
+  expect(denied.status()).toBe(401);
+  const res = await api.post("/api/wjb-ai/cron/alertas", { headers: { authorization: `Bearer ${process.env.CRON_SECRET}` } });
+  expect(res.status()).toBe(200);
+  const body = await res.json();
+  expect(body).toMatchObject({ ok: true });
+  expect(typeof body.total).toBe("number");
+  expect(JSON.stringify(body)).not.toMatch(/\d{11,14}|@/);
 });

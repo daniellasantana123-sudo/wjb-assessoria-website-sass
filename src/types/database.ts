@@ -486,6 +486,34 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      fiscal_certificate_usage: {
+        Row: {
+          id: number;
+          tenant_id: string;
+          request_id: string | null;
+          grant_id: string | null;
+          emission_model: string | null;
+          certificate_fingerprint: string | null;
+          purpose: string;
+          environment: string;
+          outcome: string;
+          reason: string | null;
+          used_at: string;
+        };
+        Insert: {
+          tenant_id: string;
+          request_id?: string | null;
+          grant_id?: string | null;
+          emission_model?: string | null;
+          certificate_fingerprint?: string | null;
+          purpose: string;
+          environment: string;
+          outcome: string;
+          reason?: string | null;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       fiscal_dps_numbers: {
         Row: {
           request_id: string;
