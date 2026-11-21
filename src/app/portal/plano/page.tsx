@@ -7,6 +7,7 @@ import {
   overageSettingsAction,
   schedulePlanChangeAction,
 } from "@/actions/commercial";
+import { cancelPaidSubscriptionAction, cancelPendingCheckoutAction, openBillingPortalAction, startCheckoutAction } from "@/actions/payments";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { Badge } from "@/components/ui/badge";
@@ -27,12 +28,22 @@ import {
   usageSummary,
   type AcceptanceDocument,
 } from "@/lib/commercial/pricing";
-import { getComboDiscountBp, getTenantCommercial, listCatalog } from "@/lib/commercial/repo";
+import { getComboDiscountBp, getTenantCommercial, listCatalog, listTenantInvoices } from "@/lib/commercial/repo";
+import { getPaymentsStatus } from "@/lib/payments/config";
 import { getActiveTenant } from "@/lib/tenant";
 
 export const metadata: Metadata = { title: "Plano de emissão", robots: { index: false, follow: false } };
 
-const STATUS = { ativa_simulada: "Ativa (simulação)", suspensa: "Suspensa", cancelada: "Cancelada" } as Record<string, string>;
+const STATUS = {
+  ativa_simulada: "Ativa (simulação)",
+  pendente_pagamento: "Aguardando pagamento",
+  ativa_teste: "Ativa (pagamento de teste)",
+  inadimplente: "Pagamento em atraso",
+  suspensa: "Suspensa",
+  cancelada: "Cancelada",
+} as Record<string, string>;
+const INVOICE_STATUS: Record<string, string> = { rascunho: "Rascunho", aberta: "Em aberto", paga: "Paga", incobravel: "Não cobrável", anulada: "Anulada" };
+const brDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—");
 const ALERT = {
   nenhum: null,
   "80": "Você usou 80% da franquia do mês.",
@@ -57,6 +68,10 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
   const invoice = sub ? invoicePreview(sub, c.usedBillable, c.usedSimulated, sub.planName) : null;
   const emissionPlans = catalog.filter((p) => p.product === "emissao");
   const sp = await searchParams;
+  const payments = getPaymentsStatus();
+  const paymentsOn = payments.enabled;
+  const paid = !!sub && (sub.mode === "stripe_test" || sub.providerSubscriptionId !== null || ["pendente_pagamento", "ativa_teste", "inadimplente"].includes(sub.status));
+  const invoices = paymentsOn && sub ? await listTenantInvoices(tenant.id) : [];
 
   return (
     <Container className="flex flex-1 flex-col gap-6 py-16">
@@ -73,6 +88,37 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
       {sp.cancelado === "1" && !sub ? (
         <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">
           Plano cancelado (simulação). O histórico e os documentos continuam disponíveis.
+        </p>
+      ) : null}
+      {paymentsOn ? (
+        <div role="note" className="border-danger/40 bg-danger/5 rounded-md border px-4 py-3 text-sm">
+          <strong>PAGAMENTO SIMULADO / AMBIENTE DE TESTE.</strong>{" "}
+          {payments.provider === "stripe_test"
+            ? "O pagamento usa a Stripe em modo de teste: só cartões de teste funcionam e nenhum dinheiro é cobrado."
+            : "O pagamento é simulado: nenhum dado de cartão é pedido e nenhum dinheiro é cobrado."}{" "}
+          O acesso só é liberado quando o servidor confirma o pagamento, nunca pela página de retorno.
+        </div>
+      ) : null}
+      {sp.pagamento === "retorno" ? (
+        <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">
+          {sub?.status === "ativa_teste"
+            ? "Pagamento confirmado (ambiente de teste). Seu plano está ativo."
+            : "Recebemos o retorno do pagamento. O plano é ativado quando o provedor confirmar, normalmente em segundos: atualize a página."}
+        </p>
+      ) : null}
+      {sp.pagamento === "cancelado" ? (
+        <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">
+          Pagamento não concluído. Nada foi cobrado. Você pode tentar de novo ou desistir.
+        </p>
+      ) : null}
+      {sp.pagamento === "desistiu" ? (
+        <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">
+          Tentativa de pagamento encerrada. Nada foi cobrado.
+        </p>
+      ) : null}
+      {sp.portal === "simulado" ? (
+        <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">
+          No pagamento simulado não há portal de cobrança. Com a Stripe, este botão abre o portal dela para trocar o cartão.
         </p>
       ) : null}
       <div role="note" className="border-warning/40 bg-warning/10 rounded-md border px-4 py-3 text-sm">
@@ -128,9 +174,23 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                       </a>
                     ) : isOwner ? (
                       <details>
-                        <summary className="text-primary cursor-pointer text-sm font-medium">Contratar (simulação)</summary>
+                        <summary className="text-primary cursor-pointer text-sm font-medium">
+                          {paymentsOn ? "Contratar (pagamento de teste)" : "Contratar (simulação)"}
+                        </summary>
                         <div className="mt-3">
-                          <AdminActionForm action={contractPlanAction} submitLabel="Contratar em simulação" resetOnSuccess={false}>
+                          {paymentsOn ? (
+                            <p className="text-muted-foreground mb-2 text-xs">
+                              {isPerNotePlan(p)
+                                ? "Você cadastra a forma de pagamento; nada é cobrado agora. Só nota oficialmente autorizada é cobrada, quando o serviço for liberado."
+                                : `Você será levado ao pagamento de ${formatBrlCents(price)} por mês (ambiente de teste). Notas adicionais só com sua autorização.`}
+                            </p>
+                          ) : null}
+                          <AdminActionForm
+                            action={paymentsOn ? startCheckoutAction : contractPlanAction}
+                            submitLabel={paymentsOn ? (isPerNotePlan(p) ? "Cadastrar forma de pagamento (teste)" : "Ir para o pagamento (teste)") : "Contratar em simulação"}
+                            pendingLabel={paymentsOn ? "Abrindo o pagamento..." : "Salvando..."}
+                            resetOnSuccess={false}
+                          >
                             <input type="hidden" name="sku" value={p.sku} />
                             <fieldset className="flex flex-col gap-2">
                               <legend className="text-foreground mb-1 text-sm font-medium">Aceites (cada um é registrado)</legend>
@@ -158,8 +218,32 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
           <section aria-labelledby="atual" className="border-border flex flex-col gap-3 rounded-md border p-5">
             <div className="flex flex-wrap items-center gap-2">
               <h2 id="atual" className="text-foreground text-lg font-semibold">{sub.planName ?? sub.sku}</h2>
-              <Badge tone={sub.status === "ativa_simulada" ? "success" : "warning"}>{STATUS[sub.status]}</Badge>
+              <Badge tone={sub.status === "ativa_simulada" || sub.status === "ativa_teste" ? "success" : "warning"}>{STATUS[sub.status]}</Badge>
             </div>
+            {sub.status === "pendente_pagamento" ? (
+              <div role="status" className="border-warning/40 bg-warning/10 rounded-md border p-3 text-sm">
+                <p>
+                  <strong>Pagamento em andamento.</strong> O plano só é ativado quando o pagamento for confirmado pelo servidor.
+                  Se você saiu da página de pagamento, pode desistir e escolher de novo.
+                </p>
+                {isOwner ? (
+                  <div className="mt-2">
+                    <AdminActionForm action={cancelPendingCheckoutAction} submitLabel="Desistir deste pagamento" variant="outline" resetOnSuccess={false} />
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            {sub.status === "inadimplente" ? (
+              <p role="alert" className="border-danger/40 bg-danger/5 rounded-md border p-3 text-sm">
+                <strong>O pagamento da renovação falhou.</strong> Novos pedidos de nota ficam bloqueados até a regularização. Atualize a
+                forma de pagamento. A contabilidade, se contratada, não é afetada.
+              </p>
+            ) : null}
+            {paid && sub.currentPeriodEnd ? (
+              <p className="text-muted-foreground text-sm">
+                {sub.cancelAtPeriodEnd ? `Cancelamento agendado: o plano termina em ${brDate(sub.currentPeriodEnd)}.` : `Período pago até ${brDate(sub.currentPeriodEnd)}.`}
+              </p>
+            ) : null}
             <p className="text-muted-foreground text-sm">
               Ciclo de {sub.cycleStart.split("-").reverse().join("/")} a {sub.cycleEnd.split("-").reverse().join("/")}
               {sub.discountBp ? ` · desconto de cliente de contabilidade ${sub.discountBp / 100}% na mensalidade` : ""}
@@ -199,7 +283,7 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
             ) : null}
           </section>
 
-          {isOwner && sub.status !== "cancelada" ? (
+          {isOwner && sub.status !== "cancelada" && sub.status !== "pendente_pagamento" ? (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               {!isPerNotePlan(sub) ? (
               <section aria-labelledby="excedente" className="border-border min-w-0 rounded-md border p-5">
@@ -220,6 +304,16 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                 </AdminActionForm>
               </section>
               ) : null}
+              {paid ? (
+                <section aria-labelledby="forma-pagamento" className="border-border min-w-0 rounded-md border p-5">
+                  <h2 id="forma-pagamento" className="text-foreground mb-2 font-semibold">Forma de pagamento</h2>
+                  <p className="text-muted-foreground mb-3 text-sm">
+                    Troca de cartão e histórico de cobranças ficam no portal seguro do provedor de pagamento. A WJB não guarda dados de
+                    cartão. Troca de plano: fale com a equipe.
+                  </p>
+                  <AdminActionForm action={openBillingPortalAction} submitLabel="Gerenciar forma de pagamento" variant="outline" resetOnSuccess={false} />
+                </section>
+              ) : (
               <section aria-labelledby="troca" className="border-border min-w-0 rounded-md border p-5">
                 <h2 id="troca" className="text-foreground mb-2 font-semibold">Trocar de plano</h2>
                 <AdminActionForm action={schedulePlanChangeAction} submitLabel="Agendar troca" variant="outline" resetOnSuccess={false}>
@@ -235,6 +329,18 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                 </AdminActionForm>
                 {sub.pendingPlanId ? <p className="text-muted-foreground mt-2 text-xs">Há uma troca agendada para o próximo ciclo.</p> : null}
               </section>
+              )}
+              {paid ? (
+                <section aria-labelledby="cancelar" className="border-border min-w-0 rounded-md border p-5">
+                  <h2 id="cancelar" className="text-foreground mb-2 font-semibold">Cancelar</h2>
+                  <AdminActionForm action={cancelPaidSubscriptionAction} submitLabel="Cancelar no fim do período" variant="outline" resetOnSuccess={false}>
+                    <label className="flex items-start gap-2 text-sm">
+                      <input type="checkbox" name="confirm" className="mt-1 size-4" required />
+                      O plano continua até o fim do período já pago; depois, novos pedidos param e o histórico continua disponível.
+                    </label>
+                  </AdminActionForm>
+                </section>
+              ) : (
               <section aria-labelledby="cancelar" className="border-border min-w-0 rounded-md border p-5">
                 <h2 id="cancelar" className="text-foreground mb-2 font-semibold">Cancelar</h2>
                 <AdminActionForm action={cancelSubscriptionAction} submitLabel="Cancelar plano" variant="outline">
@@ -248,7 +354,37 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                   </label>
                 </AdminActionForm>
               </section>
+              )}
             </div>
+          ) : null}
+
+          {paymentsOn && paid ? (
+            <section aria-labelledby="faturas" className="flex flex-col gap-2 text-sm">
+              <h2 id="faturas" className="text-foreground font-semibold">Faturas (ambiente de teste)</h2>
+              {invoices.length === 0 ? (
+                <p className="text-muted-foreground">Nenhuma fatura ainda.</p>
+              ) : (
+                <ul className="border-border divide-border divide-y rounded-md border">
+                  {invoices.map((f) => (
+                    <li key={f.provider_invoice_id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+                      <span className="min-w-0">
+                        {brDate(f.period_start)} a {brDate(f.period_end)} · <strong className="tabular-nums">{formatBrlCents(f.amount_due_cents)}</strong>
+                        {f.amount_refunded_cents ? ` · estornado ${formatBrlCents(f.amount_refunded_cents)}` : ""}
+                        {f.disputed ? " · em contestação" : ""}
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <Badge tone={f.status === "paga" ? "success" : f.status === "aberta" ? "warning" : "neutral"}>{INVOICE_STATUS[f.status] ?? f.status}</Badge>
+                        {f.hosted_invoice_url ? (
+                          <a href={f.hosted_invoice_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                            Ver fatura<span className="sr-only"> (abre em nova aba)</span>
+                          </a>
+                        ) : null}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           ) : null}
 
           {c.acceptances.length ? (

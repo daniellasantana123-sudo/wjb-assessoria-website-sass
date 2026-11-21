@@ -29,5 +29,24 @@ sleep 6
 npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts src/tests/e2e/staging-nfse-fase7.spec.ts src/tests/e2e/staging-nfse-fase8.spec.ts src/tests/e2e/staging-nfse-fase9.spec.ts --workers=1 --reporter=line
 status=$?
 pkill -f next-server 2>/dev/null || true
+
+# Fase 9.1 (mesmo build; interruptores são lidos em runtime):
+# 1) pagamentos com o provedor SIMULADO (sem Stripe, sem dinheiro);
+node scripts/wjb-ai/homologacao-supabase/05-comercial-catalogo.mjs > /tmp/wjb-staging-comercial.log 2>&1
+(WJB_PAYMENTS_ENABLED=true WJB_PAYMENTS_PROVIDER=mock npx next start -p 3000 > /tmp/wjb-staging-start-pay.log 2>&1 &)
+sleep 6
+HOMOLOG_PAYMENTS=mock npx playwright test src/tests/e2e/staging-payments.spec.ts --workers=1 --reporter=line
+s2=$?
+pkill -f next-server 2>/dev/null || true
+# 2) rota do webhook em modo stripe_test com segredos de FORMATO gerados agora
+#    (não são credenciais da Stripe; os testes não chamam a API da Stripe).
+export STRIPE_SECRET_KEY="sk_test_formato$(openssl rand -hex 12)" STRIPE_WEBHOOK_SECRET="whsec_formato$(openssl rand -hex 12)"
+(WJB_PAYMENTS_ENABLED=true WJB_PAYMENTS_PROVIDER=stripe_test npx next start -p 3000 > /tmp/wjb-staging-start-wh.log 2>&1 &)
+sleep 6
+HOMOLOG_PAYMENTS=stripe_test_format npx playwright test src/tests/e2e/staging-payments-webhook.spec.ts --workers=1 --reporter=line
+s3=$?
+unset STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET
+pkill -f next-server 2>/dev/null || true
+[ $status -eq 0 ] && [ $s2 -eq 0 ] && [ $s3 -eq 0 ] || status=1
 echo "Lembrete: rode 'npm run build' de novo antes de testar contra produção (o build atual aponta para a homologação)."
 exit $status

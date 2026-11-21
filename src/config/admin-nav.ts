@@ -1,18 +1,4 @@
-import {
-  MessagesSquare,
-  Tags,
-  Bell,
-  Building2,
-  Contact,
-  FileText,
-  LayoutDashboard,
-  LifeBuoy,
-  MessageCircle,
-  Plug,
-  ScrollText,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { Bell, Building2, Contact, CreditCard, FileText, LayoutDashboard, LifeBuoy, MessageCircle, MessagesSquare, Plug, ScrollText, ShieldCheck, Tags, Users } from "lucide-react";
 
 import type { PortalNavItem } from "@/config/portal-nav";
 
@@ -31,6 +17,7 @@ export const adminNavItems: PortalNavItem[] = [
   // WJB AI: só com o módulo ligado e para quem tem leitura fiscal (ver admin/layout.tsx).
   { href: "/admin/nfse", label: "NFS-e (simulação)", icon: FileText, feature: "wjb_ai" },
   { href: "/admin/comercial", label: "Comercial (simulação)", icon: Tags, feature: "commercial" },
+  { href: "/admin/pagamentos", label: "Pagamentos (teste)", icon: CreditCard, feature: "payments" },
   { href: "/admin/whatsapp", label: "WhatsApp (Click-to-Chat)", icon: MessagesSquare, feature: "commercial" },
   { href: "/admin/usuarios", label: "Usuários", icon: Users },
   { href: "/admin/integracoes", label: "Integrações", icon: Plug },

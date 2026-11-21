@@ -1,0 +1,136 @@
+import "server-only";
+
+import { randomUUID } from "node:crypto";
+
+import { createAdminClient } from "@/lib/db/supabase/admin";
+
+import type { PaymentProvider, PCharge, PCheckoutSession, PEvent, PInvoice, PSubscription } from "./types";
+
+/**
+ * Provedor SIMULADO (Fase 9.1): imita a Stripe sem rede nem dinheiro, para
+ * homologar o fluxo inteiro enquanto não há conta de teste. Guarda os
+ * objetos em `payment_mock_objects` (só o servidor acessa). Os "eventos"
+ * gerados passam pelo MESMO tratador dos webhooks reais, que busca de novo o
+ * objeto aqui antes de dar acesso, como faria com a Stripe.
+ */
+type Obj = Record<string, unknown>;
+const now = () => Math.floor(Date.now() / 1000);
+const MONTH = 30 * 24 * 3600;
+
+async function save(id: string, type: string, data: Obj) {
+  const { error } = await createAdminClient().from("payment_mock_objects").upsert({ id, type, data, updated_at: new Date().toISOString() });
+  if (error) throw new Error(`mock: ${error.message}`);
+}
+async function load(id: string): Promise<Obj> {
+  const { data } = await createAdminClient().from("payment_mock_objects").select("data").eq("id", id).maybeSingle();
+  if (!data) throw new Error("mock: objeto não encontrado");
+  return data.data as Obj;
+}
+const evt = (type: string, objectId: string, extra: Partial<PEvent> = {}): PEvent => ({ id: `evt_mock_${randomUUID()}`, type, livemode: false, objectId, ...extra });
+
+export class MockPaymentProvider implements PaymentProvider {
+  readonly mode = "mock" as const;
+
+  async ensureCustomer({ tenantId }: { tenantId: string; idempotencyKey: string }) {
+    const id = `cus_mock_${randomUUID().slice(0, 12)}`;
+    await save(id, "customer", { id, metadata: { wjb_tenant: tenantId } });
+    return id;
+  }
+
+  async ensurePrice({ lookupKey, amountCents, recurring }: { lookupKey: string; productName: string; amountCents: number; recurring: boolean }) {
+    const id = `price_mock_${lookupKey}`;
+    try {
+      const p = await load(id);
+      if (p.unit_amount !== amountCents) throw new Error(`Preço ${lookupKey} difere do catálogo aprovado.`);
+    } catch (e) {
+      if (e instanceof Error && e.message.includes("difere")) throw e;
+      await save(id, "price", { id, unit_amount: amountCents, currency: "brl", recurring, product: `prod_mock_${lookupKey}` });
+    }
+    return { priceId: id, productId: `prod_mock_${lookupKey}` };
+  }
+
+  async createCheckoutSession(i: Parameters<PaymentProvider["createCheckoutSession"]>[0]) {
+    const id = `cs_mock_${randomUUID()}`;
+    const url = `/portal/plano/checkout-simulado/${id}`;
+    await save(id, "checkout_session", { id, status: "open", payment_status: "unpaid", customer: i.customerId, subscription: null, client_reference_id: i.clientReferenceId, kind: i.kind, price: i.priceId, url, metadata: i.metadata });
+    return { id, url };
+  }
+
+  async expireCheckoutSession(id: string) {
+    const s = await load(id);
+    if (s.status === "open") await save(id, "checkout_session", { ...s, status: "expired" });
+  }
+
+  async createPortalSession() {
+    return { url: "/portal/plano?portal=simulado" };
+  }
+
+  async cancelSubscription({ subscriptionId, atPeriodEnd }: { subscriptionId: string; atPeriodEnd: boolean; idempotencyKey: string }) {
+    const s = await load(subscriptionId);
+    await save(subscriptionId, "subscription", atPeriodEnd ? { ...s, cancel_at_period_end: true } : { ...s, status: "canceled" });
+  }
+
+  async getCheckoutSession(id: string): Promise<PCheckoutSession> {
+    const s = await load(id);
+    return { id, status: s.status as PCheckoutSession["status"], paymentStatus: s.payment_status as PCheckoutSession["paymentStatus"], customerId: (s.customer as string) ?? null, subscriptionId: (s.subscription as string) ?? null, clientReferenceId: (s.client_reference_id as string) ?? null, url: (s.url as string) ?? null };
+  }
+  async getSubscription(id: string): Promise<PSubscription> {
+    const s = await load(id);
+    return { id, status: String(s.status), customerId: (s.customer as string) ?? null, currentPeriodEnd: (s.current_period_end as number) ?? null, cancelAtPeriodEnd: s.cancel_at_period_end === true };
+  }
+  async getInvoice(id: string): Promise<PInvoice> {
+    const s = await load(id);
+    return { id, status: s.status as PInvoice["status"], customerId: (s.customer as string) ?? null, subscriptionId: (s.subscription as string) ?? null, amountDueCents: Number(s.amount_due), amountPaidCents: Number(s.amount_paid), currency: "brl", periodStart: (s.period_start as number) ?? null, periodEnd: (s.period_end as number) ?? null, hostedInvoiceUrl: null };
+  }
+  async getCharge(id: string): Promise<PCharge> {
+    const s = await load(id);
+    return { id, invoiceId: (s.invoice as string) ?? null, customerId: (s.customer as string) ?? null, amountRefundedCents: Number(s.amount_refunded ?? 0), disputed: s.disputed === true };
+  }
+}
+
+// ---------- Ações de teste (só no provedor simulado) ----------
+
+/** Pagamento no checkout simulado. Recusado: nada muda, como na Stripe (o cliente tenta de novo). */
+export async function mockPayCheckout(sessionId: string, outcome: "aprovado" | "recusado"): Promise<PEvent[]> {
+  const s = await load(sessionId);
+  if (s.status !== "open") return [];
+  if (outcome === "recusado") return [];
+  if (s.kind === "setup") {
+    await save(sessionId, "checkout_session", { ...s, status: "complete", payment_status: "no_payment_required" });
+    return [evt("checkout.session.completed", sessionId)];
+  }
+  const price = await load(String(s.price));
+  const subId = `sub_mock_${randomUUID().slice(0, 12)}`;
+  const invId = `in_mock_${randomUUID().slice(0, 12)}`;
+  const t = now();
+  await save(subId, "subscription", { id: subId, status: "active", customer: s.customer, current_period_end: t + MONTH, cancel_at_period_end: false, price: s.price });
+  await save(invId, "invoice", { id: invId, status: "paid", customer: s.customer, subscription: subId, amount_due: price.unit_amount, amount_paid: price.unit_amount, period_start: t, period_end: t + MONTH });
+  await save(sessionId, "checkout_session", { ...s, status: "complete", payment_status: "paid", subscription: subId });
+  // Ordem diferente da natural de propósito: o tratador não depende da ordem.
+  return [evt("invoice.paid", invId), evt("checkout.session.completed", sessionId), evt("customer.subscription.created", subId)];
+}
+
+/** Renovação: paga ou com falha (cartão recusado na cobrança do mês seguinte). */
+export async function mockRenewal(subscriptionId: string, outcome: "paga" | "falhou"): Promise<PEvent[]> {
+  const sub = await load(subscriptionId);
+  const price = await load(String(sub.price));
+  const invId = `in_mock_${randomUUID().slice(0, 12)}`;
+  const t = now();
+  const paid = outcome === "paga";
+  await save(invId, "invoice", { id: invId, status: paid ? "paid" : "open", customer: sub.customer, subscription: subscriptionId, amount_due: price.unit_amount, amount_paid: paid ? price.unit_amount : 0, period_start: t, period_end: t + MONTH });
+  await save(subscriptionId, "subscription", { ...sub, status: paid ? "active" : "past_due", current_period_end: paid ? t + MONTH : sub.current_period_end });
+  return [evt(paid ? "invoice.paid" : "invoice.payment_failed", invId), evt("customer.subscription.updated", subscriptionId)];
+}
+
+export async function mockRefundOrDispute(invoiceId: string, kind: "estorno" | "contestacao"): Promise<PEvent[]> {
+  const inv = await load(invoiceId);
+  const chId = `ch_mock_${randomUUID().slice(0, 12)}`;
+  await save(chId, "charge", { id: chId, invoice: invoiceId, customer: inv.customer, amount_refunded: kind === "estorno" ? inv.amount_paid : 0, disputed: kind === "contestacao" });
+  return kind === "estorno" ? [evt("charge.refunded", chId)] : [evt("charge.dispute.created", `dp_mock_${chId}`, { relatedChargeId: chId })];
+}
+
+export async function mockCancelNow(subscriptionId: string): Promise<PEvent[]> {
+  const sub = await load(subscriptionId);
+  await save(subscriptionId, "subscription", { ...sub, status: "canceled" });
+  return [evt("customer.subscription.deleted", subscriptionId)];
+}

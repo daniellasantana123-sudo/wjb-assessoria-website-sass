@@ -86,3 +86,8 @@ Implementado em homologação: planos e assinaturas simulados (emissão sozinha 
 **Decidido pela WJB:** preços, franquias, notas adicionais e desconto do combo aprovados (doc 41); WhatsApp por Click-to-Chat, sem Cloud API (doc 42).
 
 **Pendentes da WJB:** textos jurídicos dos aceites; gateway, contrato e tributação do serviço; segundo WhatsApp do rodapé; testes em aparelhos reais; autorização de publicação; certificado e-CNPJ novo e cofre (Fase 10, doc 46).
+
+## Atualização da Fase 9.1 (21/11/2026) - ver FASE-9-1-STRIPE-PAGAMENTOS-RELATORIO e 47
+**Decidido pela WJB:** Stripe (Checkout, Billing e Customer Portal), com Link como opção de checkout acelerado.
+
+**Pendentes da WJB:** conta e chaves de teste da Stripe, colocadas no ambiente e não no chat (doc 47, A); Link disponível na conta; regra de inadimplência; cobrança agrupada da Nota Avulsa; contratos, tributação e ativação live (doc 47, B); 2º WhatsApp (oculto, não apagado); módulo `whatsapp-business` inativo (remover ou manter).

@@ -9,6 +9,7 @@ import { Logo } from "@/components/navigation/logo";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
 import { isCommercialEnabled } from "@/lib/commercial/config";
+import { isPaymentsEnabled } from "@/lib/payments/config";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import { hasWjbAiPermission } from "@/lib/wjb-ai/permissions";
 
@@ -33,6 +34,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const enabledFeatures = [
     ...(isWjbAiEnabled() && hasWjbAiPermission(session, "fiscal.request.read") ? ["wjb_ai"] : []),
     ...(isCommercialEnabled() ? ["commercial"] : []),
+    ...(isPaymentsEnabled() ? ["payments"] : []),
   ];
 
   return (

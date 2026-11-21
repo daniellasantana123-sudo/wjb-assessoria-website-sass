@@ -26,12 +26,17 @@ export const siteConfig = {
         display: "(11) 9 7614-6375",
         e164: "5511976146375",
         href: "https://wa.me/5511976146375",
+        // WhatsApp comercial OFICIAL (decisão da WJB, 21/11/2026). Único exibido como WhatsApp.
+        publicWhatsApp: true,
       },
       {
         label: "WhatsApp 2",
         display: "(11) 9 7685-4842",
         e164: "5511976854842",
         href: "https://wa.me/5511976854842",
+        // Fase 9.1: sem função distinta confirmada; deixou de ser exibido como
+        // WhatsApp (padronização no oficial). Mantido aqui, reversível, até a WJB decidir.
+        publicWhatsApp: false,
       },
     ],
   },

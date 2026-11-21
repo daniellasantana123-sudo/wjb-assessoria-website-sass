@@ -6,6 +6,7 @@ import { NewsletterForm } from "@/components/forms/newsletter-form";
 import { CookiePreferencesButton } from "@/components/shared/cookie-preferences-button";
 import { serviceCategories } from "@/config/services";
 import { siteConfig } from "@/config/site";
+import { getPublicWhatsAppPhones } from "@/integrations/whatsapp";
 
 import { Container } from "./container";
 
@@ -156,7 +157,7 @@ export function SiteFooter() {
         <div className="min-w-0">
           <h2 className="text-sm font-medium text-neutral-100">Fale conosco</h2>
           <ul className="mt-4 flex flex-col gap-1 text-sm text-neutral-400">
-            {siteConfig.contact.phones.map((phone) => (
+            {getPublicWhatsAppPhones().map((phone) => (
               <li key={phone.e164}>
                 <a
                   href={phone.href}

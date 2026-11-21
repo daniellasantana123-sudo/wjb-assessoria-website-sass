@@ -1,5 +1,7 @@
 # 42 - Fase 9: WhatsApp por Click-to-Chat
 
+> **Correção (21/11/2026, Fase 9.1):** a frase "não há nenhum módulo de API do WhatsApp no código" estava **errada**. Existe, desde o início do projeto, `src/integrations/whatsapp-business` (aviso interno de novo lead pela Meta Cloud API, chamado por `/api/leads`), **inativo** sem `WHATSAPP_ACCESS_TOKEN`/`WHATSAPP_PHONE_NUMBER_ID`. A Fase 9 removeu só o webhook e o provedor simulados. O rodapé e `/contato` passaram a exibir só o número oficial. Ver o relatório da Fase 9.1, seção 8.
+
 **Decisão da WJB (21/11/2026):** usar Click-to-Chat. **Não** usar a WhatsApp Cloud API nem qualquer automação de mensagens. Este documento substitui o plano de integração do doc 36.
 
 Número oficial: **+55 11 97614-6375** (`5511976146375`).

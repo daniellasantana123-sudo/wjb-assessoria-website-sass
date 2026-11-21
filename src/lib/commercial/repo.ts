@@ -126,6 +126,10 @@ export interface TenantCommercial {
         cycleEnd: string;
         pendingPlanId: string | null;
         createdAt: string;
+        mode: "simulado" | "stripe_test";
+        providerSubscriptionId: string | null;
+        currentPeriodEnd: string | null;
+        cancelAtPeriodEnd: boolean;
       })
     | null;
   usedSimulated: number;
@@ -179,6 +183,10 @@ export async function getTenantCommercial(tenantId: string): Promise<TenantComme
           cycleEnd: sub.cycle_end,
           pendingPlanId: sub.pending_plan_id,
           createdAt: sub.created_at,
+          mode: sub.mode as "simulado" | "stripe_test",
+          providerSubscriptionId: sub.provider_subscription_id,
+          currentPeriodEnd: sub.current_period_end,
+          cancelAtPeriodEnd: sub.cancel_at_period_end,
         }
       : null,
     usedSimulated,
@@ -227,4 +235,16 @@ export async function getCostPremises(): Promise<{ costPerNoteCents: number | nu
   const { data } = await createAdminClient().from("commercial_settings").select("value").eq("key", "cost_premises").maybeSingle();
   const v = (data?.value ?? {}) as { costPerNoteCents?: number | null; fixedCostPerClientCents?: number | null };
   return { costPerNoteCents: v.costPerNoteCents ?? null, fixedCostPerClientCents: v.fixedCostPerClientCents ?? null };
+}
+
+/** Faturas da empresa (RLS do usuário: só as da empresa dele). */
+export async function listTenantInvoices(tenantId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("payment_invoices")
+    .select("provider_invoice_id, status, amount_due_cents, amount_paid_cents, amount_refunded_cents, disputed, period_start, period_end, hosted_invoice_url, created_at, mode")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(24);
+  return data ?? [];
 }

@@ -1,0 +1,184 @@
+import "server-only";
+
+import { checkStripeKeys, STRIPE_API_VERSION, stripeKeysFromEnv } from "./config";
+import type { PaymentProvider, PCharge, PCheckoutSession, PInvoice, PSubscription } from "./types";
+
+/**
+ * Provedor Stripe em MODO DE TESTE (Fase 9.1), pela API REST oficial
+ * (`https://api.stripe.com/v1`, corpo `application/x-www-form-urlencoded`),
+ * sem SDK novo. Versão da API fixada (STRIPE_API_VERSION). Recusa qualquer
+ * chave que não seja de teste ANTES de qualquer chamada.
+ *
+ * Checkout sem `payment_method_types`: os meios exibidos (cartão e, quando a
+ * conta tiver, Link) vêm da configuração do Dashboard. Pix não é usado em
+ * assinatura (a Stripe não oferece Pix recorrente para contas no Brasil).
+ */
+export class StripeApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code: string | null,
+  ) {
+    super(`Stripe respondeu ${status}${code ? ` (${code})` : ""}`);
+    this.name = "StripeApiError";
+  }
+}
+
+/** Codifica objeto aninhado no formato da Stripe: a[b][0][c]=v. */
+export function encodeForm(obj: Record<string, unknown>, prefix = ""): string[] {
+  const out: string[] = [];
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined || v === null) continue;
+    const key = prefix ? `${prefix}[${k}]` : k;
+    if (Array.isArray(v)) v.forEach((item, i) => (typeof item === "object" && item !== null ? out.push(...encodeForm(item as Record<string, unknown>, `${key}[${i}]`)) : out.push(`${encodeURIComponent(`${key}[${i}]`)}=${encodeURIComponent(String(item))}`)));
+    else if (typeof v === "object") out.push(...encodeForm(v as Record<string, unknown>, key));
+    else out.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(v))}`);
+  }
+  return out;
+}
+
+type Fetch = typeof fetch;
+
+export class StripeTestProvider implements PaymentProvider {
+  readonly mode = "test" as const;
+  private readonly secret: string;
+
+  constructor(
+    secret = stripeKeysFromEnv().secret,
+    private readonly fetchImpl: Fetch = fetch,
+  ) {
+    // Aqui só a chave secreta importa (o segredo do webhook é conferido na rota).
+    const problems = checkStripeKeys({ secret, publishable: "", webhook: "whsec_0000000000000000" }).problems;
+    if (problems.length) throw new Error(`Stripe desligada: ${problems.join("; ")}`);
+    this.secret = secret;
+  }
+
+  private async call<T>(method: "GET" | "POST" | "DELETE", path: string, body?: Record<string, unknown>, idempotencyKey?: string): Promise<T> {
+    const query = method === "GET" && body ? `?${encodeForm(body).join("&")}` : "";
+    const res = await this.fetchImpl(`https://api.stripe.com/v1${path}${query}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${this.secret}`,
+        "Stripe-Version": STRIPE_API_VERSION,
+        ...(method === "POST" ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+        ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+      },
+      body: method === "POST" && body ? encodeForm(body).join("&") : undefined,
+      signal: AbortSignal.timeout(15_000),
+    });
+    const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    // Nunca devolve corpo bruto de erro (pode conter dado do cliente).
+    if (!res.ok) throw new StripeApiError(res.status, ((json.error as { code?: string } | undefined)?.code as string) ?? null);
+    if (json.livemode === true) throw new Error("Objeto de produção (livemode) recusado neste ambiente.");
+    return json as T;
+  }
+
+  async ensureCustomer({ tenantId, idempotencyKey }: { tenantId: string; idempotencyKey: string }) {
+    // Só o id interno opaco da empresa; nenhum nome, e-mail ou documento.
+    const c = await this.call<{ id: string }>("POST", "/customers", { metadata: { wjb_tenant: tenantId } }, idempotencyKey);
+    return c.id;
+  }
+
+  async ensurePrice({ lookupKey, productName, amountCents, recurring }: { lookupKey: string; productName: string; amountCents: number; recurring: boolean }) {
+    const found = await this.call<{ data: { id: string; product: string; unit_amount: number }[] }>("GET", "/prices", { lookup_keys: [lookupKey], active: "true" });
+    const hit = found.data[0];
+    if (hit) {
+      if (hit.unit_amount !== amountCents) throw new Error(`Preço ${lookupKey} na Stripe difere do catálogo aprovado.`);
+      return { priceId: hit.id, productId: hit.product };
+    }
+    const p = await this.call<{ id: string; product: string }>(
+      "POST",
+      "/prices",
+      {
+        currency: "brl",
+        unit_amount: amountCents,
+        lookup_key: lookupKey,
+        product_data: { name: productName, metadata: { wjb_lookup: lookupKey } },
+        ...(recurring ? { recurring: { interval: "month" } } : {}),
+      },
+      `price:${lookupKey}`,
+    );
+    return { priceId: p.id, productId: p.product };
+  }
+
+  async createCheckoutSession(i: Parameters<PaymentProvider["createCheckoutSession"]>[0]) {
+    const common = {
+      customer: i.customerId,
+      client_reference_id: i.clientReferenceId,
+      success_url: i.successUrl,
+      cancel_url: i.cancelUrl,
+      locale: "pt-BR",
+      metadata: i.metadata,
+    };
+    const body =
+      i.kind === "subscription"
+        ? { ...common, mode: "subscription", line_items: [{ price: i.priceId, quantity: 1 }], subscription_data: { metadata: i.metadata } }
+        : { ...common, mode: "setup", currency: "brl", setup_intent_data: { metadata: i.metadata } };
+    const s = await this.call<{ id: string; url: string }>("POST", "/checkout/sessions", body, i.idempotencyKey);
+    return { id: s.id, url: s.url };
+  }
+
+  async expireCheckoutSession(id: string) {
+    await this.call("POST", `/checkout/sessions/${encodeURIComponent(id)}/expire`);
+  }
+
+  async createPortalSession({ customerId, returnUrl }: { customerId: string; returnUrl: string }) {
+    const s = await this.call<{ url: string }>("POST", "/billing_portal/sessions", { customer: customerId, return_url: returnUrl, locale: "pt-BR" });
+    return { url: s.url };
+  }
+
+  async cancelSubscription({ subscriptionId, atPeriodEnd, idempotencyKey }: { subscriptionId: string; atPeriodEnd: boolean; idempotencyKey: string }) {
+    if (atPeriodEnd) await this.call("POST", `/subscriptions/${encodeURIComponent(subscriptionId)}`, { cancel_at_period_end: "true" }, idempotencyKey);
+    else await this.call("DELETE", `/subscriptions/${encodeURIComponent(subscriptionId)}`);
+  }
+
+  async getCheckoutSession(id: string): Promise<PCheckoutSession> {
+    const s = await this.call<Record<string, unknown>>("GET", `/checkout/sessions/${encodeURIComponent(id)}`);
+    return {
+      id: String(s.id),
+      status: s.status as PCheckoutSession["status"],
+      paymentStatus: s.payment_status as PCheckoutSession["paymentStatus"],
+      customerId: (s.customer as string) ?? null,
+      subscriptionId: (s.subscription as string) ?? null,
+      clientReferenceId: (s.client_reference_id as string) ?? null,
+      url: (s.url as string) ?? null,
+    };
+  }
+
+  async getSubscription(id: string): Promise<PSubscription> {
+    const s = await this.call<Record<string, unknown>>("GET", `/subscriptions/${encodeURIComponent(id)}`);
+    return {
+      id: String(s.id),
+      status: String(s.status),
+      customerId: (s.customer as string) ?? null,
+      currentPeriodEnd: (s.current_period_end as number) ?? null,
+      cancelAtPeriodEnd: s.cancel_at_period_end === true,
+    };
+  }
+
+  async getInvoice(id: string): Promise<PInvoice> {
+    const s = await this.call<Record<string, unknown>>("GET", `/invoices/${encodeURIComponent(id)}`);
+    return {
+      id: String(s.id),
+      status: s.status as PInvoice["status"],
+      customerId: (s.customer as string) ?? null,
+      subscriptionId: (s.subscription as string) ?? null,
+      amountDueCents: Number(s.amount_due ?? 0),
+      amountPaidCents: Number(s.amount_paid ?? 0),
+      currency: String(s.currency ?? ""),
+      periodStart: (s.period_start as number) ?? null,
+      periodEnd: (s.period_end as number) ?? null,
+      hostedInvoiceUrl: (s.hosted_invoice_url as string) ?? null,
+    };
+  }
+
+  async getCharge(id: string): Promise<PCharge> {
+    const s = await this.call<Record<string, unknown>>("GET", `/charges/${encodeURIComponent(id)}`);
+    return {
+      id: String(s.id),
+      invoiceId: (s.invoice as string) ?? null,
+      customerId: (s.customer as string) ?? null,
+      amountRefundedCents: Number(s.amount_refunded ?? 0),
+      disputed: s.disputed === true,
+    };
+  }
+}

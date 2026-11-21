@@ -1,0 +1,286 @@
+{
+ "geradoEm": "2026-11-21T20:09:43.139Z",
+ "ambiente": "build local de staging (homologação), provedor de pagamento simulado, Chromium com emulação",
+ "rows": [
+  {
+   "tela": "checkout-simulado",
+   "viewport": "320x568",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "360x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "375x667",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "390x844",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "390x844",
+   "axe": []
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "414x896",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "640x400",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "768x1024",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "1024x768",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "1280x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "1280x800",
+   "axe": []
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "1440x900",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "1920x1080",
+   "estouroPx": 0
+  },
+  {
+   "tela": "checkout-simulado",
+   "viewport": "844x390",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "320x568",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "360x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "375x667",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "390x844",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "390x844",
+   "axe": []
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "414x896",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "640x400",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "768x1024",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "1024x768",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "1280x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "1280x800",
+   "axe": []
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "1440x900",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "1920x1080",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pendente",
+   "viewport": "844x390",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "320x568",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "360x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "375x667",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "390x844",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "390x844",
+   "axe": []
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "414x896",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "640x400",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "768x1024",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "1024x768",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "1280x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "1280x800",
+   "axe": []
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "1440x900",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "1920x1080",
+   "estouroPx": 0
+  },
+  {
+   "tela": "plano-pago",
+   "viewport": "844x390",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "320x568",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "360x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "375x667",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "390x844",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "390x844",
+   "axe": []
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "414x896",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "640x400",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "768x1024",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "1024x768",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "1280x800",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "1280x800",
+   "axe": []
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "1440x900",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "1920x1080",
+   "estouroPx": 0
+  },
+  {
+   "tela": "admin-pagamentos",
+   "viewport": "844x390",
+   "estouroPx": 0
+  }
+ ]
+}

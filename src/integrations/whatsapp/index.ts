@@ -73,3 +73,8 @@ export function getCommercialWhatsAppLink(intent: CommercialWhatsAppIntent) {
 /** Texto curto que acompanha os botões de WhatsApp (expectativa correta). */
 export const whatsAppClickToChatNotice =
   "Abre o WhatsApp com uma mensagem pronta. Nada é enviado até você tocar em enviar.";
+
+/** Números exibidos ao público como WhatsApp (só o oficial; ver `publicWhatsApp` em site.ts). */
+export function getPublicWhatsAppPhones() {
+  return siteConfig.contact.phones.filter((p) => p.publicWhatsApp);
+}

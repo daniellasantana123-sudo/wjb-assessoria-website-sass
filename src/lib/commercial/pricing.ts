@@ -30,7 +30,7 @@ export function isPerNotePlan(plan: Pick<PlanSnapshot, "quota" | "overageCents" 
 
 export interface SubscriptionSnapshot extends PlanSnapshot {
   discountBp: number;
-  status: "ativa_simulada" | "suspensa" | "cancelada";
+  status: "ativa_simulada" | "ativa_teste" | "pendente_pagamento" | "inadimplente" | "suspensa" | "cancelada";
   overageAuthorized: boolean;
   spendingLimitCents: number | null;
 }
@@ -77,7 +77,7 @@ export type ConsumeDecision =
  * para o cliente ver o custo do excedente antes de decidir.
  */
 export function canConsume(sub: SubscriptionSnapshot | null, usedThisCycle: number): ConsumeDecision {
-  if (!sub || sub.status !== "ativa_simulada") return { allowed: false, reason: "sem_assinatura_ativa" };
+  if (!sub || (sub.status !== "ativa_simulada" && sub.status !== "ativa_teste")) return { allowed: false, reason: "sem_assinatura_ativa" };
   if (sub.overageCents === null || sub.monthlyCents === null) {
     // Alto Volume: condições contratuais, nunca calculadas aqui.
     if (sub.quota !== null && sub.quota > 0 && usedThisCycle < sub.quota) return { allowed: true, overage: false, overageCostCents: 0 };

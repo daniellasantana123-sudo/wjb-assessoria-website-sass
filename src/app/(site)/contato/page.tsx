@@ -15,6 +15,7 @@ import {
   getAddressMapUrl,
   siteConfig,
 } from "@/config/site";
+import { getPublicWhatsAppPhones } from "@/integrations/whatsapp";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/contato" },
@@ -122,7 +123,7 @@ export default function ContactPage() {
             {siteConfig.contact.email}
           </ContactRow>
 
-          {siteConfig.contact.phones.map((phone) => (
+          {getPublicWhatsAppPhones().map((phone) => (
             <ContactRow
               key={phone.e164}
               icon={WhatsAppIcon}

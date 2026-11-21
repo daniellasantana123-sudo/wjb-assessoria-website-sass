@@ -523,8 +523,8 @@ export interface Database {
         Relationships: [];
       };
       commercial_subscriptions: {
-        Row: { id: string; tenant_id: string; plan_id: string; mode: string; plan_sku: string; monthly_cents: number | null; quota: number | null; overage_cents: number | null; discount_bp: number; status: string; cycle_start: string; cycle_end: string; overage_authorized: boolean; spending_limit_cents: number | null; pending_plan_id: string | null; created_by: string | null; created_at: string; canceled_at: string | null; cancel_reason: string | null };
-        Insert: { id?: string; tenant_id: string; plan_id: string; plan_sku: string; monthly_cents?: number | null; quota?: number | null; overage_cents?: number | null; discount_bp?: number; status?: string; cycle_start: string; cycle_end: string; overage_authorized?: boolean; spending_limit_cents?: number | null; pending_plan_id?: string | null; created_by?: string | null; canceled_at?: string | null; cancel_reason?: string | null };
+        Row: { id: string; tenant_id: string; plan_id: string; mode: string; plan_sku: string; monthly_cents: number | null; quota: number | null; overage_cents: number | null; discount_bp: number; status: string; cycle_start: string; cycle_end: string; overage_authorized: boolean; spending_limit_cents: number | null; pending_plan_id: string | null; created_by: string | null; created_at: string; canceled_at: string | null; cancel_reason: string | null; provider_subscription_id: string | null; current_period_end: string | null; cancel_at_period_end: boolean };
+        Insert: { id?: string; tenant_id: string; plan_id: string; plan_sku: string; mode?: string; provider_subscription_id?: string | null; current_period_end?: string | null; cancel_at_period_end?: boolean; monthly_cents?: number | null; quota?: number | null; overage_cents?: number | null; discount_bp?: number; status?: string; cycle_start: string; cycle_end: string; overage_authorized?: boolean; spending_limit_cents?: number | null; pending_plan_id?: string | null; created_by?: string | null; canceled_at?: string | null; cancel_reason?: string | null };
         Update: Partial<Database["public"]["Tables"]["commercial_subscriptions"]["Insert"]>;
         Relationships: [];
       };
@@ -532,6 +532,42 @@ export interface Database {
         Row: { id: number; tenant_id: string; subscription_id: string | null; user_id: string | null; document: string; document_version: string; accepted_at: string };
         Insert: { tenant_id: string; subscription_id?: string | null; user_id?: string | null; document: string; document_version: string };
         Update: Record<string, never>;
+        Relationships: [];
+      };
+      payment_customers: {
+        Row: { tenant_id: string; provider: string; mode: string; provider_customer_id: string; created_at: string };
+        Insert: { tenant_id: string; mode: string; provider_customer_id: string };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      payment_prices: {
+        Row: { id: string; plan_id: string; plan_version: number; mode: string; discount_bp: number; unit_amount_cents: number; provider_price_id: string; provider_product_id: string; created_at: string };
+        Insert: { plan_id: string; plan_version: number; mode: string; discount_bp: number; unit_amount_cents: number; provider_price_id: string; provider_product_id: string };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      payment_checkouts: {
+        Row: { id: string; tenant_id: string; subscription_id: string; plan_id: string; plan_version: number; kind: string; mode: string; provider_session_id: string | null; amount_cents: number; discount_bp: number; status: string; created_by: string | null; created_at: string; completed_at: string | null };
+        Insert: { id?: string; tenant_id: string; subscription_id: string; plan_id: string; plan_version: number; kind: string; mode: string; provider_session_id?: string | null; amount_cents: number; discount_bp: number; status?: string; created_by?: string | null };
+        Update: { provider_session_id?: string | null; status?: string; completed_at?: string | null };
+        Relationships: [];
+      };
+      payment_events: {
+        Row: { provider_event_id: string; mode: string; type: string; livemode: boolean; object_id: string | null; tenant_id: string | null; status: string; attempts: number; last_error: string | null; received_at: string; processed_at: string | null };
+        Insert: { provider_event_id: string; mode: string; type: string; livemode?: boolean; object_id?: string | null; tenant_id?: string | null; status?: string };
+        Update: { status?: string; attempts?: number; last_error?: string | null; processed_at?: string | null; tenant_id?: string | null };
+        Relationships: [];
+      };
+      payment_invoices: {
+        Row: { provider_invoice_id: string; tenant_id: string; subscription_id: string | null; mode: string; status: string; currency: string; amount_due_cents: number; amount_paid_cents: number; amount_refunded_cents: number; disputed: boolean; period_start: string | null; period_end: string | null; hosted_invoice_url: string | null; created_at: string; updated_at: string };
+        Insert: { provider_invoice_id: string; tenant_id: string; subscription_id?: string | null; mode: string; status: string; amount_due_cents?: number; amount_paid_cents?: number; amount_refunded_cents?: number; disputed?: boolean; period_start?: string | null; period_end?: string | null; hosted_invoice_url?: string | null; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["payment_invoices"]["Insert"]>;
+        Relationships: [];
+      };
+      payment_mock_objects: {
+        Row: { id: string; type: string; data: Record<string, unknown>; updated_at: string };
+        Insert: { id: string; type: string; data: Record<string, unknown>; updated_at?: string };
+        Update: { data?: Record<string, unknown>; updated_at?: string };
         Relationships: [];
       };
       commercial_usage_ledger: {

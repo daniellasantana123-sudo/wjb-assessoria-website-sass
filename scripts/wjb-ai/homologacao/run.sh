@@ -16,7 +16,7 @@ docker exec "$C" psql -q -U postgres -c "create database homolog" >/dev/null
 
 echo "== 1. Schema atual (shim do Supabase + migrations 0001 a 0023)"
 PSQL homolog < "$H/00_supabase_shim.sql"
-for f in $(ls $M/*.sql | grep -v -e 0024_ -e 0025_ -e 0026_ -e 0027_ -e 0028_ -e 0029_ -e 0030_ -e 0031_ -e 0032_); do PSQL homolog < "$f" >/dev/null; done
+for f in $(ls $M/*.sql | grep -v -e 0024_ -e 0025_ -e 0026_ -e 0027_ -e 0028_ -e 0029_ -e 0030_ -e 0031_ -e 0032_ -e 0033_); do PSQL homolog < "$f" >/dev/null; done
 PSQL homolog < "$H/01_seed_ficticio.sql" >/dev/null
 echo "   ok: $(ls $M/*.sql | grep -v -e 0024_ -e 0025_ -e 0026_ -e 0027_ -e 0028_ -e 0029_ -e 0030_ | wc -l | tr -d ' ') migrations aplicadas"
 
@@ -36,10 +36,10 @@ echo "   original:   $A"; echo "   restaurado: $B"
 [ "$A" = "$B" ] && echo "   ok: restauração idêntica" || { echo "FALHA na restauração"; exit 1; }
 
 SCHEMA_SQL="select string_agg(table_name||'.'||column_name||':'||data_type, ',' order by table_name, column_name)
-  from information_schema.columns where table_schema='public' and table_name not like 'fiscal_%' and table_name not like 'commercial_%'"
+  from information_schema.columns where table_schema='public' and table_name not like 'fiscal_%' and table_name not like 'commercial_%' and table_name not like 'payment_%'"
 BEFORE=$(docker exec "$C" psql -tA -U postgres -d homolog -c "$SCHEMA_SQL")
 
-echo "== 3. Aplicando 0024 a 0032"
+echo "== 3. Aplicando 0024 a 0033"
 PSQL homolog < "$M/0024_wjb_ai_fiscal_core.sql"
 PSQL homolog < "$M/0025_wjb_ai_fiscal_queue.sql"
 PSQL homolog < "$M/0026_wjb_ai_fiscal_request_versions.sql"
@@ -49,6 +49,7 @@ PSQL homolog < "$M/0029_wjb_ai_review_assignment.sql"
 PSQL homolog < "$M/0030_wjb_commercial_plans.sql"
 PSQL homolog < "$M/0031_wjb_commercial_entitlement_grant.sql"
 PSQL homolog < "$M/0032_wjb_commercial_price_approval.sql"
+PSQL homolog < "$M/0033_wjb_payments_stripe_test.sql"
 AFTER=$(docker exec "$C" psql -tA -U postgres -d homolog -c "$SCHEMA_SQL")
 [ "$BEFORE" = "$AFTER" ] && echo "   ok: nenhuma coluna de tabela existente mudou" || { echo "FALHA: tabelas existentes alteradas"; exit 1; }
 echo "   tabelas novas: $(docker exec "$C" psql -tA -U postgres -d homolog -c "select string_agg(table_name, ', ' order by table_name) from information_schema.tables where table_schema='public' and table_name like 'fiscal_%'")"
@@ -83,8 +84,10 @@ echo "   RLS nas tabelas commercial_*: $(docker exec "$C" psql -tA -U postgres -
 PSQL homolog < "$H/14_testes_0030.sql" 2>&1 | sed -n 's/^.*NOTICE:  /   /p'
 echo "== 4f. 0032: aprovação versionada de preço"
 PSQL homolog < "$H/16_testes_0032.sql" 2>&1 | sed -n 's/^.*NOTICE:  /   /p'
+echo "== 4g. 0033: pagamentos Stripe (teste)"
+PSQL homolog < "$H/18_testes_0033.sql" 2>&1 | sed -n 's/^.*NOTICE:  /   /p'
 
-echo "== 5. Rollback da 0032 a 0024 (no banco restaurado)"
+echo "== 5. Rollback da 0033 a 0024 (no banco restaurado)"
 PSQL restore_check < "$M/0024_wjb_ai_fiscal_core.sql"
 PSQL restore_check < "$M/0025_wjb_ai_fiscal_queue.sql"
 PSQL restore_check < "$M/0026_wjb_ai_fiscal_request_versions.sql"
@@ -94,6 +97,8 @@ PSQL restore_check < "$M/0029_wjb_ai_review_assignment.sql"
 PSQL restore_check < "$M/0030_wjb_commercial_plans.sql"
 PSQL restore_check < "$M/0031_wjb_commercial_entitlement_grant.sql"
 PSQL restore_check < "$M/0032_wjb_commercial_price_approval.sql"
+PSQL restore_check < "$M/0033_wjb_payments_stripe_test.sql"
+PSQL restore_check < "$H/19_rollback_0033.sql"
 PSQL restore_check < "$H/17_rollback_0032.sql"
 PSQL restore_check < "$H/15_rollback_0031.sql"
 PSQL restore_check < "$H/13_rollback_0030.sql"

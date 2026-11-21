@@ -20,7 +20,7 @@ export interface PortalNavItem {
   label: string;
   icon: LucideIcon;
   /** Item de um módulo ligado por interruptor; só aparece quando o layout o habilita. */
-  feature?: "wjb_ai" | "commercial";
+  feature?: "wjb_ai" | "commercial" | "payments";
 }
 
 /** Filtra itens de módulos desligados (ex.: NFS-e do WJB AI). */
