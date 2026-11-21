@@ -4,6 +4,7 @@ import { getFiscalProviderMode, isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import { getFiscalProvider } from "@/lib/wjb-ai/fiscal/provider";
 import { processQueue } from "@/lib/wjb-ai/fiscal/queue";
 import { createSupabaseQueueRepo } from "@/lib/wjb-ai/fiscal/queue.repo";
+import { isCronAuthorized } from "@/lib/security/cron-auth";
 
 /**
  * POST /api/wjb-ai/cron/processar-fila (F3). Processa um lote da fila de
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       { ok: false, error: "CRON_SECRET não configurado" },
       { status: 503 },
     );
-  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!isCronAuthorized(request.headers.get("authorization"), secret)) {
     return NextResponse.json(
       { ok: false, error: "não autorizado" },
       { status: 401 },

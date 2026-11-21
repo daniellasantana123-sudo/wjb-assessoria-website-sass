@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { notifyFiscalAlerts } from "@/lib/notifications";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import { loadFiscalAlerts } from "@/lib/wjb-ai/fiscal/monitoring.repo";
+import { isCronAuthorized } from "@/lib/security/cron-auth";
 
 /**
  * POST /api/wjb-ai/cron/alertas (Fase 6). Avalia certificados, procurações,
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       { ok: false, error: "CRON_SECRET não configurado" },
       { status: 503 },
     );
-  if (request.headers.get("authorization") !== `Bearer ${secret}`)
+  if (!isCronAuthorized(request.headers.get("authorization"), secret))
     return NextResponse.json(
       { ok: false, error: "não autorizado" },
       { status: 401 },

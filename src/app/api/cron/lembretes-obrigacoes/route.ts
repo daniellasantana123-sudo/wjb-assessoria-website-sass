@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/db/supabase/admin";
 import { notifyObligationEvent } from "@/lib/notifications";
 import { groupReminders, reminderDates, type ReminderRow } from "@/lib/obligations/reminders";
+import { isCronAuthorized } from "@/lib/security/cron-auth";
 
 /**
  * Lembrete diário de vencimento (2026-09-30, decisão do usuário). Chamado
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
   if (!secret) {
     return NextResponse.json({ ok: false, error: "CRON_SECRET não configurado" }, { status: 503 });
   }
-  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!isCronAuthorized(request.headers.get("authorization"), secret)) {
     return NextResponse.json({ ok: false, error: "não autorizado" }, { status: 401 });
   }
 

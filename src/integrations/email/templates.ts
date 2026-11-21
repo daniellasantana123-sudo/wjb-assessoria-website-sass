@@ -3,6 +3,16 @@
  * dependência nova sem necessidade real pra um único layout simples), no
  * padrão visual da marca (`#194382`, `docs/design/design-system.md`).
  */
+/** Escapa texto para HTML: corpo e título podem conter dado digitado por visitante (formulário público). */
+export function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/** Só http(s) ou caminho relativo no botão; qualquer outra coisa vira o site. */
+function safeHref(url: string): string {
+  return /^(https?:\/\/|\/)/i.test(url) ? escapeHtml(url) : "https://wjbassessoriacontabil.com.br";
+}
+
 export function renderNotificationEmail({
   title,
   body,
@@ -14,6 +24,10 @@ export function renderNotificationEmail({
   ctaLabel: string;
   ctaUrl: string;
 }): string {
+  const t = escapeHtml(title);
+  const b = escapeHtml(body);
+  const label = escapeHtml(ctaLabel);
+  const href = safeHref(ctaUrl);
   return `<!doctype html>
 <html lang="pt-BR">
   <body style="margin:0;padding:0;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;">
@@ -28,9 +42,9 @@ export function renderNotificationEmail({
             </tr>
             <tr>
               <td style="padding:28px;">
-                <h1 style="margin:0 0 12px;font-size:18px;color:#131d2b;">${title}</h1>
-                <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#5c6b7f;">${body}</p>
-                <a href="${ctaUrl}" style="display:inline-block;background:#194382;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 20px;border-radius:6px;">${ctaLabel}</a>
+                <h1 style="margin:0 0 12px;font-size:18px;color:#131d2b;">${t}</h1>
+                <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#5c6b7f;">${b}</p>
+                <a href="${href}" style="display:inline-block;background:#194382;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 20px;border-radius:6px;">${label}</a>
               </td>
             </tr>
             <tr>

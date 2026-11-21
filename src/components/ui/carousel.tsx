@@ -72,7 +72,7 @@ function Carousel({
 
   /**
    * `useSyncExternalStore` em vez de `useState`+`useEffect` (mesmo padrão
-   * já usado no projeto pra CookieConsentBanner/PricingSimulator) — ler
+   * já usado no projeto pra CookieConsentBanner) — ler
    * `canScrollPrev()`/`canScrollNext()` direto do embla e assinar
    * `on("select"/"reInit")` evita o setState síncrono no corpo do efeito
    * que o lint `react-hooks/set-state-in-effect` rejeita, e ainda
