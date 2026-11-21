@@ -6,10 +6,11 @@
 | 0024 `wjb_ai_fiscal_core` | 7 tabelas `fiscal_*`, 4 funções (`can_approve_fiscal_profile`, `grant_/revoke_fiscal_profile_approver`, `approve_fiscal_profile`), RLS | 0001 (`tenants`, `profiles`, `audit_log`, `is_staff`), 0011+0021 (`is_super_admin` considerando status), 0016 (`account_status`: `profiles.status`), 0018 (`tenants.status`, `my_tenant_ids` com status), `auth.uid()` do Supabase | `scripts/wjb-ai/homologacao/03_rollback_0024.sql` |
 | 0025 `wjb_ai_fiscal_queue` | colunas de fila em `fiscal_requests`, `actor_kind` em `fiscal_request_events`, índice da fila | 0024 | `04_rollback_0025.sql` |
 | 0026 `wjb_ai_fiscal_request_versions` | `fiscal_request_versions` (versões de pedidos corrigidos), RLS só leitura | 0024; 0018/0021 (`my_tenant_ids`, `is_staff`) | `05_rollback_0026.sql` |
+| 0029 `wjb_ai_review_assignment` | `fiscal_requests`: `assigned_to`, `priority`, `review_due_at`; trigger recusa responsável que não seja equipe ativa e calcula o prazo ao entrar em revisão | 0024; 0001 (`profiles`); 0021 | `11_rollback_0029.sql` |
 | 0028 `wjb_ai_certificate_usage` | `fiscal_certificate_usage`: trilha de cada uso do certificado (ok/negado/erro, impressão digital, motivo), imutável por trigger (única exceção: cascata ao apagar a empresa); só a equipe lê; só o servidor grava | 0024 (`fiscal_requests`, `fiscal_authorization_grants`); 0021 (`is_staff`) | `09_rollback_0028.sql` |
 | 0027 `wjb_ai_dps_numbering_and_emitter` | modelos A/B e metadados do certificado em `fiscal_authorization_grants`; revogação definitiva (trigger); equipe não apaga autorização (corrige policy da 0024); `fiscal_dps_series` (série 1-49999), `fiscal_dps_numbers`, `configure_dps_series`, `allocate_dps_number` (só service role) | 0024 (`fiscal_requests`, `fiscal_authorization_grants`, `can_approve_fiscal_profile`); 0021 (`is_staff`, `is_super_admin`) | `06_rollback_0027.sql` |
 
-- **Ordem obrigatória:** 0024 -> 0025 -> 0026 -> 0027 -> 0028. Rollback na ordem inversa.
+- **Ordem obrigatória:** 0024 -> 0025 -> 0026 -> 0027 -> 0028 -> 0029. Rollback na ordem inversa.
 - **Interação conhecida:** a 0022 (guarda de colunas privilegiadas de `profiles`) bloqueia mudança de `status`/papel por usuário logado; scripts de teste usam service role ou sessão sem JWT.
 - **Projetos Supabase novos** (como a homologação) já vêm com privilégios padrão revogados e o gatilho `ensure_rls`; a 0002 restaura os privilégios e todas as tabelas ligam RLS explicitamente, então o comportamento é igual ao da produção.
 - **Validação:** `bash scripts/wjb-ai/homologacao/run.sh` (Postgres 17 local: aplica 0001-0027, 38 testes de RLS + 23 da 0027 com numeração concorrente, backup/restauração e rollback das quatro) e `node scripts/wjb-ai/homologacao-supabase/01-migrations.mjs` (registro com sha256 na homologação real).
@@ -33,3 +34,6 @@
 ## Atualização da Fase 6 (20/11/2026)
 - 0028 aplicada **só na homologação**, com backup antes. Local: T63-T70; API real: 56/56.
 - Nenhuma credencial nova. Certificados de teste da assinatura são gerados na hora em diretório temporário e apagados no fim de cada teste.
+
+## Atualização da Fase 7 (21/11/2026)
+- 0029 aplicada só na homologação, com backup antes; local T71-T76.

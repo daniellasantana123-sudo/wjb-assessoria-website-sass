@@ -48,6 +48,8 @@ export const auditActionLabels: Record<string, string> = {
   "fiscal.profile_created": "Rascunho de perfil fiscal criado",
   "fiscal.authorization_registered": "Autorização de emissão registrada",
   "fiscal.authorization_revoked": "Autorização de emissão revogada",
+  "fiscal.review_assigned": "Revisão de NFS-e atribuída",
+  "fiscal.assistant_handoff": "Assistente de NFS-e encaminhou à equipe",
   "fiscal.profile_settings_saved": "Cadastro fiscal salvo no rascunho",
   "fiscal.dps_series_configured": "Série da DPS configurada",
   "fiscal.request_corrected": "Solicitação de NFS-e corrigida pelo cliente",

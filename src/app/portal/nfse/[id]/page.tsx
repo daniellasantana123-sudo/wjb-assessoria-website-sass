@@ -65,10 +65,18 @@ export default async function PortalNfseDetailPage({
         <h1 className="text-foreground text-2xl font-semibold">
           Solicitação de NFS-e
         </h1>
-        <FiscalStatusBadge
-          status={request.status}
-          simulated={request.simulatedReference !== null}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          <FiscalStatusBadge
+            status={request.status}
+            simulated={request.simulated}
+          />
+          <Link
+            href={`/portal/nfse/${request.id}/previa`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Prévia (simulação)
+          </Link>
+        </div>
       </div>
       {request.simulatedReference ? (
         <p

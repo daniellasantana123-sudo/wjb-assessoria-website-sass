@@ -18,6 +18,7 @@ import {
   parseAuthorizationForm,
   parseFiscalSettingsForm,
 } from "@/lib/wjb-ai/fiscal/profile-form";
+import { isPriority } from "@/lib/wjb-ai/fiscal/review-queue";
 import { looksLikeSecret } from "@/lib/wjb-ai/fiscal/secret-guard";
 import type { FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
 import {
@@ -519,4 +520,47 @@ export async function revokeApproverAction(
   if (error) return { error: error.message };
   revalidatePath("/admin/nfse/permissoes");
   return { ok: "Permissão revogada." };
+}
+
+export async function assignReviewAction(
+  requestId: string,
+  _prev: AdminActionState | undefined,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await guard("fiscal.review");
+  if (isState(session)) return session;
+  const assignee = String(formData.get("assignedTo") ?? "");
+  const priority = String(formData.get("priority") ?? "");
+  if (assignee && !/^[0-9a-f-]{36}$/i.test(assignee))
+    return { error: "Responsável inválido." };
+  if (!isPriority(priority)) return { error: "Prioridade inválida." };
+  const supabase = await createClient();
+  // RLS: só equipe atualiza; o trigger da 0029 recusa responsável que não seja equipe ativa.
+  const { data, error } = await supabase
+    .from("fiscal_requests")
+    .update({ assigned_to: assignee || null, priority })
+    .eq("id", requestId)
+    .select("id, tenant_id, review_due_at")
+    .maybeSingle();
+  if (error || !data)
+    return {
+      error:
+        error?.code === "22023"
+          ? "Só membro ativo da equipe pode receber a revisão."
+          : "Não foi possível atualizar.",
+    };
+  await audit(
+    session,
+    data.tenant_id,
+    "fiscal.review_assigned",
+    "fiscal_request",
+    requestId,
+    {
+      assigned_to: assignee || null,
+      priority,
+    },
+  );
+  revalidatePath(`/admin/nfse/${requestId}`);
+  revalidatePath("/admin/nfse");
+  return { ok: "Atribuição e prioridade atualizadas." };
 }

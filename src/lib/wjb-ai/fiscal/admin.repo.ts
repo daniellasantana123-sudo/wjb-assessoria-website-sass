@@ -4,6 +4,7 @@ import { createClient } from "@/lib/db/supabase/server";
 import type { NormalizedNfseDraft } from "@/lib/wjb-ai/fiscal/draft";
 import { evaluateEmitterAuthorization } from "@/lib/wjb-ai/fiscal/emitter-authorization";
 import { resolveLayout } from "@/lib/wjb-ai/fiscal/national/layouts";
+import { sortForReview } from "@/lib/wjb-ai/fiscal/review-queue";
 import { evaluateFiscalReadiness } from "@/lib/wjb-ai/fiscal/profile-settings";
 import {
   getWjbCertificateMetadata,
@@ -61,6 +62,9 @@ export interface AdminRequestRow {
   lastError: string | null;
   createdAt: string;
   updatedAt: string;
+  assignedTo: string | null;
+  priority: string;
+  reviewDueAt: string | null;
 }
 
 type Row = {
@@ -74,10 +78,13 @@ type Row = {
   last_error: string | null;
   created_at: string;
   updated_at: string;
+  assigned_to: string | null;
+  priority: string;
+  review_due_at: string | null;
   tenants: { name: string } | { name: string }[] | null;
 };
 const SELECT =
-  "id, tenant_id, status, draft_snapshot, policy_reasons, attempt_count, needs_intervention, last_error, created_at, updated_at, tenants(name)";
+  "id, tenant_id, status, draft_snapshot, policy_reasons, attempt_count, needs_intervention, last_error, created_at, updated_at, assigned_to, priority, review_due_at, tenants(name)";
 
 function toRow(r: Row): AdminRequestRow {
   const tenant = Array.isArray(r.tenants) ? r.tenants[0] : r.tenants;
@@ -93,11 +100,15 @@ function toRow(r: Row): AdminRequestRow {
     lastError: r.last_error,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
+    assignedTo: r.assigned_to,
+    priority: r.priority,
+    reviewDueAt: r.review_due_at,
   };
 }
 
 export async function listAdminRequests(
   queue: AdminQueue,
+  filters: { tenantId?: string; assignedTo?: string } = {},
 ): Promise<AdminRequestRow[]> {
   const supabase = await createClient();
   let q = supabase
@@ -108,8 +119,33 @@ export async function listAdminRequests(
   const statuses = QUEUE_FILTER[queue];
   if (queue === "erros") q = q.eq("needs_intervention", true);
   else if (statuses) q = q.in("status", statuses);
+  if (filters.tenantId) q = q.eq("tenant_id", filters.tenantId);
+  if (filters.assignedTo) q = q.eq("assigned_to", filters.assignedTo);
   const { data } = await q;
-  return ((data ?? []) as unknown as Row[]).map(toRow);
+  const rows = ((data ?? []) as unknown as Row[]).map(toRow);
+  return queue === "revisao" ? sortForReview(rows) : rows;
+}
+
+/** Equipe ativa que pode receber revisão e nomes dos responsáveis. */
+export async function listReviewStaff() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name, staff_role, status")
+    .eq("is_wjb_staff", true)
+    .eq("status", "active")
+    .in("staff_role", ["contador", "super_admin"])
+    .order("full_name");
+  return (data ?? []).map((p) => ({ id: p.id, name: p.full_name ?? "—" }));
+}
+
+export async function listTenantsForFilter() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tenants")
+    .select("id, name")
+    .order("name");
+  return data ?? [];
 }
 
 export interface AdminMetrics {
@@ -178,6 +214,11 @@ export async function getAdminRequest(id: string) {
     .maybeSingle();
   if (!data) return null;
   const row = toRow(data as unknown as Row);
+  const { data: versions } = await supabase
+    .from("fiscal_request_versions")
+    .select("version, draft_snapshot, replaced_by, replaced_at")
+    .eq("request_id", id)
+    .order("version");
   const [{ data: events }, { data: attempts }] = await Promise.all([
     supabase
       .from("fiscal_request_events")
@@ -232,6 +273,11 @@ export async function getAdminRequest(id: string) {
             : "—",
     })),
     attempts: attempts ?? [],
+    versions: (versions ?? []).map((v) => ({
+      version: v.version,
+      draft: v.draft_snapshot as unknown as NormalizedNfseDraft,
+      replacedAt: v.replaced_at,
+    })),
     approvedProfileVersion: profile?.version ?? null,
     grantValidUntil: grant?.valid_until ?? null,
   };

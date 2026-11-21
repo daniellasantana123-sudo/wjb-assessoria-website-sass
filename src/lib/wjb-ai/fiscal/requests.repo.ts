@@ -154,18 +154,35 @@ function toSummary(row: {
   };
 }
 
-/** Histórico da empresa ativa. `tenant_id` explícito além da RLS. */
+/**
+ * Histórico da empresa ativa. `tenant_id` explícito além da RLS. Marca como
+ * simulado todo resultado que não tenha tentativa oficial (hoje, todos): a
+ * lista nunca pode mostrar "Autorizada" como se fosse nota com valor fiscal.
+ */
 export async function listFiscalRequests(
   tenantId: string,
-): Promise<FiscalRequestSummary[]> {
+): Promise<(FiscalRequestSummary & { simulated: boolean })[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("fiscal_requests")
     .select("id, status, created_at, draft_snapshot, policy_reasons")
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false })
-    .limit(100);
-  return (data ?? []).map(toSummary);
+    .limit(500);
+  const ids = (data ?? []).map((r) => r.id);
+  const { data: official } = ids.length
+    ? await supabase
+        .from("fiscal_issuance_attempts")
+        .select("request_id")
+        .eq("tenant_id", tenantId)
+        .eq("simulated", false)
+        .in("request_id", ids)
+    : { data: [] as { request_id: string }[] };
+  const officialIds = new Set((official ?? []).map((a) => a.request_id));
+  return (data ?? []).map((r) => ({
+    ...toSummary(r),
+    simulated: !officialIds.has(r.id),
+  }));
 }
 
 export interface FiscalRequestEvent {
@@ -182,6 +199,8 @@ export async function getFiscalRequest(
   | (FiscalRequestSummary & {
       events: FiscalRequestEvent[];
       simulatedReference: string | null;
+      /** Sem tentativa oficial registrada = tudo é simulação. */
+      simulated: boolean;
     })
   | null
 > {
@@ -210,6 +229,7 @@ export async function getFiscalRequest(
   return {
     ...toSummary(data),
     simulatedReference: attempt?.simulated ? attempt.official_reference : null,
+    simulated: attempt ? attempt.simulated !== false : true,
     events: (events ?? []).map((e) => ({
       fromStatus: e.from_status as FiscalStatus | null,
       toStatus: e.to_status as FiscalStatus,

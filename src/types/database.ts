@@ -267,6 +267,9 @@ export interface Database {
           next_attempt_at: string | null;
           last_error: string | null;
           needs_intervention: boolean;
+          assigned_to: string | null;
+          priority: string;
+          review_due_at: string | null;
         };
         Insert: {
           id?: string;
@@ -286,6 +289,9 @@ export interface Database {
           next_attempt_at?: string | null;
           last_error?: string | null;
           needs_intervention?: boolean;
+          assigned_to?: string | null;
+          priority?: string;
+          review_due_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["fiscal_requests"]["Insert"]>;
         Relationships: [];

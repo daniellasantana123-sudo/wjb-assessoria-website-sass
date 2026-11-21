@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useSyncExternalStore } from "react";
 
 import {
   previewNfseAction,
@@ -66,6 +66,49 @@ export interface NfseFormInitial {
   sourceReference: string;
 }
 
+/**
+ * Rascunho recuperável (Fase 7): só campos que não identificam pessoas, na
+ * sessionStorage da aba (some ao fechar). Documento, nome e e-mail do tomador
+ * NUNCA são gravados no navegador.
+ */
+const DRAFT_FIELDS = [
+  "serviceDescription",
+  "grossAmount",
+  "competence",
+  "sourceReference",
+] as const;
+type DraftField = (typeof DRAFT_FIELDS)[number];
+const draftKey = (tenantId: string) => `wjb-ai:nfse-rascunho:${tenantId}`;
+function readDraft(
+  tenantId: string,
+): Partial<Record<DraftField, string>> | null {
+  try {
+    const raw = window.sessionStorage.getItem(draftKey(tenantId));
+    return raw
+      ? (JSON.parse(raw) as Partial<Record<DraftField, string>>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+function writeDraft(tenantId: string, v: Partial<Record<DraftField, string>>) {
+  try {
+    const subset = Object.fromEntries(DRAFT_FIELDS.map((k) => [k, v[k] ?? ""]));
+    if (Object.values(subset).some((x) => x && x !== ""))
+      window.sessionStorage.setItem(draftKey(tenantId), JSON.stringify(subset));
+  } catch {
+    /* navegador sem storage: segue sem rascunho */
+  }
+}
+function clearDraft(tenantId: string) {
+  try {
+    window.sessionStorage.removeItem(draftKey(tenantId));
+  } catch {
+    /* ignore */
+  }
+}
+const noopSubscribe = () => () => {};
+
 export function NfseRequestForm({
   tenantId,
   defaultCompetence,
@@ -106,17 +149,70 @@ export function NfseRequestForm({
       sourceReference: "",
     },
   );
+  const [draftDismissed, setDraftDismissed] = useState(false);
+  const hasSavedDraft = useSyncExternalStore(
+    noopSubscribe,
+    () => !initial && readDraft(tenantId) !== null,
+    () => false,
+  );
   const bind = (name: keyof typeof values) => ({
     name,
     value: values[name],
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setValues((v) => ({ ...v, [name]: e.target.value })),
+    onChange: (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
+      const next = { ...values, [name]: e.target.value };
+      setValues(next);
+      setDraftDismissed(true);
+      if (!initial) writeDraft(tenantId, next);
+    },
   });
+  const restoreDraft = () => {
+    const d = readDraft(tenantId);
+    if (d)
+      setValues((v) => ({
+        ...v,
+        ...Object.fromEntries(Object.entries(d).filter(([, x]) => x)),
+      }));
+    setDraftDismissed(true);
+  };
   const preview = previewState?.preview;
 
   return (
     <form action={previewAction} className="flex flex-col gap-5" noValidate>
       <input type="hidden" name="expectedTenantId" value={tenantId} />
+      {hasSavedDraft && !draftDismissed ? (
+        <div
+          role="status"
+          className="border-border bg-muted/30 flex flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm"
+        >
+          <span className="text-foreground">
+            Há um rascunho desta sessão (serviço, valor e competência). Os dados
+            do tomador não são guardados.
+          </span>
+          <span className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={restoreDraft}
+            >
+              Recuperar rascunho
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                clearDraft(tenantId);
+                setDraftDismissed(true);
+              }}
+            >
+              Descartar
+            </Button>
+          </span>
+        </div>
+      ) : null}
 
       <Field
         id="serviceDescription"
@@ -273,7 +369,10 @@ export function NfseRequestForm({
           <Button
             type="submit"
             variant="cta"
-            formAction={submitFormAction}
+            formAction={(fd) => {
+              clearDraft(tenantId);
+              return submitFormAction(fd);
+            }}
             disabled={previewing || submitting}
             className="self-start"
           >

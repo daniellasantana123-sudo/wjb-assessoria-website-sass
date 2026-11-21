@@ -5,6 +5,9 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { NfseAdminNav } from "@/components/wjb-ai/admin/nfse-admin-nav";
 import { FiscalStatusBadge } from "@/components/wjb-ai/fiscal-status-badge";
 import { requireStaffSession } from "@/lib/auth/dal";
@@ -13,10 +16,17 @@ import {
   ADMIN_QUEUE_LABELS,
   getAdminMetrics,
   listAdminRequests,
+  listReviewStaff,
+  listTenantsForFilter,
   type AdminQueue,
 } from "@/lib/wjb-ai/fiscal/admin.repo";
 import { formatCents } from "@/lib/wjb-ai/fiscal/labels";
 import { loadFiscalAlerts } from "@/lib/wjb-ai/fiscal/monitoring.repo";
+import {
+  isPriority,
+  PRIORITIES,
+  slaState,
+} from "@/lib/wjb-ai/fiscal/review-queue";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -31,16 +41,37 @@ export default async function AdminNfsePage({
   searchParams,
 }: PageProps<"/admin/nfse">) {
   if (!isWjbAiEnabled()) notFound();
-  await requireStaffSession();
-  const { fila } = await searchParams;
+  const session = await requireStaffSession();
+  const sp = await searchParams;
+  const one = (k: string) => (Array.isArray(sp[k]) ? sp[k]?.[0] : sp[k]) ?? "";
+  const fila = one("fila");
   const queue: AdminQueue = QUEUES.includes(fila as AdminQueue)
     ? (fila as AdminQueue)
     : "revisao";
-  const [requests, metrics, alerts] = await Promise.all([
-    listAdminRequests(queue),
+  const empresa = /^[0-9a-f-]{36}$/i.test(one("empresa")) ? one("empresa") : "";
+  const minhas = one("minhas") === "1";
+  const [requests, metrics, alerts, tenants, staff] = await Promise.all([
+    listAdminRequests(queue, {
+      tenantId: empresa || undefined,
+      assignedTo: minhas ? session.userId : undefined,
+    }),
     getAdminMetrics(),
     loadFiscalAlerts(),
+    listTenantsForFilter(),
+    listReviewStaff(),
   ]);
+  const staffName = new Map(staff.map((s) => [s.id, s.name]));
+  const now = new Date();
+  const qs = (extra: Record<string, string>) => {
+    const p = new URLSearchParams({
+      fila: queue,
+      ...(empresa ? { empresa } : {}),
+      ...(minhas ? { minhas: "1" } : {}),
+      ...extra,
+    });
+    for (const [k, v] of [...p.entries()]) if (!v) p.delete(k);
+    return `/admin/nfse?${p.toString()}`;
+  };
 
   return (
     <Container className="flex flex-1 flex-col gap-6 py-16">
@@ -121,7 +152,7 @@ export default async function AdminNfsePage({
         {QUEUES.map((q) => (
           <Link
             key={q}
-            href={`/admin/nfse?fila=${q}`}
+            href={qs({ fila: q })}
             aria-current={q === queue ? "page" : undefined}
             className={cn(
               "focus-visible:ring-primary rounded-full border px-3 py-1 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none",
@@ -134,6 +165,40 @@ export default async function AdminNfsePage({
           </Link>
         ))}
       </nav>
+
+      <form
+        method="get"
+        action="/admin/nfse"
+        className="flex flex-wrap items-end gap-3"
+      >
+        <input type="hidden" name="fila" value={queue} />
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="empresa">Empresa</Label>
+          <Select id="empresa" name="empresa" defaultValue={empresa}>
+            <option value="">Todas</option>
+            {tenants.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <label className="text-foreground flex items-center gap-2 pb-2 text-sm">
+          <input
+            type="checkbox"
+            name="minhas"
+            value="1"
+            defaultChecked={minhas}
+          />
+          Só as atribuídas a mim
+        </label>
+        <button
+          type="submit"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          Filtrar
+        </button>
+      </form>
 
       {requests.length === 0 ? (
         <p className="border-border bg-muted/30 text-muted-foreground rounded-md border p-8 text-center text-sm">
@@ -158,9 +223,32 @@ export default async function AdminNfsePage({
                       timeStyle: "short",
                     })}
                     {r.needsIntervention ? " · precisa de intervenção" : ""}
+                    {r.assignedTo
+                      ? ` · com ${staffName.get(r.assignedTo) ?? "equipe"}`
+                      : ""}
                   </span>
                 </span>
-                <FiscalStatusBadge status={r.status} />
+                <span className="flex flex-wrap items-center gap-2">
+                  {r.status === "REVISAO_HUMANA" && isPriority(r.priority) ? (
+                    <>
+                      {r.priority !== "normal" ? (
+                        <Badge
+                          tone={r.priority === "urgente" ? "danger" : "neutral"}
+                        >
+                          {PRIORITIES[r.priority].label}
+                        </Badge>
+                      ) : null}
+                      {slaState(r.reviewDueAt, r.priority, now) ===
+                      "vencido" ? (
+                        <Badge tone="danger">prazo vencido</Badge>
+                      ) : slaState(r.reviewDueAt, r.priority, now) ===
+                        "vence_logo" ? (
+                        <Badge tone="warning">vence logo</Badge>
+                      ) : null}
+                    </>
+                  ) : null}
+                  <FiscalStatusBadge status={r.status} simulated />
+                </span>
               </Link>
             </li>
           ))}

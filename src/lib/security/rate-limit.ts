@@ -10,11 +10,12 @@ const MAX_REQUESTS = 5;
 
 const hits = new Map<string, number[]>();
 
-export function isRateLimited(key: string): boolean {
+/** `max` opcional (padrão 5/min): o chat do WJB AI usa um limite maior. */
+export function isRateLimited(key: string, max: number = MAX_REQUESTS): boolean {
   const now = Date.now();
   const timestamps = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
 
-  if (timestamps.length >= MAX_REQUESTS) {
+  if (timestamps.length >= max) {
     hits.set(key, timestamps);
     return true;
   }

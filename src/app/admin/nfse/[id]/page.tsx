@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
+  assignReviewAction,
   authorizeSendAction,
   releaseInterventionAction,
   reviewRequestAction,
@@ -16,7 +17,16 @@ import { AdminActionForm } from "@/components/wjb-ai/admin/admin-action-form";
 import { FiscalStatusBadge } from "@/components/wjb-ai/fiscal-status-badge";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
-import { getAdminRequest } from "@/lib/wjb-ai/fiscal/admin.repo";
+import {
+  getAdminRequest,
+  listReviewStaff,
+} from "@/lib/wjb-ai/fiscal/admin.repo";
+import {
+  diffDrafts,
+  isPriority,
+  PRIORITIES,
+  slaState,
+} from "@/lib/wjb-ai/fiscal/review-queue";
 import { FISCAL_STATUS_LABELS, formatCents } from "@/lib/wjb-ai/fiscal/labels";
 import {
   POLICY_REASON_LABELS,
@@ -47,6 +57,27 @@ export default async function AdminNfseDetailPage({
   if (!r) notFound();
   const canReview = hasWjbAiPermission(session, "fiscal.review");
   const d = r.draft;
+  const staff = canReview ? await listReviewStaff() : [];
+  const assigneeName = staff.find((s) => s.id === r.assignedTo)?.name ?? null;
+  const priority = isPriority(r.priority) ? r.priority : "normal";
+  const sla = slaState(r.reviewDueAt, priority, new Date());
+  // Versões: v1..vN guardadas na correção + versão atual. Diferença de cada passo.
+  const chain = [
+    ...r.versions.map((v) => ({
+      label: `versão ${v.version}`,
+      draft: v.draft,
+      at: v.replacedAt,
+    })),
+    { label: "atual", draft: r.draft, at: null as string | null },
+  ];
+  const steps = chain
+    .slice(1)
+    .map((cur, i) => ({
+      from: chain[i].label,
+      to: cur.label,
+      at: chain[i].at,
+      changes: diffDrafts(chain[i].draft, cur.draft),
+    }));
 
   return (
     <Container className="flex flex-1 flex-col gap-6 py-16">
@@ -65,7 +96,10 @@ export default async function AdminNfseDetailPage({
           {r.needsIntervention ? (
             <Badge tone="danger">Fila de erros</Badge>
           ) : null}
-          <FiscalStatusBadge status={r.status} />
+          <FiscalStatusBadge
+            status={r.status}
+            simulated={r.attempts.every((a) => a.simulated !== false)}
+          />
         </div>
       </div>
 
@@ -128,6 +162,124 @@ export default async function AdminNfseDetailPage({
           </p>
         ) : null}
       </section>
+
+      <section
+        aria-labelledby="atribuicao"
+        className="border-border rounded-md border p-6"
+      >
+        <h2
+          id="atribuicao"
+          className="text-foreground mb-2 text-sm font-semibold"
+        >
+          Atribuição e prazo
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Responsável:{" "}
+          {assigneeName ?? (r.assignedTo ? "membro da equipe" : "ninguém")} ·
+          prioridade {PRIORITIES[priority].label.toLowerCase()}
+          {r.reviewDueAt ? ` · prazo ${when(r.reviewDueAt)}` : ""}{" "}
+          {sla === "vencido" ? (
+            <Badge tone="danger">prazo vencido</Badge>
+          ) : sla === "vence_logo" ? (
+            <Badge tone="warning">vence logo</Badge>
+          ) : null}
+        </p>
+        {canReview ? (
+          <div className="mt-3">
+            <AdminActionForm
+              action={assignReviewAction.bind(null, r.id)}
+              submitLabel="Salvar atribuição"
+              variant="outline"
+              resetOnSuccess={false}
+            >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="assignedTo">Responsável</Label>
+                  <Select
+                    id="assignedTo"
+                    name="assignedTo"
+                    defaultValue={r.assignedTo ?? ""}
+                  >
+                    <option value="">Ninguém</option>
+                    {staff.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="priority">
+                    Prioridade (define o prazo da revisão)
+                  </Label>
+                  <Select id="priority" name="priority" defaultValue={priority}>
+                    {Object.entries(PRIORITIES).map(([k, v]) => (
+                      <option key={k} value={k}>
+                        {v.label} ({v.hours} h)
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+            </AdminActionForm>
+          </div>
+        ) : null}
+      </section>
+
+      {steps.length ? (
+        <section
+          aria-labelledby="versoes"
+          className="border-border rounded-md border p-6"
+        >
+          <h2
+            id="versoes"
+            className="text-foreground mb-3 text-sm font-semibold"
+          >
+            O que mudou nas correções
+          </h2>
+          <ol className="flex flex-col gap-4 text-sm">
+            {steps.map((st) => (
+              <li key={st.to}>
+                <p className="text-foreground font-medium">
+                  {st.from} → {st.to}
+                  {st.at ? (
+                    <span className="text-muted-foreground font-normal">
+                      {" "}
+                      (corrigido em {when(st.at)})
+                    </span>
+                  ) : null}
+                </p>
+                {st.changes.length === 0 ? (
+                  <p className="text-muted-foreground">Nenhum campo mudou.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="mt-1 w-full min-w-[28rem] text-left">
+                      <thead className="text-muted-foreground text-xs">
+                        <tr>
+                          <th className="py-1 pr-3 font-medium">Campo</th>
+                          <th className="py-1 pr-3 font-medium">Antes</th>
+                          <th className="py-1 font-medium">Depois</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {st.changes.map((c) => (
+                          <tr key={c.field} className="border-border border-t">
+                            <td className="py-1 pr-3">{c.field}</td>
+                            <td className="text-muted-foreground py-1 pr-3 break-words line-through">
+                              {c.before}
+                            </td>
+                            <td className="py-1 break-words">{c.after}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       {canReview && r.status === "REVISAO_HUMANA" ? (
         <section className="border-border rounded-md border p-6">
