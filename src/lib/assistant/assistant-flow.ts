@@ -111,6 +111,7 @@ export function getAssistantServiceResponse(
         serviceLabel: "Outros serviços",
       };
     case "especialista":
+    case "emissaoNotas": // fluxo próprio (commercial-flow.ts)
       return null;
     default:
       return null;

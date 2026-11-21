@@ -18,13 +18,16 @@ import { AdminActionForm } from "@/components/wjb-ai/admin/admin-action-form";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { isCommercialEnabled } from "@/lib/commercial/config";
 import { formatBrlCents, marginAt } from "@/lib/commercial/pricing";
-import { getComboDiscountBp, getCostPremises, listCatalog, listSubscriptionsForAdmin } from "@/lib/commercial/repo";
+import { getComboDiscountBp, getCostPremises, getPlanHistory, getSettingHistory, listCatalog, listSubscriptionsForAdmin } from "@/lib/commercial/repo";
 
 export const metadata: Metadata = { title: "Comercial", robots: { index: false, follow: false } };
 
 const toReais = (c: number | null) => (c === null ? "" : (c / 100).toFixed(2).replace(".", ","));
+const brDate = (iso: string | null) => (iso ? iso.slice(0, 10).split("-").reverse().join("/") : "—");
+const STATUS_LABEL: Record<string, string> = { draft: "rascunho", approved: "aprovado", archived: "arquivado" };
+const STATUS_TONE: Record<string, "warning" | "success" | "neutral"> = { draft: "warning", approved: "success", archived: "neutral" };
 
-function PlanFields({ id, p }: { id: string; p?: { name: string; description: string; monthlyCents: number | null; quota: number | null; overageCents: number | null; status: string } }) {
+function PlanFields({ id, p }: { id: string; p?: { name: string; description: string; monthlyCents: number | null; quota: number | null; overageCents: number | null; status: string; approvalReference: string | null; effectiveFrom: string | null } }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <div className="flex flex-col gap-1.5"><Label htmlFor={`n-${id}`}>Nome</Label><Input id={`n-${id}`} name="name" defaultValue={p?.name} required /></div>
@@ -32,8 +35,18 @@ function PlanFields({ id, p }: { id: string; p?: { name: string; description: st
       <div className="flex flex-col gap-1.5"><Label htmlFor={`q-${id}`}>Franquia (notas/mês; vazio = sem)</Label><Input id={`q-${id}`} name="quota" inputMode="numeric" defaultValue={p?.quota ?? ""} /></div>
       <div className="flex flex-col gap-1.5"><Label htmlFor={`o-${id}`}>Excedente ou valor por nota (R$)</Label><Input id={`o-${id}`} name="overage" inputMode="decimal" defaultValue={toReais(p?.overageCents ?? null)} /></div>
       <div className="flex flex-col gap-1.5"><Label htmlFor={`s-${id}`}>Situação</Label>
-        <Select id={`s-${id}`} name="status" defaultValue={p?.status ?? "draft"}><option value="draft">Rascunho</option><option value="archived">Arquivado</option></Select></div>
+        <Select id={`s-${id}`} name="status" defaultValue={p?.status ?? "draft"}>
+          <option value="draft">Rascunho</option>
+          {p ? <option value="approved">Aprovado</option> : null}
+          <option value="archived">Arquivado</option>
+        </Select></div>
       <div className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1"><Label htmlFor={`d-${id}`}>Descrição</Label><Input id={`d-${id}`} name="description" defaultValue={p?.description} /></div>
+      {p ? (
+        <>
+          <div className="flex flex-col gap-1.5 sm:col-span-2"><Label htmlFor={`r-${id}`}>Referência da aprovação (obrigatória para aprovar)</Label><Input id={`r-${id}`} name="approvalReference" defaultValue={p.approvalReference ?? ""} maxLength={300} /></div>
+          <div className="flex flex-col gap-1.5"><Label htmlFor={`v-${id}`}>Vigência a partir de</Label><Input id={`v-${id}`} name="effectiveFrom" type="date" defaultValue={p.effectiveFrom ?? ""} /></div>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -43,34 +56,59 @@ export default async function AdminComercialPage() {
   if (!isCommercialEnabled()) notFound();
   const session = await requireStaffSession();
   const canEdit = session.staffRole === "super_admin";
-  const [catalog, combo, premises, admin] = await Promise.all([listCatalog(true), getComboDiscountBp(), getCostPremises(), listSubscriptionsForAdmin()]);
+  const [catalog, combo, premises, admin, history, comboHistory] = await Promise.all([
+    listCatalog("all"),
+    getComboDiscountBp(),
+    getCostPremises(),
+    listSubscriptionsForAdmin(),
+    getPlanHistory(),
+    getSettingHistory("combo_discount_bp"),
+  ]);
 
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
       <Breadcrumb items={[{ label: "Admin WJB", href: "/admin" }, { label: "Comercial" }]} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-foreground text-2xl font-semibold">Comercial</h1>
-        <Badge tone="warning">Simulação: preços em rascunho, sem cobrança</Badge>
+        <Badge tone="warning">Simulação: preços aprovados, sem cobrança</Badge>
       </div>
       {!canEdit ? <p className="text-muted-foreground text-sm">Somente leitura: catálogo, preços e descontos são alterados pelo super admin.</p> : null}
 
       <section aria-labelledby="catalogo" className="flex flex-col gap-4">
         <h2 id="catalogo" className="text-foreground text-lg font-semibold">Catálogo de planos de emissão</h2>
-        <p className="text-muted-foreground text-sm">Nesta fase o plano só pode ser rascunho ou arquivado. Toda alteração gera nova versão e histórico no banco.</p>
+        <p className="text-muted-foreground text-sm">
+          Só planos <strong>aprovados</strong> aparecem para clientes, na página de emissão e no assistente. Aprovar exige referência e
+          vigência; o banco grava quem aprovou e quando. Mudar o preço de um plano aprovado o devolve a rascunho. Toda alteração gera
+          versão e histórico. Aprovar preço não liga cobrança: as assinaturas continuam em simulação.
+        </p>
         <ul className="flex flex-col gap-3">
           {catalog.map((p) => (
             <li key={p.id} className="border-border rounded-md border p-4">
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <strong>{p.name}</strong>
                 <code className="text-muted-foreground">{p.sku}</code>
-                <Badge tone={p.status === "draft" ? "warning" : "neutral"}>{p.status === "draft" ? "rascunho" : "arquivado"}</Badge>
-                <span className="text-muted-foreground">v{p.version} · {formatBrlCents(p.monthlyCents)} · {p.quota === null ? "sem franquia" : `${p.quota} notas`} · {p.overageCents === null ? "contratual" : `${formatBrlCents(p.overageCents)}/nota`}</span>
+                <Badge tone={STATUS_TONE[p.status]}>{STATUS_LABEL[p.status]}</Badge>
+                <span className="text-muted-foreground">v{p.version} · {formatBrlCents(p.monthlyCents)} · {p.monthlyCents === null ? "contratual" : !p.quota ? "sem franquia" : `${p.quota} notas`} · {p.overageCents === null ? "contratual" : `${formatBrlCents(p.overageCents)}/nota`}</span>
               </div>
+              {p.status === "approved" ? (
+                <p className="text-muted-foreground mt-1 text-xs">Aprovado em {brDate(p.approvedAt)} · vigente desde {brDate(p.effectiveFrom)} · {p.approvalReference}</p>
+              ) : null}
+              <details className="mt-2">
+                <summary className="text-muted-foreground cursor-pointer text-xs">Histórico de versões</summary>
+                <ol className="text-muted-foreground mt-2 flex flex-col gap-1 text-xs">
+                  {history.filter((h) => h.planId === p.id).map((h) => (
+                    <li key={`${h.version}-${h.changedAt}`}>
+                      v{h.version} · {STATUS_LABEL[h.status] ?? h.status} · {formatBrlCents(h.monthlyCents)} · {h.monthlyCents === null ? "contratual" : !h.quota ? "sem franquia" : `${h.quota} notas`} · {h.overageCents === null ? "contratual" : `${formatBrlCents(h.overageCents)}/nota`}
+                      {h.effectiveFrom ? ` · vigência ${brDate(h.effectiveFrom)}` : ""} · alterado em {new Date(h.changedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
+                    </li>
+                  ))}
+                </ol>
+              </details>
               {canEdit ? (
                 <details className="mt-2">
                   <summary className="text-primary cursor-pointer text-sm">Editar</summary>
                   <div className="mt-3">
-                    <AdminActionForm action={savePlanAction.bind(null, p.id)} submitLabel="Salvar rascunho" variant="outline" resetOnSuccess={false}>
+                    <AdminActionForm action={savePlanAction.bind(null, p.id)} submitLabel="Salvar" variant="outline" resetOnSuccess={false}>
                       <PlanFields id={p.id} p={p} />
                     </AdminActionForm>
                   </div>
@@ -95,7 +133,17 @@ export default async function AdminComercialPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section aria-labelledby="combo" className="border-border min-w-0 rounded-md border p-4">
           <h2 id="combo" className="text-foreground mb-2 font-semibold">Desconto do combo (cliente de contabilidade)</h2>
-          <p className="text-muted-foreground mb-3 text-sm">Atual: {combo / 100}%. Vale só sobre a mensalidade do plano de emissão, nas novas contratações. Máximo 50%.</p>
+          <p className="text-muted-foreground mb-3 text-sm">Atual: {combo / 100}%. Vale só sobre a mensalidade do plano de emissão, nas novas contratações, sem acumular com outros descontos. Máximo 50%.</p>
+          {comboHistory.length ? (
+            <details className="mb-3">
+              <summary className="text-muted-foreground cursor-pointer text-xs">Histórico do desconto</summary>
+              <ol className="text-muted-foreground mt-2 flex flex-col gap-1 text-xs">
+                {comboHistory.map((h) => (
+                  <li key={h.changedAt}>{Number(h.after) / 100}% · alterado em {new Date(h.changedAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</li>
+                ))}
+              </ol>
+            </details>
+          ) : null}
           {canEdit ? (
             <AdminActionForm action={saveComboDiscountAction} submitLabel="Salvar" variant="outline" resetOnSuccess={false}>
               <div className="flex flex-col gap-1.5 sm:max-w-xs"><Label htmlFor="pct">Desconto (%)</Label><Input id="pct" name="percent" inputMode="decimal" defaultValue={String(combo / 100)} /></div>
@@ -118,7 +166,7 @@ export default async function AdminComercialPage() {
               <caption className="sr-only">Margem estimada por plano com a franquia toda usada</caption>
               <thead className="text-muted-foreground text-xs"><tr><th className="py-1 pr-2 font-medium">Plano</th><th className="py-1 pr-2 font-medium">Receita</th><th className="py-1 pr-2 font-medium">Custo</th><th className="py-1 font-medium">Margem</th></tr></thead>
               <tbody>
-                {catalog.filter((p) => p.status === "draft").map((p) => {
+                {catalog.filter((p) => p.status !== "archived").map((p) => {
                   const m = marginAt(p, p.quota ?? 10, 0, premises);
                   return (
                     <tr key={p.id} className="border-border border-t">

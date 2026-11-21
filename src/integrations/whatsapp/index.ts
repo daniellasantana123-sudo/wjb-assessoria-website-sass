@@ -43,3 +43,33 @@ export function getPlanWhatsAppLink(planName: string) {
     `Olá! Tenho interesse no plano ${planName} da WJB Assessoria Contábil.`,
   );
 }
+
+/**
+ * Click-to-Chat comercial da emissão de notas (Fase 9, 21/11/2026).
+ *
+ * O link (`wa.me`) SÓ abre uma conversa com o número oficial da WJB e deixa
+ * uma mensagem pronta: o cliente precisa confirmar o envio no próprio
+ * WhatsApp. Não é a API de mensagens do WhatsApp: não há webhook, leitura,
+ * confirmação de entrega nem envio automático.
+ *
+ * A função só aceita uma INTENÇÃO da lista fechada abaixo, nunca texto livre:
+ * assim nenhum dado de cadastro, CPF/CNPJ, valor ou dado fiscal pode entrar
+ * no link por engano.
+ */
+export const commercialWhatsAppMessages = {
+  mei: "Olá! Tenho interesse no plano MEI Digital da WJB. Gostaria de receber orientações.",
+  somenteEmissao: "Olá! Gostaria de contratar somente o serviço de emissão de NFS-e da WJB.",
+  combo: "Olá! Tenho interesse em Contabilidade Completa + Emissão de NFS-e.",
+  altoVolume: "Olá! Gostaria de solicitar proposta para emissão de NFS-e em alto volume.",
+  contabilidade: "Olá! Gostaria de falar com um contador da WJB Assessoria Contábil.",
+  duvidaEmissao: "Olá! Tenho uma dúvida sobre o serviço de emissão de NFS-e da WJB.",
+} as const;
+export type CommercialWhatsAppIntent = keyof typeof commercialWhatsAppMessages;
+
+export function getCommercialWhatsAppLink(intent: CommercialWhatsAppIntent) {
+  return getWhatsAppLink(commercialWhatsAppMessages[intent]);
+}
+
+/** Texto curto que acompanha os botões de WhatsApp (expectativa correta). */
+export const whatsAppClickToChatNotice =
+  "Abre o WhatsApp com uma mensagem pronta. Nada é enviado até você tocar em enviar.";

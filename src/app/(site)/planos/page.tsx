@@ -9,6 +9,7 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
 import { headerCtas } from "@/config/navigation";
+import { getCommercialWhatsAppLink, whatsAppClickToChatNotice } from "@/integrations/whatsapp";
 import { planAddons } from "@/config/plans";
 import { getBreadcrumbSchema, getPlansCatalogSchema } from "@/lib/seo/schema";
 import { cn, staticCardHoverClass } from "@/lib/utils";
@@ -86,9 +87,18 @@ export default function PlansPage() {
             para clientes de contabilidade. O emissor público é gratuito: a WJB cobra pela conveniência, suporte e automação.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/emissao-de-notas" className={buttonVariants({ variant: "cta" })}>Quero emitir notas</Link>
-            <Link href="/emissao-de-notas#lista" className={buttonVariants({ variant: "outline" })}>Entrar na lista de interesse</Link>
+            <Link href="/emissao-de-notas#planos" className={buttonVariants({ variant: "cta" })}>Ver planos de emissão</Link>
+            {(["somenteEmissao", "combo"] as const).map((intent) => {
+              const href = getCommercialWhatsAppLink(intent);
+              return href ? (
+                <a key={intent} href={href} target="_blank" rel="noopener noreferrer" data-analytics-location={`planos-emissao-${intent}`} className={buttonVariants({ variant: "outline" })}>
+                  {intent === "combo" ? "Contabilidade + emissão no WhatsApp" : "Só emissão no WhatsApp"}
+                  <span className="sr-only"> (abre o WhatsApp em nova aba)</span>
+                </a>
+              ) : null;
+            })}
           </div>
+          <p className="text-muted-foreground mt-2 text-xs">{whatsAppClickToChatNotice}</p>
         </section>
       ) : null}
 

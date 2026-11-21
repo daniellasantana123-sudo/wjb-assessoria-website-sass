@@ -493,8 +493,8 @@ export interface Database {
         Relationships: [];
       };
       commercial_plans: {
-        Row: { id: string; sku: string; product: string; name: string; description: string; monthly_cents: number | null; quota: number | null; overage_cents: number | null; status: string; version: number; updated_by: string | null; updated_at: string };
-        Insert: { id?: string; sku: string; product: string; name: string; description?: string; monthly_cents?: number | null; quota?: number | null; overage_cents?: number | null; status?: string };
+        Row: { id: string; sku: string; product: string; name: string; description: string; monthly_cents: number | null; quota: number | null; overage_cents: number | null; status: string; version: number; updated_by: string | null; updated_at: string; approved_at: string | null; approved_by: string | null; approval_reference: string | null; effective_from: string | null };
+        Insert: { id?: string; sku: string; product: string; name: string; description?: string; monthly_cents?: number | null; quota?: number | null; overage_cents?: number | null; status?: string; approval_reference?: string | null; effective_from?: string | null };
         Update: Partial<Database["public"]["Tables"]["commercial_plans"]["Insert"]>;
         Relationships: [];
       };
@@ -508,6 +508,12 @@ export interface Database {
         Row: { key: string; value: unknown; updated_by: string | null; updated_at: string };
         Insert: { key: string; value: unknown; updated_by?: string | null };
         Update: { value?: unknown; updated_by?: string | null };
+        Relationships: [];
+      };
+      commercial_setting_changes: {
+        Row: { id: number; key: string; before: unknown; after: unknown; changed_by: string | null; changed_at: string };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
         Relationships: [];
       };
       commercial_accounts: {

@@ -15,12 +15,14 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { AdminActionForm } from "@/components/wjb-ai/admin/admin-action-form";
 import { requireSession } from "@/lib/auth/dal";
+import { getCommercialWhatsAppLink } from "@/integrations/whatsapp";
 import { isCommercialEnabled } from "@/lib/commercial/config";
 import {
   ACCEPTANCE_DOCUMENTS,
   comboDiscountBp,
   formatBrlCents,
   invoicePreview,
+  isPerNotePlan,
   monthlyWithDiscount,
   usageSummary,
   type AcceptanceDocument,
@@ -52,7 +54,7 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
   const sub = c.subscription;
   const used = c.usedSimulated + c.usedBillable;
   const usage = sub ? usageSummary(sub.quota, used) : null;
-  const invoice = sub ? invoicePreview(sub, c.usedBillable, c.usedSimulated) : null;
+  const invoice = sub ? invoicePreview(sub, c.usedBillable, c.usedSimulated, sub.planName) : null;
   const emissionPlans = catalog.filter((p) => p.product === "emissao");
   const sp = await searchParams;
 
@@ -74,8 +76,9 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
         </p>
       ) : null}
       <div role="note" className="border-warning/40 bg-warning/10 rounded-md border px-4 py-3 text-sm">
-        <strong>Simulação.</strong> Os valores abaixo são <strong>rascunho, não aprovados</strong> pela WJB, e nenhuma cobrança é
-        feita. O emissor público de NFS-e é gratuito: a WJB cobra pela conveniência, organização, suporte e automação do serviço.
+        <strong>Contratação em simulação.</strong> Os valores são os aprovados pela WJB, mas a cobrança ainda não está ativa e a
+        emissão oficial de notas ainda não está disponível: nada é cobrado. O emissor público de NFS-e é gratuito: a WJB cobra pela
+        conveniência, organização, suporte e automação do serviço.
       </div>
 
       {!sub ? (
@@ -97,7 +100,7 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                   <li key={p.id} className="border-border flex min-w-0 flex-col gap-3 rounded-md border p-5">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-foreground font-semibold">{p.name}</h3>
-                      <Badge tone="warning">rascunho</Badge>
+                      <Badge tone="info">valor aprovado</Badge>
                     </div>
                     {p.description ? <p className="text-muted-foreground text-sm">{p.description}</p> : null}
                     <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
@@ -109,11 +112,21 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                         ) : null}
                       </dd>
                       <dt className="text-muted-foreground">Franquia</dt>
-                      <dd>{p.quota === null ? "Sem franquia" : `${p.quota} notas/mês`}</dd>
-                      <dt className="text-muted-foreground">{p.quota === null ? "Por nota" : "Excedente"}</dt>
+                      <dd>{p.monthlyCents === null ? "Contratual" : isPerNotePlan(p) ? "Sem franquia" : `${p.quota} notas/mês`}</dd>
+                      <dt className="text-muted-foreground">{isPerNotePlan(p) ? "Por nota" : "Excedente"}</dt>
                       <dd>{p.overageCents === null ? "Contratual" : `${formatBrlCents(p.overageCents)}/nota`}</dd>
                     </dl>
-                    {isOwner ? (
+                    {p.monthlyCents === null || p.overageCents === null ? (
+                      <a
+                        href={getCommercialWhatsAppLink("altoVolume") ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-analytics-location="portal-plano-alto-volume"
+                        className="text-primary text-sm font-medium underline"
+                      >
+                        Pedir proposta pelo WhatsApp<span className="sr-only"> (abre em nova aba)</span>
+                      </a>
+                    ) : isOwner ? (
                       <details>
                         <summary className="text-primary cursor-pointer text-sm font-medium">Contratar (simulação)</summary>
                         <div className="mt-3">
@@ -155,7 +168,7 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
               <div>
                 <p className="text-sm">
                   Notas no ciclo: <strong>{usage.used}</strong>
-                  {usage.quota !== null ? ` de ${usage.quota}` : " (sem franquia)"} <Badge tone="info">simuladas</Badge>
+                  {usage.quota ? ` de ${usage.quota}` : " (sem franquia, cobrança por nota)"} <Badge tone="info">simuladas</Badge>
                 </p>
                 {usage.percent !== null ? (
                   <div
@@ -169,7 +182,7 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                     <div className={`h-full ${usage.alert === "nenhum" ? "bg-primary" : "bg-warning"}`} style={{ width: `${Math.min(100, usage.percent)}%` }} />
                   </div>
                 ) : null}
-                {ALERT[usage.alert] ? <p role="status" className="text-warning mt-2 text-sm font-medium">{ALERT[usage.alert]}</p> : null}
+                {ALERT[usage.alert] ? <p role="status" className="text-warning-text mt-2 text-sm font-medium">{ALERT[usage.alert]}</p> : null}
               </div>
             ) : null}
             {invoice ? (
@@ -177,9 +190,9 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                 <p className="text-foreground font-medium">Prévia da fatura do ciclo</p>
                 <ul className="mt-1">
                   {invoice.lines.map((l) => (
-                    <li key={l.label} className="flex flex-wrap justify-between gap-2"><span>{l.label}</span><span>{formatBrlCents(l.cents)}</span></li>
+                    <li key={l.label} className="flex items-start justify-between gap-3"><span className="min-w-0">{l.label}</span><span className="shrink-0 tabular-nums whitespace-nowrap">{formatBrlCents(l.cents)}</span></li>
                   ))}
-                  <li className="border-border mt-1 flex justify-between gap-2 border-t pt-1 font-semibold"><span>Total</span><span>{formatBrlCents(invoice.totalCents)}</span></li>
+                  <li className="border-border mt-1 flex justify-between gap-3 border-t pt-1 font-semibold"><span>Total</span><span className="shrink-0 tabular-nums whitespace-nowrap">{formatBrlCents(invoice.totalCents)}</span></li>
                 </ul>
                 <p className="text-muted-foreground mt-2 text-xs">{invoice.note}</p>
               </div>
@@ -188,6 +201,7 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
 
           {isOwner && sub.status !== "cancelada" ? (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {!isPerNotePlan(sub) ? (
               <section aria-labelledby="excedente" className="border-border min-w-0 rounded-md border p-5">
                 <h2 id="excedente" className="text-foreground mb-2 font-semibold">Excedente</h2>
                 <p className="text-muted-foreground mb-3 text-sm">
@@ -205,6 +219,7 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                   </div>
                 </AdminActionForm>
               </section>
+              ) : null}
               <section aria-labelledby="troca" className="border-border min-w-0 rounded-md border p-5">
                 <h2 id="troca" className="text-foreground mb-2 font-semibold">Trocar de plano</h2>
                 <AdminActionForm action={schedulePlanChangeAction} submitLabel="Agendar troca" variant="outline" resetOnSuccess={false}>

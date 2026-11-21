@@ -1,5 +1,3 @@
-import { createHmac } from "node:crypto";
-
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
@@ -38,7 +36,7 @@ async function contract(page: Page, planName: string) {
 test("cliente de contabilidade contrata emissão (combo) com desconto, sem cobrança", async ({ browser }) => {
   const page = await login(browser, "CLIENTEA");
   await page.goto("/portal/plano");
-  await expect(page.getByText(/rascunho, não aprovados/)).toBeVisible();
+  await expect(page.getByText(/Os valores são os aprovados pela WJB/)).toBeVisible();
   await expect(page.getByText(/20% de desconto/)).toBeVisible();
   // Sem marcar os aceites o navegador nem envia; com aceites, contrata.
   await contract(page, "MEI Digital");
@@ -70,11 +68,11 @@ test("empresa sem contabilidade contrata só a emissão e não vê o plano da ou
   const page = await login(browser, "CLIENTEB");
   await page.goto("/portal/plano");
   await expect(page.getByText(/de desconto/)).toHaveCount(0);
-  await contract(page, "Nota avulsa");
+  await contract(page, "Nota Avulsa");
   await page.waitForURL(/contratado=1/);
-  await expect(page.getByText(/Nota avulsa contratado em SIMULAÇÃO/)).toBeVisible();
+  await expect(page.getByText(/Nota Avulsa contratado em SIMULAÇÃO/)).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Nota avulsa" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nota Avulsa" })).toBeVisible();
   // O plano da empresa A (MEI Digital) não aparece como plano ativo da B.
   await expect(page.getByRole("heading", { name: "MEI Digital" })).toHaveCount(0);
   await expect(page.getByText(/desconto de cliente de contabilidade/)).toHaveCount(0);
@@ -83,7 +81,7 @@ test("empresa sem contabilidade contrata só a emissão e não vê o plano da ou
 test("super admin vê assinaturas, suspende e o cliente perde o acesso na hora", async ({ browser }) => {
   const admin = await login(browser, "SUPERADMIN");
   await admin.goto("/admin/comercial");
-  await expect(admin.getByText("Simulação: preços em rascunho, sem cobrança")).toBeVisible();
+  await expect(admin.getByText("Simulação: preços aprovados, sem cobrança")).toBeVisible();
   const rowB = admin.getByRole("listitem").filter({ hasText: "Empresa Ficticia B · nfse_avulsa" });
   await rowB.getByRole("button", { name: "Suspender" }).click();
   await expect(admin.getByText(/Assinatura suspensa/)).toBeVisible();
@@ -99,10 +97,9 @@ test("contador vê o comercial só para leitura", async ({ browser }) => {
   await expect(page.locator("summary", { hasText: "Editar" })).toHaveCount(0);
 });
 
-test("landing sem preços e pré-cadastro com telefone opcional", async ({ page }) => {
+test("landing com pré-cadastro e telefone opcional", async ({ page }) => {
   await page.goto("/emissao-de-notas");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("notas de serviço");
-  await expect(page.locator("main")).not.toContainText("R$");
   await page.getByLabel("Nome").fill("Fulana Fictícia F8");
   await page.getByLabel("E-mail").fill(`f8-${Date.now()}@exemplo.test`);
   await page.getByLabel(/Concordo com o uso destes dados/).check();
@@ -110,19 +107,14 @@ test("landing sem preços e pré-cadastro com telefone opcional", async ({ page 
   await expect(page.getByText(/Você está na lista de interesse/)).toBeVisible();
 });
 
-test("webhook do WhatsApp simulado: assinatura, repetição e canal não conectado", async ({ request, browser }) => {
-  const now = Math.floor(Date.now() / 1000);
-  const body = JSON.stringify({ entry: [{ changes: [{ value: { messages: [{ id: `wamid.${now}`, timestamp: String(now), from: "5511900000000", type: "text" }] } }] }] });
-  const bad = await request.post("/api/wjb-ai/whatsapp/webhook", { data: body, headers: { "content-type": "application/json", "x-hub-signature-256": "sha256=00" } });
-  expect(bad.status()).toBe(401);
-  const sig = "sha256=" + createHmac("sha256", process.env.WJB_WHATSAPP_MOCK_APP_SECRET ?? "").update(body).digest("hex");
-  const ok = await request.post("/api/wjb-ai/whatsapp/webhook", { data: body, headers: { "content-type": "application/json", "x-hub-signature-256": sig } });
-  expect(await ok.json()).toMatchObject({ ok: true, simulated: true, novo: 1 });
-  const again = await request.post("/api/wjb-ai/whatsapp/webhook", { data: body, headers: { "content-type": "application/json", "x-hub-signature-256": sig } });
-  expect(await again.json()).toMatchObject({ repetido: 1, novo: 0 });
+test("WhatsApp é só Click-to-Chat: não existe webhook nem API de mensagens", async ({ request, browser }) => {
+  for (const method of ["get", "post"] as const) {
+    const res = await request[method]("/api/wjb-ai/whatsapp/webhook");
+    expect(res.status()).toBe(404);
+  }
   const page = await login(browser, "ATENDIMENTO");
   await page.goto("/admin/whatsapp");
-  await expect(page.getByText("Não conectado à Cloud API")).toBeVisible();
+  await expect(page.getByText("Click-to-Chat (sem API de mensagens)")).toBeVisible();
   await expect(page.getByText("(11) 9 7614-6375", { exact: false })).toBeVisible();
 });
 

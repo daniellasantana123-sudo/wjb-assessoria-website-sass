@@ -1,5 +1,3 @@
-import { createHmac } from "node:crypto";
-
 import { describe, expect, it } from "vitest";
 
 import { isRealBillingEnabled } from "@/lib/commercial/config";
@@ -14,16 +12,7 @@ import {
   type SubscriptionSnapshot,
 } from "@/lib/commercial/pricing";
 import { leadFormSchema, NFSE_PRE_REGISTRATION_CONTEXT } from "@/lib/validation/lead";
-import {
-  isBusinessHours,
-  maskPhone,
-  MockWhatsAppProvider,
-  parseWebhookPayload,
-  ReplayGuard,
-  verifyWebhookSignature,
-  createCloudApiProvider,
-  WhatsAppNotConnectedError,
-} from "@/lib/whatsapp/provider";
+import { commercialWhatsAppMessages, getCommercialWhatsAppLink } from "@/integrations/whatsapp";
 
 // Valores do RASCUNHO do documento da Fase 8 (não aprovados), só para teste.
 const mei = { sku: "nfse_mei", monthlyCents: 2490, quota: 10, overageCents: 390 };
@@ -122,42 +111,20 @@ describe("pré-cadastro: telefone opcional só nesse formulário", () => {
   });
 });
 
-describe("WhatsApp simulado", () => {
-  const optIn = { optedIn: true, optedOutAt: null };
-  const monday10 = new Date("2026-11-23T13:00:00Z"); // 10h em Brasília
-  const sunday = new Date("2026-11-22T13:00:00Z");
-  it("Cloud API real está bloqueada", () => {
-    expect(() => createCloudApiProvider()).toThrow(WhatsAppNotConnectedError);
+describe("WhatsApp Click-to-Chat (Fase 9: sem API de mensagens)", () => {
+  it("abre o número oficial com a mensagem da intenção, codificada", () => {
+    const link = getCommercialWhatsAppLink("mei")!;
+    expect(link.startsWith("https://wa.me/5511976146375?text=")).toBe(true);
+    const text = decodeURIComponent(new URL(link).searchParams.get("text") ?? "");
+    expect(text).toBe("Olá! Tenho interesse no plano MEI Digital da WJB. Gostaria de receber orientações.");
+    // Acento, ponto de exclamação e "+" sobrevivem à codificação.
+    expect(new URL(getCommercialWhatsAppLink("combo")!).searchParams.get("text")).toBe("Olá! Tenho interesse em Contabilidade Completa + Emissão de NFS-e.");
+    expect(link).not.toMatch(/[ áã]/);
   });
-  it("exige opt-in, respeita opt-out e horário; ids marcados SIMULADO", async () => {
-    const p = new MockWhatsAppProvider();
-    expect((await p.send({ to: "x", text: "oi" }, null, monday10)).reason).toBe("sem_opt_in");
-    expect((await p.send({ to: "x", text: "oi" }, { optedIn: true, optedOutAt: "2026-11-01" }, monday10)).reason).toBe("sem_opt_in");
-    expect((await p.send({ to: "x", text: "oi" }, optIn, sunday)).reason).toBe("fora_do_horario_sem_modelo");
-    const ok = await p.send({ to: "x", text: "oi" }, optIn, monday10);
-    expect(ok).toMatchObject({ status: "entregue" });
-    expect(ok.id).toMatch(/^SIMULADO-WA-/);
-    expect((await p.send({ to: "x", template: "aviso_nota" }, optIn, sunday)).status).toBe("entregue");
-    expect(p.connected).toBe(false);
-    expect(isBusinessHours(monday10)).toBe(true);
-  });
-  it("assinatura do webhook (X-Hub-Signature-256)", () => {
-    const body = '{"entry":[]}';
-    const sig = "sha256=" + createHmac("sha256", "segredo-de-teste").update(body).digest("hex");
-    expect(verifyWebhookSignature(body, sig, "segredo-de-teste")).toBe(true);
-    expect(verifyWebhookSignature(body + " ", sig, "segredo-de-teste")).toBe(false);
-    expect(verifyWebhookSignature(body, sig, "outro")).toBe(false);
-    expect(verifyWebhookSignature(body, null, "segredo-de-teste")).toBe(false);
-  });
-  it("anti-replay e telefone mascarado", () => {
-    const payload = { entry: [{ changes: [{ value: { messages: [{ id: "wamid.1", timestamp: "1000", from: "5511999990000", type: "text" }] } }] }] };
-    const evs = parseWebhookPayload(payload);
-    expect(evs[0].fromRef).toBe("***0000");
-    expect(JSON.stringify(evs)).not.toContain("5511999990000");
-    const g = new ReplayGuard();
-    expect(g.accept(evs[0], 1010)).toBe("novo");
-    expect(g.accept(evs[0], 1020)).toBe("repetido");
-    expect(g.accept({ ...evs[0], id: "wamid.2" }, 2000)).toBe("fora_da_janela");
-    expect(maskPhone("1")).toBe("***");
+  it("todas as mensagens são fixas e sem dado pessoal ou fiscal", () => {
+    for (const [intent, msg] of Object.entries(commercialWhatsAppMessages)) {
+      expect(msg, intent).not.toMatch(/\d{3}|@|cpf|cnpj|R\$/i);
+      expect(getCommercialWhatsAppLink(intent as keyof typeof commercialWhatsAppMessages)).toContain("wa.me/5511976146375");
+    }
   });
 });

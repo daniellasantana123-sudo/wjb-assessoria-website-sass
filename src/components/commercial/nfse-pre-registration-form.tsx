@@ -20,9 +20,10 @@ import { NFSE_PRE_REGISTRATION_CONTEXT } from "@/lib/validation/lead";
  */
 const PERFIS = ["MEI", "ME/EPP", "Profissional autônomo (CPF)", "Ainda não tenho empresa"];
 const VOLUME = ["Até 10 notas por mês", "11 a 50", "51 a 150", "Mais de 150"];
-const OBJETIVOS = ["Só emissão de NFS-e", "Contabilidade completa", "Contabilidade + emissão"];
+export const PRE_REGISTRATION_OBJECTIVES = ["Só emissão de NFS-e", "MEI Digital", "Contabilidade completa", "Contabilidade + emissão (combo)", "Alto volume"] as const;
+const OBJETIVOS = PRE_REGISTRATION_OBJECTIVES;
 
-export function NfsePreRegistrationForm() {
+export function NfsePreRegistrationForm({ defaultObjective }: { defaultObjective?: (typeof PRE_REGISTRATION_OBJECTIVES)[number] } = {}) {
   const pathname = usePathname();
   const submissionId = useRef(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : undefined);
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
@@ -91,7 +92,7 @@ export function NfsePreRegistrationForm() {
         <div className="flex flex-col gap-1.5"><Label htmlFor="pc-volume">Quantas notas por mês, mais ou menos?</Label>
           <Select id="pc-volume" name="volume" defaultValue={VOLUME[0]}>{VOLUME.map((v) => <option key={v}>{v}</option>)}</Select></div>
         <div className="flex flex-col gap-1.5 sm:col-span-2"><Label htmlFor="pc-obj">O que você procura?</Label>
-          <Select id="pc-obj" name="objetivo" defaultValue={OBJETIVOS[0]}>{OBJETIVOS.map((o) => <option key={o}>{o}</option>)}</Select></div>
+          <Select id="pc-obj" name="objetivo" defaultValue={defaultObjective ?? OBJETIVOS[0]}>{OBJETIVOS.map((o) => <option key={o}>{o}</option>)}</Select></div>
       </div>
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
       <label className="flex items-start gap-2 text-sm">

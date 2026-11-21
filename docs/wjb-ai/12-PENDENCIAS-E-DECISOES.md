@@ -81,3 +81,8 @@ Preparado: verificação local do PFX sem rede (`scripts/wjb-ai/certificado/veri
 Implementado em homologação: planos e assinaturas simulados (emissão sozinha ou em combo com a contabilidade), consumo não faturável, WhatsApp simulado, auditoria responsiva e de acessibilidade.
 
 **Decisões da WJB:** preços, franquias e desconto do combo (todos em rascunho, doc 35); texto dos 4 aceites com revisão jurídica; premissas de custo; publicar ou não `/emissao-de-notas`; titularidade, uso atual e autorização para registrar o número do WhatsApp na Cloud API (doc 36); teste em aparelhos reais e em Firefox/Safari (doc 37).
+
+## Atualização da Fase 9 (21/11/2026) - ver 41 a 46
+**Decidido pela WJB:** preços, franquias, notas adicionais e desconto do combo aprovados (doc 41); WhatsApp por Click-to-Chat, sem Cloud API (doc 42).
+
+**Pendentes da WJB:** textos jurídicos dos aceites; gateway, contrato e tributação do serviço; segundo WhatsApp do rodapé; testes em aparelhos reais; autorização de publicação; certificado e-CNPJ novo e cofre (Fase 10, doc 46).

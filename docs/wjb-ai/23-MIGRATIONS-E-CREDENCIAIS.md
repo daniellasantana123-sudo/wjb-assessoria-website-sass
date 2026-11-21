@@ -13,7 +13,9 @@
 | 0030 `wjb_commercial_plans` | 7 tabelas `commercial_*` (catálogo rascunho, assinatura só simulada, aceites e consumo append-only), `has_entitlement`, RLS | 0001; 0011+0021 (`is_staff`, `is_super_admin`); 0018 (`my_tenant_ids`); 0024 (`fiscal_requests`) | `13_rollback_0030.sql` |
 | 0031 `wjb_commercial_entitlement_grant` | retira `execute` de `has_entitlement` para `authenticated` (só o servidor consulta) | 0030 | `15_rollback_0031.sql` |
 
-- **Ordem obrigatória:** 0024 -> 0025 -> 0026 -> 0027 -> 0028 -> 0029 -> 0030 -> 0031. Rollback na ordem inversa.
+| 0032 `wjb_commercial_price_approval` | status `approved` com referência, vigência, autor e data (gravados pelo banco); preço alterado volta a rascunho; `commercial_setting_changes` (histórico do desconto) | 0030 | `17_rollback_0032.sql` |
+
+- **Ordem obrigatória:** 0024 -> 0025 -> 0026 -> 0027 -> 0028 -> 0029 -> 0030 -> 0031 -> 0032. Rollback na ordem inversa.
 - **Interação conhecida:** a 0022 (guarda de colunas privilegiadas de `profiles`) bloqueia mudança de `status`/papel por usuário logado; scripts de teste usam service role ou sessão sem JWT.
 - **Projetos Supabase novos** (como a homologação) já vêm com privilégios padrão revogados e o gatilho `ensure_rls`; a 0002 restaura os privilégios e todas as tabelas ligam RLS explicitamente, então o comportamento é igual ao da produção.
 - **Validação:** `bash scripts/wjb-ai/homologacao/run.sh` (Postgres 17 local: aplica 0001-0027, 38 testes de RLS + 23 da 0027 com numeração concorrente, backup/restauração e rollback das quatro) e `node scripts/wjb-ai/homologacao-supabase/01-migrations.mjs` (registro com sha256 na homologação real).
@@ -44,3 +46,7 @@
 ## Atualização da Fase 8 (21/11/2026)
 - 0030 e 0031 aplicadas só na homologação, com backup antes; local T77-T92 (doc 38).
 - Nenhuma credencial nova versionada. Os segredos do webhook simulado do WhatsApp (`WJB_WHATSAPP_MOCK_APP_SECRET`, `WJB_WHATSAPP_MOCK_VERIFY_TOKEN`) são gerados no `staging.sh` a cada execução e não são da Meta.
+
+## Atualização da Fase 9 (21/11/2026)
+- 0032 aplicada só na homologação, com backup antes; local T93-T103; segurança pela API S1-S14 (doc 44).
+- Removidos os segredos do webhook simulado do WhatsApp: o canal agora é Click-to-Chat, sem nenhuma credencial.

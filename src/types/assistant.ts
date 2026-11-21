@@ -8,7 +8,7 @@
  */
 export type AssistantWidgetState = "closed" | "greeting" | "open" | "minimized";
 
-export type AssistantScreen = "menu" | "service" | "lead" | "completed";
+export type AssistantScreen = "menu" | "service" | "commercial" | "lead" | "completed";
 
 /**
  * Chaves reais do menu principal - cada uma mapeia para um serviço/rota que
@@ -25,6 +25,7 @@ export type AssistantServiceKey =
   | "impostosRegularizacao"
   | "consultoria"
   | "duvidasFrequentes"
+  | "emissaoNotas"
   | "outrosServicos"
   | "especialista";
 

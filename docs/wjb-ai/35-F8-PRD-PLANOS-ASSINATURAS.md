@@ -1,5 +1,7 @@
 # 35 - Fase 8: planos, assinaturas e contratação (PRD em rascunho)
 
+> **Atualização 21/11/2026 (Fase 9):** os valores abaixo foram **aprovados** pela WJB (franquia da Nota Avulsa = 0). Registro e funcionamento no doc 41.
+
 **Data:** 21/11/2026 · Branch `wjb-ai/f2-solicitar-nfse` · **Só homologação.** Nenhum preço foi aprovado pela WJB, nenhum preço aparece no site público e nenhuma cobrança real existe.
 
 ## 1. Objetivo

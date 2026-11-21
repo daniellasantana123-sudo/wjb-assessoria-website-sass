@@ -13,21 +13,20 @@ export SUPABASE_URL="$HOMOLOG_SUPABASE_URL" SUPABASE_ANON_KEY="$HOMOLOG_SUPABASE
 export SUPABASE_SERVICE_ROLE_KEY="$HOMOLOG_SUPABASE_SERVICE_ROLE_KEY"
 export NEXT_PUBLIC_SUPABASE_URL="$HOMOLOG_SUPABASE_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$HOMOLOG_SUPABASE_ANON_KEY"
 export WJB_AI_ENABLED=true WJB_AI_FISCAL_MODE=mock SAAS_PUBLIC_ENABLED=true NEXT_PUBLIC_SAAS_PUBLIC_ENABLED=true
-# Fase 8: comercialização e WhatsApp SIMULADOS só neste build local.
-export WJB_COMMERCIAL_ENABLED=true WJB_WHATSAPP_MOCK_ENABLED=true
-export WJB_WHATSAPP_MOCK_APP_SECRET="$(openssl rand -hex 24)" WJB_WHATSAPP_MOCK_VERIFY_TOKEN="$(openssl rand -hex 12)"
+# Fases 8/9: comercialização SIMULADA só neste build local (WhatsApp é Click-to-Chat, sem API).
+export WJB_COMMERCIAL_ENABLED=true
 # Integrações externas desligadas no staging: G-Click em mock, sem e-mail, sem WhatsApp.
 unset GCLICK_REAL_INTEGRATION_ENABLED RESEND_API_KEY WHATSAPP_ACCESS_TOKEN || true
 export HOMOLOG_STAGING=1
 # Segredo só desta execução, para a rota agendada da fila simulada.
 export CRON_SECRET="$(openssl rand -hex 24)"
 
-node scripts/wjb-ai/homologacao-supabase/05-comercial-rascunho.mjs > /tmp/wjb-staging-comercial.log 2>&1 || { echo "cenário comercial falhou (ver /tmp/wjb-staging-comercial.log)"; exit 1; }
+node scripts/wjb-ai/homologacao-supabase/05-comercial-catalogo.mjs > /tmp/wjb-staging-comercial.log 2>&1 || { echo "cenário comercial falhou (ver /tmp/wjb-staging-comercial.log)"; exit 1; }
 pkill -f next-server 2>/dev/null || true
 npm run build > /tmp/wjb-staging-build.log 2>&1 || { echo "build falhou (ver /tmp/wjb-staging-build.log)"; exit 1; }
 (npx next start -p 3000 > /tmp/wjb-staging-start.log 2>&1 &)
 sleep 6
-npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts src/tests/e2e/staging-nfse-fase7.spec.ts src/tests/e2e/staging-nfse-fase8.spec.ts --workers=1 --reporter=line
+npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts src/tests/e2e/staging-nfse-fase7.spec.ts src/tests/e2e/staging-nfse-fase8.spec.ts src/tests/e2e/staging-nfse-fase9.spec.ts --workers=1 --reporter=line
 status=$?
 pkill -f next-server 2>/dev/null || true
 echo "Lembrete: rode 'npm run build' de novo antes de testar contra produção (o build atual aponta para a homologação)."

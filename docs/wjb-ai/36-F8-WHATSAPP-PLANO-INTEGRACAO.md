@@ -1,5 +1,7 @@
 # 36 - Fase 8: WhatsApp da WJB (plano de integração)
 
+> **Substituído em 21/11/2026 (Fase 9):** a WJB decidiu não usar a Cloud API. O canal é Click-to-Chat (doc 42), e o webhook e o provedor simulados descritos abaixo foram removidos do código.
+
 **Número:** +55 11 97614-6375 (formato internacional E.164: `5511976146375`).
 **Situação:** **não conectado à WhatsApp Cloud API.** Nada foi registrado, migrado nem desconectado, e nenhuma mensagem real foi enviada.
 

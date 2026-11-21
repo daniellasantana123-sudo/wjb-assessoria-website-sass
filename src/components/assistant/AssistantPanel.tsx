@@ -8,6 +8,9 @@ import { getAssistantWhatsAppLink } from "@/lib/assistant/whatsapp";
 import { cn } from "@/lib/utils";
 import type { AssistantScreen, AssistantServiceKey } from "@/types/assistant";
 
+import type { CommercialCatalog } from "@/lib/assistant/commercial-flow";
+
+import { AssistantCommercial } from "./AssistantCommercial";
 import { AssistantHeader } from "./AssistantHeader";
 import { AssistantLeadForm } from "./AssistantLeadForm";
 import { AssistantMessage } from "./AssistantMessage";
@@ -17,6 +20,8 @@ export interface AssistantPanelProps {
   screen: AssistantScreen;
   selectedService: AssistantServiceKey | null;
   greetingMessage: string;
+  /** Catálogo comercial aprovado; `null` = emissão de notas indisponível (item some do menu). */
+  commercialCatalog: CommercialCatalog | null;
   /** Sobe o painel pra não ficar sob o banner de cookies enquanto ele existir. */
   liftForCookieBanner: boolean;
   onSelectService: (key: AssistantServiceKey) => void;
@@ -39,6 +44,7 @@ export function AssistantPanel({
   screen,
   selectedService,
   greetingMessage,
+  commercialCatalog,
   liftForCookieBanner,
   onSelectService,
   onNavigate,
@@ -107,12 +113,18 @@ export function AssistantPanel({
               direto para um especialista. O que você precisa hoje?
             </AssistantMessage>
             <AssistantQuickReplies
-              options={assistantMenuOptions.map((option) => ({
+              options={assistantMenuOptions
+                .filter((option) => option.key !== "emissaoNotas" || commercialCatalog !== null)
+                .map((option) => ({
                 label: option.label,
                 onClick: () => onSelectService(option.key),
               }))}
             />
           </>
+        ) : null}
+
+        {screen === "commercial" && commercialCatalog ? (
+          <AssistantCommercial catalog={commercialCatalog} onNavigate={onNavigate} onBackToMenu={onBackToMenu} />
         ) : null}
 
         {screen === "service" && serviceResponse ? (

@@ -56,9 +56,9 @@ export async function contractPlanAction(_prev: CommercialState | undefined, for
   if (missing.length) return { error: "Para contratar, marque todos os aceites (cada um é registrado separadamente)." };
 
   const admin = createAdminClient();
-  const { data: plan } = await admin.from("commercial_plans").select("*").eq("sku", sku).eq("status", "draft").eq("product", "emissao").maybeSingle();
+  const { data: plan } = await admin.from("commercial_plans").select("*").eq("sku", sku).eq("status", "approved").eq("product", "emissao").maybeSingle();
   if (!plan) return { error: "Plano não encontrado." };
-  if (plan.monthly_cents === null && plan.overage_cents === null) return { error: "Este plano é sob proposta: fale com a equipe comercial." };
+  if (plan.monthly_cents === null || plan.overage_cents === null) return { error: "Este plano é sob proposta: fale com a equipe comercial." };
 
   const current = await getTenantCommercial(ctx.tenantId);
   if (current.subscription) return { error: "A empresa já tem um plano. Use a troca de plano." };
@@ -124,7 +124,7 @@ export async function schedulePlanChangeAction(_prev: CommercialState | undefine
   if (isErr(ctx)) return ctx;
   const sku = String(formData.get("sku") ?? "");
   const admin = createAdminClient();
-  const { data: plan } = await admin.from("commercial_plans").select("id, name").eq("sku", sku).eq("status", "draft").eq("product", "emissao").maybeSingle();
+  const { data: plan } = await admin.from("commercial_plans").select("id, name").eq("sku", sku).eq("status", "approved").eq("product", "emissao").maybeSingle();
   if (!plan) return { error: "Plano não encontrado." };
   const current = await getTenantCommercial(ctx.tenantId);
   if (!current.subscription) return { error: "A empresa não tem plano." };
@@ -176,20 +176,35 @@ export async function savePlanAction(planId: string | null, _prev: CommercialSta
   const quotaRaw = String(formData.get("quota") ?? "").trim();
   const quota = quotaRaw ? Number.parseInt(quotaRaw, 10) : null;
   const status = String(formData.get("status") ?? "draft");
+  const reference = String(formData.get("approvalReference") ?? "").trim();
+  const effectiveFrom = String(formData.get("effectiveFrom") ?? "").trim();
   if (name.length < 2) return { error: "Informe o nome do plano." };
   if (!planId && !/^[a-z0-9_]{3,40}$/.test(sku)) return { error: "Código (sku) com letras minúsculas, números e _." };
   if (Number.isNaN(monthly) || Number.isNaN(overage) || (quota !== null && (!Number.isInteger(quota) || quota < 0)))
     return { error: "Valores inválidos." };
-  if (status !== "draft" && status !== "archived") return { error: "Nesta fase o plano só pode ser rascunho ou arquivado." };
-  const supabase = await createClient(); // RLS: só super_admin escreve; o banco versiona e guarda histórico
-  const row = { name, description: String(formData.get("description") ?? "").slice(0, 500), monthly_cents: monthly, quota, overage_cents: overage, status };
-  const { error } = planId
-    ? await supabase.from("commercial_plans").update(row).eq("id", planId)
-    : await supabase.from("commercial_plans").insert({ ...row, sku, product: "emissao" });
-  if (error) return { error: error.code === "23505" ? "Já existe plano com esse código." : "Não foi possível salvar." };
-  await audit(session.userId, null, planId ? "commercial.plan_updated" : "commercial.plan_created", planId ?? sku, { status });
+  if (status !== "draft" && status !== "archived" && status !== "approved") return { error: "Situação inválida." };
+  if (status === "approved" && !planId) return { error: "Crie o plano como rascunho e aprove depois." };
+  if (status === "approved" && reference.length < 5) return { error: "Para aprovar, informe a referência da aprovação (quem aprovou e onde)." };
+  if (status === "approved" && effectiveFrom && !/^\d{4}-\d{2}-\d{2}$/.test(effectiveFrom)) return { error: "Data de vigência inválida." };
+  const supabase = await createClient(); // RLS: só super_admin escreve; o banco versiona, guarda histórico e grava autor/data da aprovação
+  const row = {
+    name,
+    description: String(formData.get("description") ?? "").slice(0, 500),
+    monthly_cents: monthly,
+    quota,
+    overage_cents: overage,
+    status,
+    ...(status === "approved" ? { approval_reference: reference.slice(0, 300), effective_from: effectiveFrom || null } : {}),
+  };
+  const { data: saved, error } = planId
+    ? await supabase.from("commercial_plans").update(row).eq("id", planId).select("status").maybeSingle()
+    : await supabase.from("commercial_plans").insert({ ...row, sku, product: "emissao" }).select("status").maybeSingle();
+  if (error || !saved) return { error: error?.code === "23505" ? "Já existe plano com esse código." : "Não foi possível salvar." };
+  await audit(session.userId, null, planId ? "commercial.plan_updated" : "commercial.plan_created", planId ?? sku, { status: saved.status });
   revalidatePath("/admin/comercial");
-  return { ok: "Plano salvo como rascunho (versão e histórico registrados)." };
+  if (status === "approved" && saved.status !== "approved")
+    return { ok: "Preço alterado: o plano voltou a rascunho e precisa de nova aprovação (versão registrada)." };
+  return { ok: saved.status === "approved" ? "Plano aprovado (autor, data e vigência registrados)." : "Plano salvo (versão e histórico registrados)." };
 }
 
 export async function saveComboDiscountAction(_prev: CommercialState | undefined, formData: FormData): Promise<CommercialState> {

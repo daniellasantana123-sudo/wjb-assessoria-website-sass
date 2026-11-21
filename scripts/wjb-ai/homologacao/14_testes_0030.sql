@@ -29,7 +29,7 @@ select homolog_test.expect_error($$insert into public.commercial_plans (sku, pro
 select homolog_test.act_as('66666666-6666-4666-8666-666666666666');
 insert into public.commercial_plans (id, sku, product, name, monthly_cents, quota, overage_cents)
 values ('aa000000-0000-4000-8000-000000000001','nfse_mei','emissao','MEI Digital (rascunho)',2490,10,390);
-select homolog_test.expect_error($$update public.commercial_plans set status = 'approved' where sku = 'nfse_mei'$$, 'T78 plano não pode ser aprovado nesta fase (só draft/archived)');
+select homolog_test.expect_error($$update public.commercial_plans set status = 'approved' where sku = 'nfse_mei'$$, 'T78 plano não é aprovado sem referência e vigência (0032)');
 update public.commercial_plans set monthly_cents = 2990 where sku = 'nfse_mei';
 select homolog_test.expect((select version from public.commercial_plans where sku = 'nfse_mei') = 2
   and (select count(*) from public.commercial_plan_changes where plan_id = 'aa000000-0000-4000-8000-000000000001') = 2, 'T79 alteração de preço gera versão e histórico');

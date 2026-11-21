@@ -60,7 +60,7 @@ export function getServerWidgetStateSnapshot(): "closed" | "minimized" {
 
 export function getStoredScreen(): AssistantScreen {
   const raw = readKey(SCREEN_KEY);
-  return raw === "service" || raw === "lead" || raw === "completed"
+  return raw === "service" || raw === "commercial" || raw === "lead" || raw === "completed"
     ? raw
     : "menu";
 }

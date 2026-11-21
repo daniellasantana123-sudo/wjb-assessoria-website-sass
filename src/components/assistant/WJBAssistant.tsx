@@ -25,6 +25,7 @@ import {
   subscribeConsent,
 } from "@/lib/consent/cookie-consent";
 import { getAssistantWhatsAppLink } from "@/lib/assistant/whatsapp";
+import type { CommercialCatalog } from "@/lib/assistant/commercial-flow";
 import type { AssistantServiceKey } from "@/types/assistant";
 
 import { AssistantLauncher } from "./AssistantLauncher";
@@ -83,6 +84,28 @@ export function WJBAssistant() {
     null,
   );
   const widgetState = liveOverlay ?? persistedWidgetState;
+
+  // Catálogo comercial aprovado (emissão de notas). Só é buscado quando o
+  // painel abre; 404 = comercialização desligada e o item some do menu.
+  const [commercialCatalog, setCommercialCatalog] = useState<CommercialCatalog | null>(null);
+  const [catalogRequested, setCatalogRequested] = useState(false);
+  useEffect(() => {
+    if (widgetState !== "open" || catalogRequested) return;
+    let alive = true;
+    fetch("/api/commercial/catalog")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: ({ ok?: boolean } & CommercialCatalog) | null) => {
+        if (!alive) return;
+        setCatalogRequested(true);
+        if (data?.ok && Array.isArray(data.plans)) setCommercialCatalog({ plans: data.plans, comboDiscountBp: Number(data.comboDiscountBp) || 0 });
+      })
+      .catch(() => {
+        if (alive) setCatalogRequested(true);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [widgetState, catalogRequested]);
 
   useEffect(() => {
     trackAssistantEvent("assistant_viewed");
@@ -168,7 +191,7 @@ export function WJBAssistant() {
       return;
     }
     setStoredService(key);
-    setStoredScreen("service");
+    setStoredScreen(key === "emissaoNotas" ? "commercial" : "service");
     trackAssistantEvent("assistant_service_selected", { service: key });
   }
 
@@ -203,6 +226,7 @@ export function WJBAssistant() {
         screen={screen}
         selectedService={selectedService}
         greetingMessage={greetingMessage}
+        commercialCatalog={commercialCatalog}
         liftForCookieBanner={liftForCookieBanner}
         onSelectService={handleSelectService}
         onNavigate={handleNavigate}

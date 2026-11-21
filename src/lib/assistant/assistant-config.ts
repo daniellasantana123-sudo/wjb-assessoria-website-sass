@@ -16,6 +16,8 @@ export const assistantMenuOptions: AssistantMenuOption[] = [
   { key: "contabilidadeCompleta", label: "Contabilidade para minha empresa" },
   { key: "contabilidadeDigital", label: "Contabilidade Digital" },
   { key: "mei", label: "MEI" },
+  // Só aparece quando o catálogo comercial está disponível (interruptor ligado).
+  { key: "emissaoNotas", label: "Emitir notas fiscais (NFS-e)" },
   { key: "departamentoPessoal", label: "Departamento pessoal / Folha" },
   { key: "impostosRegularizacao", label: "Impostos e regularização" },
   { key: "consultoria", label: "Consultoria contábil e tributária" },
@@ -50,6 +52,11 @@ export const assistantPageGreetings: { pathPrefix: string; message: string }[] =
       pathPrefix: "/contabilidade-digital",
       message:
         "Vi que você está conhecendo a Contabilidade Digital da WJB. Posso ajudar com alguma dúvida ou encaminhar você para um especialista.",
+    },
+    {
+      pathPrefix: "/emissao-de-notas",
+      message:
+        "Vi que você está conhecendo a emissão de notas da WJB. Posso explicar os planos e valores e te ajudar a escolher.",
     },
     {
       pathPrefix: "/duvidas",

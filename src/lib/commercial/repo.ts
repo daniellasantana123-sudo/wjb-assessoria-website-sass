@@ -18,15 +18,22 @@ export interface CatalogPlan {
   monthlyCents: number | null;
   quota: number | null;
   overageCents: number | null;
-  status: "draft" | "archived";
+  status: "draft" | "approved" | "archived";
   version: number;
   updatedAt: string;
+  approvedAt: string | null;
+  approvalReference: string | null;
+  effectiveFrom: string | null;
 }
 
-export async function listCatalog(includeArchived = false): Promise<CatalogPlan[]> {
+/**
+ * Catálogo. `approved` (padrão) é o que cliente, landing e assistente veem:
+ * só planos com preço aprovado. O Admin usa `all` (rascunhos e arquivados).
+ */
+export async function listCatalog(scope: "approved" | "all" = "approved"): Promise<CatalogPlan[]> {
   const admin = createAdminClient();
   let q = admin.from("commercial_plans").select("*").order("monthly_cents", { ascending: true, nullsFirst: false });
-  if (!includeArchived) q = q.eq("status", "draft");
+  if (scope === "approved") q = q.eq("status", "approved");
   const { data } = await q;
   return (data ?? []).map((p) => ({
     id: p.id,
@@ -40,7 +47,62 @@ export async function listCatalog(includeArchived = false): Promise<CatalogPlan[
     status: p.status as CatalogPlan["status"],
     version: p.version,
     updatedAt: p.updated_at,
+    approvedAt: p.approved_at,
+    approvalReference: p.approval_reference,
+    effectiveFrom: p.effective_from,
   }));
+}
+
+/** Versões anteriores de cada plano (vigência e preço), mais recentes primeiro. */
+export async function getPlanHistory(limit = 200) {
+  const { data } = await createAdminClient()
+    .from("commercial_plan_changes")
+    .select("plan_id, after, changed_at")
+    .order("changed_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []).map((c) => {
+    const a = (c.after ?? {}) as Record<string, unknown>;
+    return {
+      planId: c.plan_id,
+      changedAt: c.changed_at,
+      version: Number(a.version ?? 0),
+      status: String(a.status ?? ""),
+      monthlyCents: (a.monthly_cents as number | null) ?? null,
+      quota: (a.quota as number | null) ?? null,
+      overageCents: (a.overage_cents as number | null) ?? null,
+      effectiveFrom: (a.effective_from as string | null) ?? null,
+    };
+  });
+}
+
+/** Histórico das configurações comerciais (desconto do combo etc.). */
+export async function getSettingHistory(key: string, limit = 20) {
+  const { data } = await createAdminClient()
+    .from("commercial_setting_changes")
+    .select("before, after, changed_at")
+    .eq("key", key)
+    .order("changed_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []).map((c) => ({ before: c.before, after: c.after, changedAt: c.changed_at }));
+}
+
+/** Versão pública e mínima do catálogo aprovado (landing e assistente). */
+export interface PublicPlan {
+  sku: string;
+  name: string;
+  description: string;
+  monthlyCents: number | null;
+  quota: number | null;
+  overageCents: number | null;
+}
+export async function getPublicEmissionCatalog(): Promise<{ plans: PublicPlan[]; comboDiscountBp: number }> {
+  const [plans, combo] = await Promise.all([listCatalog("approved"), getComboDiscountBp()]);
+  return {
+    plans: plans
+      .filter((p) => p.product === "emissao")
+      .map((p) => ({ sku: p.sku, name: p.name, description: p.description, monthlyCents: p.monthlyCents, quota: p.quota, overageCents: p.overageCents })),
+    comboDiscountBp: combo,
+  };
 }
 
 export async function getComboDiscountBp(): Promise<number> {
