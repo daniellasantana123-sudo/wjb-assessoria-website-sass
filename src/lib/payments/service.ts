@@ -38,6 +38,36 @@ async function audit(actor: string | null, tenantId: string | null, action: stri
   await admin().from("audit_log").insert({ actor_id: actor, tenant_id: tenantId, action, entity: "payments", entity_id: entityId, metadata });
 }
 
+type PlanRow = { id: string; sku: string; name: string; version: number };
+
+/** Preço no provedor para a versão aprovada do plano e a variante de desconto (reaproveita se já existe). */
+async function ensurePlanPrice(provider: PaymentProvider, plan: PlanRow, discount: number, amount: number): Promise<string> {
+  const db = admin();
+  const { data: price } = await db.from("payment_prices").select("provider_price_id").eq("plan_id", plan.id).eq("plan_version", plan.version).eq("mode", provider.mode).eq("discount_bp", discount).maybeSingle();
+  if (price) return price.provider_price_id;
+  const p = await provider.ensurePrice({ lookupKey: priceLookupKey(plan.sku, plan.version, discount), productName: `${plan.name}${discount ? ` (combo -${discount / 100}%)` : ""}`, amountCents: amount, recurring: true });
+  await db.from("payment_prices").upsert(
+    { plan_id: plan.id, plan_version: plan.version, mode: provider.mode, discount_bp: discount, unit_amount_cents: amount, provider_price_id: p.priceId, provider_product_id: p.productId },
+    { onConflict: "plan_id,plan_version,mode,discount_bp", ignoreDuplicates: true },
+  );
+  return p.priceId;
+}
+
+/** Retrato do plano na versão em que o preço foi criado (para a assinatura local seguir o preço vigente na Stripe). */
+async function planSnapshotForPrice(providerPriceId: string) {
+  const db = admin();
+  const { data: price } = await db.from("payment_prices").select("plan_id, plan_version, discount_bp").eq("provider_price_id", providerPriceId).maybeSingle();
+  if (!price) return null;
+  const { data: plan } = await db.from("commercial_plans").select("*").eq("id", price.plan_id).single();
+  let snap = plan ? { sku: plan.sku, monthly: plan.monthly_cents, quota: plan.quota, overage: plan.overage_cents, version: plan.version } : null;
+  if (plan && plan.version !== price.plan_version) {
+    const { data: ch } = await db.from("commercial_plan_changes").select("after").eq("plan_id", price.plan_id).eq("after->>version", String(price.plan_version)).limit(1).maybeSingle();
+    const a = (ch?.after ?? null) as { sku?: string; monthly_cents?: number | null; quota?: number | null; overage_cents?: number | null } | null;
+    if (a) snap = { sku: a.sku ?? plan.sku, monthly: a.monthly_cents ?? null, quota: a.quota ?? null, overage: a.overage_cents ?? null, version: price.plan_version };
+  }
+  return snap ? { planId: price.plan_id, discountBp: price.discount_bp, ...snap } : null;
+}
+
 export type CheckoutResult = { ok: true; url: string } | { ok: false; error: string };
 
 export async function startCheckout(input: { userId: string; tenantId: string; sku: string; accepted: AcceptanceDocument[]; baseUrl: string }): Promise<CheckoutResult> {
@@ -71,19 +101,7 @@ export async function startCheckout(input: { userId: string; tenantId: string; s
   if (!customer) return { ok: false, error: "Não foi possível preparar o pagamento." };
 
   // Preço no provedor da versão aprovada (e variante do combo).
-  let priceId: string | null = null;
-  if (kind === "subscription") {
-    const { data: price } = await db.from("payment_prices").select("provider_price_id").eq("plan_id", plan.id).eq("plan_version", plan.version).eq("mode", provider.mode).eq("discount_bp", discount).maybeSingle();
-    if (price) priceId = price.provider_price_id;
-    else {
-      const p = await provider.ensurePrice({ lookupKey: priceLookupKey(plan.sku, plan.version, discount), productName: `${plan.name}${discount ? ` (combo -${discount / 100}%)` : ""}`, amountCents: amount, recurring: true });
-      await db.from("payment_prices").upsert(
-        { plan_id: plan.id, plan_version: plan.version, mode: provider.mode, discount_bp: discount, unit_amount_cents: amount, provider_price_id: p.priceId, provider_product_id: p.productId },
-        { onConflict: "plan_id,plan_version,mode,discount_bp", ignoreDuplicates: true },
-      );
-      priceId = p.priceId;
-    }
-  }
+  const priceId = kind === "subscription" ? await ensurePlanPrice(provider, plan, discount, amount) : null;
 
   const { start, end } = cycleFor(toIsoDate(new Date()));
   const { data: sub, error: subErr } = await db
@@ -163,9 +181,12 @@ async function syncSubscription(provider: PaymentProvider, providerSubId: string
   }
   if (local.tenant_id !== tenantId) throw new Error("assinatura de outra empresa");
   const status = nextStatus(local.status, mapSubscriptionStatus(ps.status));
+  // A assinatura local segue o preço VIGENTE na Stripe (troca de plano feita aqui ou no portal).
+  const plan = ps.priceId ? await planSnapshotForPrice(ps.priceId) : null;
   await db
     .from("commercial_subscriptions")
     .update({
+      ...(plan ? { plan_id: plan.planId, plan_sku: plan.sku, monthly_cents: plan.monthly, quota: plan.quota, overage_cents: plan.overage, discount_bp: plan.discountBp, pending_plan_id: null } : {}),
       provider_subscription_id: providerSubId,
       status,
       current_period_end: iso(ps.currentPeriodEnd),
@@ -273,11 +294,18 @@ export async function handlePaymentEvent(event: PEvent, provider: PaymentProvide
  * vivas e reprocessa eventos que falharam (até 5 tentativas). Nunca cria
  * cobrança: só lê o provedor e atualiza o estado local.
  */
-export async function reconcilePayments(): Promise<{ checkouts: number; subscriptions: number; retried: number; errors: number }> {
+export async function reconcilePayments(): Promise<{ checkouts: number; subscriptions: number; retried: number; pulled: number; errors: number }> {
   const provider = getProvider();
-  const out = { checkouts: 0, subscriptions: 0, retried: 0, errors: 0 };
+  const out = { checkouts: 0, subscriptions: 0, retried: 0, pulled: 0, errors: 0 };
   if (!provider) return out;
   const db = admin();
+  try {
+    const p = await pullProviderEvents(Math.floor(Date.now() / 1000) - 3 * 24 * 3600, provider);
+    out.pulled = p.pulled;
+    out.errors += p.failed;
+  } catch {
+    out.errors++;
+  }
   const { data: openCk } = await db.from("payment_checkouts").select("provider_session_id, created_at").eq("status", "aberto").eq("mode", provider.mode).not("provider_session_id", "is", null).limit(200);
   for (const c of openCk ?? []) {
     try {
@@ -306,6 +334,69 @@ export async function reconcilePayments(): Promise<{ checkouts: number; subscrip
     const r = await handlePaymentEvent({ id: f.provider_event_id, type: f.type, livemode: false, objectId: f.object_id }, provider);
     out.retried++;
     if (r === "falhou") out.errors++;
+  }
+  return out;
+}
+
+// ---------------- Troca de plano (assinatura paga) ----------------
+
+type ChangeContext = { provider: PaymentProvider; customerId: string; providerSubId: string; newPriceId: string; newPlan: { name: string; sku: string } };
+
+async function prepareChange(tenantId: string, sku: string): Promise<ChangeContext | { error: string }> {
+  const provider = getProvider();
+  if (!provider) return { error: "Pagamentos indisponíveis." };
+  const db = admin();
+  const { data: sub } = await db.from("commercial_subscriptions").select("plan_sku, status, provider_subscription_id, cancel_at_period_end").eq("tenant_id", tenantId).neq("status", "cancelada").maybeSingle();
+  if (!sub?.provider_subscription_id || sub.status !== "ativa_teste") return { error: "A troca exige um plano pago ativo e em dia." };
+  if (sub.cancel_at_period_end) return { error: "Há um cancelamento agendado: desfaça-o com a equipe antes de trocar." };
+  if (sub.plan_sku === sku) return { error: "Esse já é o plano atual." };
+  const { data: plan } = await db.from("commercial_plans").select("*").eq("sku", sku).eq("status", "approved").eq("product", "emissao").maybeSingle();
+  if (!plan || plan.monthly_cents === null || plan.overage_cents === null) return { error: "Plano não disponível para troca." };
+  const snap = { sku: plan.sku, monthlyCents: plan.monthly_cents, quota: plan.quota, overageCents: plan.overage_cents };
+  if (isPerNotePlan(snap)) return { error: "Para a Nota Avulsa, cancele o plano atual e contrate de novo." };
+  const { data: account } = await db.from("commercial_accounts").select("relationship").eq("tenant_id", tenantId).maybeSingle();
+  const discount = comboDiscountBp(account?.relationship === "contabilidade", await getComboDiscountBp());
+  const amount = monthlyWithDiscount(snap, discount) ?? 0;
+  const { data: cust } = await db.from("payment_customers").select("provider_customer_id").eq("tenant_id", tenantId).maybeSingle();
+  if (!cust) return { error: "Cliente de pagamento não encontrado." };
+  const newPriceId = await ensurePlanPrice(provider, plan, discount, amount);
+  return { provider, customerId: cust.provider_customer_id, providerSubId: sub.provider_subscription_id, newPriceId, newPlan: { name: plan.name, sku: plan.sku } };
+}
+
+/** Valor cobrado agora (diferença proporcional) se a troca for confirmada. Nada é alterado. */
+export async function previewPaidPlanChange(tenantId: string, sku: string): Promise<{ ok: true; amountDueCents: number; planName: string } | { ok: false; error: string }> {
+  const c = await prepareChange(tenantId, sku);
+  if ("error" in c) return { ok: false, error: c.error };
+  const p = await c.provider.previewPriceChange({ customerId: c.customerId, subscriptionId: c.providerSubId, newPriceId: c.newPriceId });
+  return { ok: true, amountDueCents: p.amountDueCents, planName: c.newPlan.name };
+}
+
+export async function changePaidPlan(input: { userId: string; tenantId: string; sku: string }): Promise<{ ok: true; planName: string } | { ok: false; error: string }> {
+  const c = await prepareChange(input.tenantId, input.sku);
+  if ("error" in c) return { ok: false, error: c.error };
+  const key = createHash("sha256").update(`change:${c.providerSubId}:${c.newPriceId}`).digest("hex").slice(0, 40);
+  try {
+    const r = await c.provider.changeSubscriptionPrice({ subscriptionId: c.providerSubId, newPriceId: c.newPriceId, idempotencyKey: key });
+    await syncSubscription(c.provider, c.providerSubId, input.tenantId);
+    if (r.invoiceId) await applyInvoice(c.provider, r.invoiceId);
+  } catch (e) {
+    await audit(input.userId, input.tenantId, "payments.plan_change_failed", c.providerSubId, { to_sku: c.newPlan.sku, error: shortError(e) });
+    return { ok: false, error: "A troca não foi concluída (pagamento da diferença recusado ou indisponível). Nada mudou." };
+  }
+  await audit(input.userId, input.tenantId, "payments.plan_changed", c.providerSubId, { to_sku: c.newPlan.sku });
+  return { ok: true, planName: c.newPlan.name };
+}
+
+/** Busca eventos recentes no provedor e trata os que faltarem (reserva para webhook perdido). */
+export async function pullProviderEvents(createdGte: number, provider: PaymentProvider | null = getProvider()) {
+  const out = { pulled: 0, processed: 0, duplicates: 0, failed: 0 };
+  if (!provider) return out;
+  for (const e of await provider.listEvents({ createdGte })) {
+    out.pulled++;
+    const r = await handlePaymentEvent(e, provider);
+    if (r === "processado") out.processed++;
+    else if (r === "repetido") out.duplicates++;
+    else if (r === "falhou") out.failed++;
   }
   return out;
 }

@@ -56,6 +56,8 @@ export const auditActionLabels: Record<string, string> = {
   "payments.checkout_abandoned": "Pagamento de teste abandonado",
   "payments.cancel_requested": "Cancelamento do plano pago agendado (teste)",
   "payments.mock_event": "Evento de pagamento simulado pela equipe",
+  "payments.plan_changed": "Plano pago trocado (teste)",
+  "payments.plan_change_failed": "Troca de plano pago não concluída (teste)",
   "commercial.overage_settings": "Excedente do plano alterado",
   "commercial.plan_change_scheduled": "Troca de plano agendada",
   "commercial.subscription_canceled": "Plano cancelado",

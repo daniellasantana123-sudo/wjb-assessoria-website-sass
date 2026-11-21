@@ -18,6 +18,8 @@ export interface PSubscription {
   customerId: string | null;
   currentPeriodEnd: number | null; // segundos
   cancelAtPeriodEnd: boolean;
+  priceId: string | null;
+  itemId: string | null;
 }
 export interface PInvoice {
   id: string;
@@ -68,21 +70,26 @@ export interface PaymentProvider {
   getSubscription(id: string): Promise<PSubscription>;
   getInvoice(id: string): Promise<PInvoice>;
   getCharge(id: string): Promise<PCharge>;
-  listOpenAgedSessions?(): Promise<string[]>;
+  /** Troca o preço da assinatura; a diferença proporcional é faturada na hora. Devolve a fatura gerada, se houver. */
+  changeSubscriptionPrice(input: { subscriptionId: string; newPriceId: string; idempotencyKey: string }): Promise<{ invoiceId: string | null }>;
+  /** Quanto será cobrado (ou creditado, se negativo) agora pela troca. */
+  previewPriceChange(input: { customerId: string; subscriptionId: string; newPriceId: string }): Promise<{ amountDueCents: number }>;
+  /** Eventos recentes no provedor (reserva para webhook perdido). */
+  listEvents(input: { createdGte: number }): Promise<PEvent[]>;
 }
 
-/** Eventos que o sistema trata; o resto é registrado como ignorado. */
+/**
+ * Só os eventos necessários (decisão da WJB, 21/11/2026). O webhook na
+ * Stripe deve assinar exatamente esta lista; o resto é registrado como
+ * ignorado. Criação de assinatura é coberta por `checkout.session.completed`
+ * + `customer.subscription.updated`; meios assíncronos (boleto/Pix) não são
+ * usados em assinatura.
+ */
 export const HANDLED_EVENTS = [
   "checkout.session.completed",
-  "checkout.session.async_payment_succeeded",
-  "checkout.session.async_payment_failed",
   "checkout.session.expired",
   "invoice.paid",
   "invoice.payment_failed",
-  "invoice.finalized",
-  "invoice.voided",
-  "invoice.marked_uncollectible",
-  "customer.subscription.created",
   "customer.subscription.updated",
   "customer.subscription.deleted",
   "charge.refunded",

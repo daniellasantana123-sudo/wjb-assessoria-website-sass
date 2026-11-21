@@ -91,3 +91,8 @@ Implementado em homologação: planos e assinaturas simulados (emissão sozinha 
 **Decidido pela WJB:** Stripe (Checkout, Billing e Customer Portal), com Link como opção de checkout acelerado.
 
 **Pendentes da WJB:** conta e chaves de teste da Stripe, colocadas no ambiente e não no chat (doc 47, A); Link disponível na conta; regra de inadimplência; cobrança agrupada da Nota Avulsa; contratos, tributação e ativação live (doc 47, B); 2º WhatsApp (oculto, não apagado); módulo `whatsapp-business` inativo (remover ou manter).
+
+## Continuação da Fase 9.1 (21/11/2026)
+**Decidido pela WJB:** Stripe e Link aprovados para testes; WhatsApp só Click-to-Chat no número principal; remover o aviso de lead pela Cloud API (feito) e usar Resend + aviso interno (feito).
+
+**Pendentes:** a WJB colocar as chaves de teste com `configurar-chaves.mjs` e rodar (ou pedir para rodar) `sandbox.sh`; URL pública de homologação para o webhook (ou Stripe CLI); confirmar a finalidade do (11) 97685-4842 (oculto, não apagado); itens de ativação comercial do doc 47, B.

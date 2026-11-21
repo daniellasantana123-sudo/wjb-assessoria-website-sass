@@ -7,7 +7,7 @@ import {
   overageSettingsAction,
   schedulePlanChangeAction,
 } from "@/actions/commercial";
-import { cancelPaidSubscriptionAction, cancelPendingCheckoutAction, openBillingPortalAction, startCheckoutAction } from "@/actions/payments";
+import { cancelPaidSubscriptionAction, cancelPendingCheckoutAction, changePaidPlanAction, openBillingPortalAction, startCheckoutAction } from "@/actions/payments";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ import {
 } from "@/lib/commercial/pricing";
 import { getComboDiscountBp, getTenantCommercial, listCatalog, listTenantInvoices } from "@/lib/commercial/repo";
 import { getPaymentsStatus } from "@/lib/payments/config";
+import { previewPaidPlanChange } from "@/lib/payments/service";
 import { getActiveTenant } from "@/lib/tenant";
 
 export const metadata: Metadata = { title: "Plano de emissão", robots: { index: false, follow: false } };
@@ -72,6 +73,8 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
   const paymentsOn = payments.enabled;
   const paid = !!sub && (sub.mode === "stripe_test" || sub.providerSubscriptionId !== null || ["pendente_pagamento", "ativa_teste", "inadimplente"].includes(sub.status));
   const invoices = paymentsOn && sub ? await listTenantInvoices(tenant.id) : [];
+  const trocaSku = typeof sp.troca === "string" && /^[a-z0-9_]{3,40}$/.test(sp.troca) ? sp.troca : null;
+  const changePreview = paymentsOn && isOwner && paid && trocaSku ? await previewPaidPlanChange(tenant.id, trocaSku).catch(() => ({ ok: false as const, error: "Não foi possível calcular a troca agora." })) : null;
 
   return (
     <Container className="flex flex-1 flex-col gap-6 py-16">
@@ -114,6 +117,11 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
       {sp.pagamento === "desistiu" ? (
         <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">
           Tentativa de pagamento encerrada. Nada foi cobrado.
+        </p>
+      ) : null}
+      {sp.trocado === "1" && sub ? (
+        <p role="status" className="border-success/40 bg-success/10 rounded-md border px-4 py-3 text-sm font-medium">
+          Plano trocado para {sub.planName ?? sub.sku} (ambiente de teste). A diferença proporcional entrou nas faturas.
         </p>
       ) : null}
       {sp.portal === "simulado" ? (
@@ -309,9 +317,43 @@ export default async function PortalPlanoPage({ searchParams }: PageProps<"/port
                   <h2 id="forma-pagamento" className="text-foreground mb-2 font-semibold">Forma de pagamento</h2>
                   <p className="text-muted-foreground mb-3 text-sm">
                     Troca de cartão e histórico de cobranças ficam no portal seguro do provedor de pagamento. A WJB não guarda dados de
-                    cartão. Troca de plano: fale com a equipe.
+                    cartão.
                   </p>
                   <AdminActionForm action={openBillingPortalAction} submitLabel="Gerenciar forma de pagamento" variant="outline" resetOnSuccess={false} />
+                  {sub.status === "ativa_teste" ? (
+                    <div className="border-border mt-4 border-t pt-4">
+                      <h3 className="text-foreground mb-2 text-sm font-semibold">Trocar de plano</h3>
+                      <form method="get" action="/portal/plano" className="flex flex-col gap-2">
+                        <Label htmlFor="troca">Novo plano</Label>
+                        <Select id="troca" name="troca" defaultValue={trocaSku ?? ""}>
+                          <option value="">Selecione</option>
+                          {emissionPlans
+                            .filter((p) => p.sku !== sub.sku && p.monthlyCents !== null && p.overageCents !== null && !isPerNotePlan(p))
+                            .map((p) => (
+                              <option key={p.id} value={p.sku}>{p.name}</option>
+                            ))}
+                        </Select>
+                        <button type="submit" className="border-border hover:bg-muted min-h-11 self-start rounded-md border px-4 text-sm font-medium">Ver valor da troca</button>
+                      </form>
+                      {changePreview && !changePreview.ok ? <p role="alert" className="text-danger mt-2 text-sm">{changePreview.error}</p> : null}
+                      {changePreview && changePreview.ok ? (
+                        <div className="mt-3">
+                          <p role="status" className="text-sm">
+                            Trocar para <strong>{changePreview.planName}</strong>: cobrança agora de{" "}
+                            <strong className="tabular-nums">{formatBrlCents(changePreview.amountDueCents)}</strong> (diferença proporcional ao
+                            restante do período). Depois, a mensalidade do novo plano.
+                          </p>
+                          <AdminActionForm action={changePaidPlanAction} submitLabel="Confirmar troca" resetOnSuccess={false}>
+                            <input type="hidden" name="sku" value={trocaSku ?? ""} />
+                            <label className="flex items-start gap-2 text-sm">
+                              <input type="checkbox" name="confirm" className="mt-1 size-4" required />
+                              Concordo com a cobrança mostrada acima.
+                            </label>
+                          </AdminActionForm>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </section>
               ) : (
               <section aria-labelledby="troca" className="border-border min-w-0 rounded-md border p-5">

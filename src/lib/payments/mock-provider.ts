@@ -76,7 +76,29 @@ export class MockPaymentProvider implements PaymentProvider {
   }
   async getSubscription(id: string): Promise<PSubscription> {
     const s = await load(id);
-    return { id, status: String(s.status), customerId: (s.customer as string) ?? null, currentPeriodEnd: (s.current_period_end as number) ?? null, cancelAtPeriodEnd: s.cancel_at_period_end === true };
+    return { id, status: String(s.status), customerId: (s.customer as string) ?? null, currentPeriodEnd: (s.current_period_end as number) ?? null, cancelAtPeriodEnd: s.cancel_at_period_end === true, priceId: (s.price as string) ?? null, itemId: `si_${id}` };
+  }
+  /** Proporcional simples pelo tempo restante do período (a Stripe calcula por segundo). */
+  private async prorate(subscriptionId: string, newPriceId: string) {
+    const sub = await load(subscriptionId);
+    const [oldP, newP] = await Promise.all([load(String(sub.price)), load(newPriceId)]);
+    const left = Math.max(0, Math.min(1, (Number(sub.current_period_end) - now()) / MONTH));
+    return { sub, amount: Math.round((Number(newP.unit_amount) - Number(oldP.unit_amount)) * left) };
+  }
+  async previewPriceChange({ subscriptionId, newPriceId }: { customerId: string; subscriptionId: string; newPriceId: string }) {
+    const { amount } = await this.prorate(subscriptionId, newPriceId);
+    return { amountDueCents: Math.max(0, amount) };
+  }
+  async changeSubscriptionPrice({ subscriptionId, newPriceId }: { subscriptionId: string; newPriceId: string; idempotencyKey: string }) {
+    const { sub, amount } = await this.prorate(subscriptionId, newPriceId);
+    await save(subscriptionId, "subscription", { ...sub, price: newPriceId });
+    if (amount <= 0) return { invoiceId: null }; // crédito fica para a próxima fatura
+    const invId = `in_mock_${randomUUID().slice(0, 12)}`;
+    await save(invId, "invoice", { id: invId, status: "paid", customer: sub.customer, subscription: subscriptionId, amount_due: amount, amount_paid: amount, period_start: now(), period_end: sub.current_period_end });
+    return { invoiceId: invId };
+  }
+  async listEvents() {
+    return []; // eventos simulados são tratados na hora
   }
   async getInvoice(id: string): Promise<PInvoice> {
     const s = await load(id);
@@ -107,7 +129,7 @@ export async function mockPayCheckout(sessionId: string, outcome: "aprovado" | "
   await save(invId, "invoice", { id: invId, status: "paid", customer: s.customer, subscription: subId, amount_due: price.unit_amount, amount_paid: price.unit_amount, period_start: t, period_end: t + MONTH });
   await save(sessionId, "checkout_session", { ...s, status: "complete", payment_status: "paid", subscription: subId });
   // Ordem diferente da natural de propósito: o tratador não depende da ordem.
-  return [evt("invoice.paid", invId), evt("checkout.session.completed", sessionId), evt("customer.subscription.created", subId)];
+  return [evt("invoice.paid", invId), evt("checkout.session.completed", sessionId), evt("customer.subscription.updated", subId)];
 }
 
 /** Renovação: paga ou com falha (cartão recusado na cobrança do mês seguinte). */

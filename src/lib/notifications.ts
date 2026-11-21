@@ -44,7 +44,8 @@ export type NotificationType =
   | "obligation.due_soon"
   | "fiscal_request.reviewed"
   | "fiscal_request.processed"
-  | "fiscal_alert";
+  | "fiscal_alert"
+  | "lead.created";
 
 const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   invitation: "Você foi convidado(a)",
@@ -63,6 +64,7 @@ const NOTIFICATION_TITLES: Record<NotificationType, string> = {
   "fiscal_request.reviewed": "Solicitação de NFS-e revisada",
   "fiscal_request.processed": "Solicitação de NFS-e processada",
   fiscal_alert: "Alerta da emissão fiscal",
+  "lead.created": "Novo contato pelo site",
 };
 
 interface NotificationRecipient {
@@ -603,4 +605,29 @@ export async function markAllNotificationsAsRead() {
     .update({ read_at: new Date().toISOString() })
     .eq("recipient_id", user.id)
     .is("read_at", null);
+}
+
+/**
+ * Novo lead (Fase 9.1): aviso in-app para a equipe ativa (todos os papéis
+ * leem Leads). Sem e-mail aqui (o e-mail com os dados já sai pelo Resend em
+ * `/api/leads`, para a caixa da WJB) e sem nome, e-mail ou telefone no
+ * texto: só o formulário de origem e o link para /admin/leads, que exige
+ * login da equipe.
+ */
+export async function notifyNewLead({ formContext }: { formContext: string }) {
+  const admin = createAdminClient();
+  const { data } = await admin.from("profiles").select("id, email, status").eq("is_wjb_staff", true);
+  const recipients: NotificationRecipient[] = (data ?? [])
+    .filter((row) => row.status !== "suspended")
+    .map((row) => ({ id: row.id, email: row.email }));
+  const origin = formContext.replace(/[^\p{L}\p{N} ()+\-.,:/]/gu, "").slice(0, 80) || "formulário do site";
+  await dispatchNotification({
+    recipients,
+    tenantId: null,
+    type: "lead.created",
+    body: `Novo contato recebido pelo site (${origin}). Veja os dados em Leads.`,
+    link: "/admin/leads",
+    metadataSanitized: { form_context: origin },
+    sendEmail: false,
+  });
 }

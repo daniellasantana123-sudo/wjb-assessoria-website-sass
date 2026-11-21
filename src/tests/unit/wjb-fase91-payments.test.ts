@@ -145,3 +145,44 @@ describe("inventário do WhatsApp (Fase 9.1)", () => {
     expect(getPublicWhatsAppPhones().map((p) => p.e164)).toEqual(["5511976146375"]);
   });
 });
+
+import { HANDLED_EVENTS } from "@/lib/payments/types";
+describe("troca de plano, prévia e eventos na Stripe (fetch falso)", () => {
+  const SKX = "sk_test_" + "a".repeat(24);
+  function seqFetch(replies: unknown[]) {
+    let i = 0;
+    return vi.fn(async (...args: [string, RequestInit?]) => (void args, new Response(JSON.stringify(replies[Math.min(i++, replies.length - 1)]), { status: 200 })));
+  }
+  const sub = { id: "sub_1", status: "active", items: { data: [{ id: "si_1", price: { id: "price_old" } }] } };
+  it("troca o preço do item com cobrança proporcional imediata e sem deixar assinatura incompleta", async () => {
+    const f = seqFetch([sub, { id: "sub_1", latest_invoice: "in_9" }]);
+    const r = await new StripeTestProvider(SKX, f as unknown as typeof fetch).changeSubscriptionPrice({ subscriptionId: "sub_1", newPriceId: "price_new", idempotencyKey: "k1" });
+    expect(r).toEqual({ invoiceId: "in_9" });
+    const body = decodeURIComponent(String(f.mock.calls[1][1]!.body));
+    expect(body).toContain("items[0][id]=si_1");
+    expect(body).toContain("items[0][price]=price_new");
+    expect(body).toContain("proration_behavior=always_invoice");
+    expect(body).toContain("payment_behavior=error_if_incomplete");
+  });
+  it("prévia usa a fatura futura com o mesmo comportamento de proporcional", async () => {
+    const f = seqFetch([sub, { amount_due: 3420 }]);
+    const r = await new StripeTestProvider(SKX, f as unknown as typeof fetch).previewPriceChange({ customerId: "cus_1", subscriptionId: "sub_1", newPriceId: "price_new" });
+    expect(r).toEqual({ amountDueCents: 3420 });
+    const url = decodeURIComponent(String(f.mock.calls[1][0]));
+    expect(url).toContain("/invoices/upcoming?");
+    expect(url).toContain("subscription_proration_behavior=always_invoice");
+    expect(f.mock.calls[1][1]!.method).toBe("GET");
+  });
+  it("lista só os eventos necessários, do mais antigo ao mais novo", async () => {
+    const f = seqFetch([{ data: [{ id: "evt_2", type: "invoice.paid", livemode: false, data: { object: { id: "in_2" } } }, { id: "evt_1", type: "charge.dispute.created", livemode: false, data: { object: { id: "dp_1", charge: "ch_1" } } }], has_more: false }]);
+    const evs = await new StripeTestProvider(SKX, f as unknown as typeof fetch).listEvents({ createdGte: 100 });
+    expect(evs.map((e) => e.id)).toEqual(["evt_1", "evt_2"]);
+    expect(evs[0].relatedChargeId).toBe("ch_1");
+    const url = decodeURIComponent(String(f.mock.calls[0][0]));
+    HANDLED_EVENTS.forEach((t, i) => expect(url).toContain(`types[${i}]=${t}`));
+    expect(url).toContain("created[gte]=100");
+  });
+  it("são exatamente 8 eventos de webhook", () => {
+    expect([...HANDLED_EVENTS].sort()).toEqual(["charge.dispute.created", "charge.refunded", "checkout.session.completed", "checkout.session.expired", "customer.subscription.deleted", "customer.subscription.updated", "invoice.paid", "invoice.payment_failed"]);
+  });
+});

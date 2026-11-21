@@ -1,7 +1,7 @@
 import "server-only";
 
 import { checkStripeKeys, STRIPE_API_VERSION, stripeKeysFromEnv } from "./config";
-import type { PaymentProvider, PCharge, PCheckoutSession, PInvoice, PSubscription } from "./types";
+import { HANDLED_EVENTS, type PaymentProvider, type PCharge, type PCheckoutSession, type PInvoice, type PSubscription } from "./types";
 
 /**
  * Provedor Stripe em MODO DE TESTE (Fase 9.1), pela API REST oficial
@@ -152,7 +152,51 @@ export class StripeTestProvider implements PaymentProvider {
       customerId: (s.customer as string) ?? null,
       currentPeriodEnd: (s.current_period_end as number) ?? null,
       cancelAtPeriodEnd: s.cancel_at_period_end === true,
+      priceId: ((s.items as { data?: { price?: { id?: string } }[] } | undefined)?.data?.[0]?.price?.id as string) ?? null,
+      itemId: ((s.items as { data?: { id?: string }[] } | undefined)?.data?.[0]?.id as string) ?? null,
     };
+  }
+
+  async changeSubscriptionPrice({ subscriptionId, newPriceId, idempotencyKey }: { subscriptionId: string; newPriceId: string; idempotencyKey: string }) {
+    const cur = await this.getSubscription(subscriptionId);
+    if (!cur.itemId) throw new Error("assinatura sem item");
+    const s = await this.call<{ latest_invoice?: string | null }>(
+      "POST",
+      `/subscriptions/${encodeURIComponent(subscriptionId)}`,
+      { items: [{ id: cur.itemId, price: newPriceId }], proration_behavior: "always_invoice", payment_behavior: "error_if_incomplete" },
+      idempotencyKey,
+    );
+    return { invoiceId: typeof s.latest_invoice === "string" ? s.latest_invoice : null };
+  }
+
+  async previewPriceChange({ customerId, subscriptionId, newPriceId }: { customerId: string; subscriptionId: string; newPriceId: string }) {
+    const cur = await this.getSubscription(subscriptionId);
+    if (!cur.itemId) throw new Error("assinatura sem item");
+    const inv = await this.call<{ amount_due: number }>("GET", "/invoices/upcoming", {
+      customer: customerId,
+      subscription: subscriptionId,
+      subscription_items: [{ id: cur.itemId, price: newPriceId }],
+      subscription_proration_behavior: "always_invoice",
+    });
+    return { amountDueCents: Number(inv.amount_due ?? 0) };
+  }
+
+  async listEvents({ createdGte }: { createdGte: number }) {
+    const out: import("./types").PEvent[] = [];
+    let startingAfter: string | undefined;
+    for (let page = 0; page < 3; page++) {
+      const r = await this.call<{ data: { id: string; type: string; livemode: boolean; data: { object: { id?: string; charge?: string } } }[]; has_more: boolean }>("GET", "/events", {
+        created: { gte: createdGte },
+        types: [...HANDLED_EVENTS],
+        limit: 100,
+        ...(startingAfter ? { starting_after: startingAfter } : {}),
+      });
+      for (const e of r.data)
+        out.push({ id: e.id, type: e.type, livemode: e.livemode, objectId: e.data?.object?.id ?? null, relatedChargeId: e.type.startsWith("charge.dispute.") ? (e.data?.object?.charge ?? null) : null });
+      if (!r.has_more || r.data.length === 0) break;
+      startingAfter = r.data[r.data.length - 1].id;
+    }
+    return out.reverse(); // mais antigos primeiro
   }
 
   async getInvoice(id: string): Promise<PInvoice> {

@@ -90,11 +90,31 @@ test("empresa B não abre o checkout da A", async ({ browser }) => {
   expect(res?.status()).toBe(404);
 });
 
+test("troca de plano pago: mostra o valor proporcional antes e só cobra depois do aceite", async ({ browser }) => {
+  const client = await login(browser, "CLIENTEA");
+  await client.goto("/portal/plano");
+  await client.getByLabel("Novo plano").selectOption("nfse_profissional");
+  await client.getByRole("button", { name: "Ver valor da troca" }).click();
+  await client.waitForURL(/troca=nfse_profissional/);
+  const preview = client.getByRole("status").filter({ hasText: "Trocar para Profissional" });
+  await expect(preview).toBeVisible();
+  expect(nb(await preview.innerText())).toMatch(/cobrança agora de R\$ \d+,\d{2}/);
+  const A = await tenantId("Empresa Ficticia A");
+  const { data: before } = await admin().from("commercial_subscriptions").select("plan_sku").eq("tenant_id", A).neq("status", "cancelada").single();
+  expect(before!.plan_sku).toBe("nfse_mei"); // só pré-visualizou
+  await client.getByLabel("Concordo com a cobrança mostrada acima.").check();
+  await client.getByRole("button", { name: "Confirmar troca" }).click();
+  await client.waitForURL(/trocado=1/);
+  await expect(client.getByText(/Plano trocado para Profissional/)).toBeVisible();
+  const { data: after } = await admin().from("commercial_subscriptions").select("plan_sku, quota, discount_bp, status").eq("tenant_id", A).neq("status", "cancelada").single();
+  expect(after).toMatchObject({ plan_sku: "nfse_profissional", quota: 50, discount_bp: 2000, status: "ativa_teste" });
+});
+
 test("renovação com falha deixa inadimplente (sem acesso); renovação paga reativa; estorno aparece na fatura", async ({ browser }) => {
   const sa = await login(browser, "SUPERADMIN");
   await sa.goto("/admin/pagamentos");
   await expect(sa.getByText("AMBIENTE DE TESTE · sem cobrança real")).toBeVisible();
-  const row = sa.getByRole("listitem").filter({ hasText: "Empresa Ficticia A · nfse_mei" });
+  const row = sa.getByRole("listitem").filter({ hasText: "Empresa Ficticia A · nfse_profissional" });
   await row.getByLabel(/Evento simulado/).selectOption("renovacao_falhou");
   await row.getByRole("button", { name: "Simular evento" }).click();
   await expect(sa.getByRole("status").filter({ hasText: /renovacao_falhou": processado, processado/ })).toBeVisible();
@@ -125,7 +145,7 @@ test("cancelamento pago agenda para o fim do período; cancelamento no provedor 
   await expect(client.getByText(/Cancelamento agendado: o plano termina em/)).toBeVisible();
   const sa = await login(browser, "SUPERADMIN");
   await sa.goto("/admin/pagamentos");
-  const row = sa.getByRole("listitem").filter({ hasText: "Empresa Ficticia A · nfse_mei" });
+  const row = sa.getByRole("listitem").filter({ hasText: "Empresa Ficticia A · nfse_profissional" });
   await row.getByLabel(/Evento simulado/).selectOption("cancelar_agora");
   await row.getByRole("button", { name: "Simular evento" }).click();
   await expect(sa.getByRole("status").filter({ hasText: /cancelar_agora": processado/ })).toBeVisible();

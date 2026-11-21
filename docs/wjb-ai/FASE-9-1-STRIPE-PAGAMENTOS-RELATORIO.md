@@ -106,3 +106,59 @@ Ver o plano de ativação (doc 47): conta e chaves de teste, Link, política de 
 | Rodapé e `/contato` (lista "WhatsApp") | 97614-6375 e **97685-4842** | **padronizado**: só o oficial é exibido (`publicWhatsApp` em `site.ts`). O segundo número **continua na configuração**, sem uso público, até a WJB decidir (reversível com uma linha) |
 | JSON-LD (`telephone`), aviso de lead, Área do Cliente, `LeadForm` | oficial | sem mudança |
 | `src/integrations/whatsapp-business` (aviso interno de novo lead pela Meta Cloud API) | oficial, como destino | **inativo** sem `WHATSAPP_ACCESS_TOKEN`/`WHATSAPP_PHONE_NUMBER_ID`. Existe desde o início do projeto. **Não removido** (é código do site em produção); decisão pendente da WJB, porque contraria "não usamos a Cloud API" se as variáveis forem configuradas |
+
+---
+
+# Continuação: decisões da WJB após a Fase 9.1 (21/11/2026)
+
+## A. Sandbox real da Stripe: pronto, **ainda não executado**
+As chaves de teste ainda não estão no ambiente (nenhuma variável `STRIPE_*` em `.env.homolog.local` nem em `.env.stripe.local`). **Nenhuma chamada foi feita à API da Stripe.** O que ficou pronto para rodar assim que as chaves forem colocadas:
+
+| Peça | Uso |
+| --- | --- |
+| `node scripts/wjb-ai/stripe/configurar-chaves.mjs` | lê cada chave da área de transferência do macOS (nada digitado nem exibido), recusa live, grava `.env.stripe.local` com permissão 600 (fora do Git) e limpa a área de transferência |
+| `bash scripts/wjb-ai/stripe/sandbox.sh` | roda `src/tests/sandbox/stripe-sandbox.test.ts` contra a **API real da Stripe em modo de teste** e o Supabase de homologação, usando o código do próprio serviço. Recusa chave live. Grava evidência só com contagens e status em `docs/wjb-ai/evidencias/f91/sandbox-resultado.json` |
+
+Roteiro do sandbox (11 passos, cartões de teste publicados pela Stripe, **Test Clocks** para o tempo):
+1. Checkout real: modo assinatura, BRL, R$ 19,92 (20% do combo calculado no servidor), meios oferecidos (registra se o Link aparece). Desistir expira a sessão.
+2. Pagamento aprovado (`pm_card_visa`): assinatura ativa, 1 fatura paga, direito de uso.
+3. Eventos repetidos sem efeito. Evento real assinado com o `whsec_` passa pelo webhook como "repetido"; corpo alterado dá 400.
+4. Renovação com Test Clock: 2ª fatura paga e período renovado.
+5. Troca de plano com prévia proporcional e cobrança da diferença.
+6. Renovação recusada (`pm_card_chargeCustomerFail`): em atraso, sem direito de uso. 7. Regularização com outro cartão: reativa.
+8. Estorno registrado na fatura. 9. Conciliação sem erro.
+10. Cancelamento no fim do período: segue ativo até a data; depois encerra.
+11. Cartão recusado já na contratação: nada é ativado.
+
+Limites assumidos: o checkout hospedado da Stripe **não** é preenchido por automação (a assinatura é criada pela API com cartão de teste, que equivale ao cliente concluir o checkout). Contestação real só pelo Dashboard. Sem URL pública de homologação, o sandbox lê os eventos pela API (`pullProviderEvents`, a mesma reserva usada na conciliação) em vez de recebê-los por webhook.
+
+## B. Implementado nesta continuação
+| Item | Onde |
+| --- | --- |
+| **Troca de plano pago**: o cliente vê **antes** o valor proporcional (`/v1/invoices/upcoming`), confirma, e a diferença é cobrada na hora (`always_invoice`, sem deixar assinatura incompleta). A assinatura local segue o **preço vigente na Stripe**, inclusive se a troca for feita pelo Customer Portal | `previewPaidPlanChange`, `changePaidPlan`, `planSnapshotForPrice` (service), `/portal/plano` |
+| **Só os eventos necessários**: 8 (`checkout.session.completed`, `checkout.session.expired`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`, `charge.dispute.created`). Antes eram 14 | `HANDLED_EVENTS` |
+| Busca de eventos no provedor como reserva (webhook perdido), dentro da conciliação | `pullProviderEvents` |
+| E2E simulado da troca: prévia sem alterar nada, confirmação, Profissional com franquia 50 e desconto mantido | `staging-payments.spec.ts` |
+
+## C. WhatsApp: auditoria do número secundário (11) 97685-4842
+| Verificação | Resultado |
+| --- | --- |
+| Origem | documento de conteúdo institucional fornecido pela WJB em 30/08/2026 ("2 WhatsApp reais"); no código desde o primeiro commit (`2ba7c761`) |
+| Função técnica | **nenhuma**: nenhuma integração, roteamento, notificação, JSON-LD ou formulário usa esse número; todos usam o principal |
+| Onde aparecia | rodapé, `/contato` e o manual do cliente (`/ajuda`), sempre rotulado "WhatsApp" |
+| Ação | comunicação **padronizada no principal** (+55 11 97614-6375) nesses três lugares. O contato **não foi apagado**: continua em `site.ts` com `publicWhatsApp: false` até a WJB confirmar a finalidade |
+
+## D. Avisos de novos leads
+- **Removido** `src/integrations/whatsapp-business` (Cloud API, nunca ligado) e as variáveis `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` e `WHATSAPP_LEAD_TEMPLATE_NAME`.
+- O aviso de lead continua: **e-mail pelo Resend** para a caixa da WJB, com os dados e `replyTo` do lead, como antes. **Novo:** um **aviso interno no Admin** (`notifyNewLead`) para a equipe ativa (suspensos não recebem), só para lead gravado, com link para `/admin/leads` (exige login da equipe) e **sem nome, e-mail ou telefone no texto**. Sem e-mail duplicado.
+- Testes: integração da rota (aviso só para lead gravado, sem dado pessoal) e unitário do aviso (destinatários, texto saneado, sem e-mail).
+
+## E. Testes desta continuação
+| Bateria | Resultado |
+| --- | --- |
+| Unitários | **598 passando** (21 da Fase 9.1, 1 do aviso de lead, +1 na integração de leads) |
+| TypeScript e lint | sem erros |
+| API da homologação | 56 / 14 / 12, 0 falhas |
+| E2E com login real: Fases 2-9 / pagamentos simulados (com troca de plano) / webhook | **40/40, 9/9, 2/2** |
+| Regressão com o build normal e tudo desligado | **96/96** |
+| Sandbox real da Stripe | **não executado** (sem chaves); a suíte se pula sozinha e o script se recusa a rodar sem `.env.stripe.local` |

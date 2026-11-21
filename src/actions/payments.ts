@@ -10,7 +10,7 @@ import { requireOwnerContext } from "@/lib/commercial/owner-context";
 import { createAdminClient } from "@/lib/db/supabase/admin";
 import { getPaymentsStatus, isPaymentsEnabled } from "@/lib/payments/config";
 import { mockCancelNow, mockPayCheckout, mockRefundOrDispute, mockRenewal } from "@/lib/payments/mock-provider";
-import { cancelPaidSubscription, cancelPendingCheckout, getProvider, handlePaymentEvent, openBillingPortal, reconcilePayments, startCheckout } from "@/lib/payments/service";
+import { cancelPaidSubscription, cancelPendingCheckout, changePaidPlan, getProvider, handlePaymentEvent, openBillingPortal, reconcilePayments, startCheckout } from "@/lib/payments/service";
 
 export interface PaymentActionState {
   error?: string;
@@ -65,6 +65,18 @@ export async function cancelPaidSubscriptionAction(_prev: PaymentActionState | u
   return { ok: "Cancelamento agendado para o fim do período já pago (ambiente de teste)." };
 }
 
+/** Troca de plano pago (a diferença proporcional é cobrada na hora; o valor foi mostrado antes). */
+export async function changePaidPlanAction(_prev: PaymentActionState | undefined, formData: FormData): Promise<PaymentActionState> {
+  if (!isPaymentsEnabled()) return { error: "Pagamentos indisponíveis." };
+  const ctx = await requireOwnerContext("payments");
+  if ("error" in ctx) return ctx;
+  if (formData.get("confirm") !== "on") return { error: "Confirme o valor da troca." };
+  const r = await changePaidPlan({ userId: ctx.session.userId, tenantId: ctx.tenantId, sku: String(formData.get("sku") ?? "") });
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/portal/plano");
+  redirect(`/portal/plano?trocado=1`);
+}
+
 /** Checkout SIMULADO: só o responsável da empresa dona da sessão, só com provedor simulado. */
 export async function mockPayAction(sessionId: string, outcome: "aprovado" | "recusado"): Promise<PaymentActionState> {
   if (getPaymentsStatus().provider !== "mock" || !isPaymentsEnabled()) return { error: "Disponível só no pagamento simulado." };
@@ -90,7 +102,7 @@ export async function adminReconcileAction(): Promise<PaymentActionState> {
   if (!isPaymentsEnabled() || !(await superAdmin())) return { error: "Sem permissão." };
   const r = await reconcilePayments();
   revalidatePath("/admin/pagamentos");
-  return { ok: `Conciliação: ${r.checkouts} checkout(s), ${r.subscriptions} assinatura(s), ${r.retried} evento(s) reprocessado(s), ${r.errors} erro(s).` };
+  return { ok: `Conciliação: ${r.checkouts} checkout(s), ${r.subscriptions} assinatura(s), ${r.pulled} evento(s) conferido(s) no provedor, ${r.retried} reprocessado(s), ${r.errors} erro(s).` };
 }
 
 const MOCK_EVENTS = ["renovacao_paga", "renovacao_falhou", "estorno", "contestacao", "cancelar_agora"] as const;

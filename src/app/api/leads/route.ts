@@ -5,9 +5,9 @@ import { leadFormSchema, newsletterFormSchema } from "@/lib/validation/lead";
 import { createClient, isSupabaseConfigured } from "@/lib/db/supabase/server";
 import { getEmailAdapter } from "@/integrations/email";
 import { renderNotificationEmail } from "@/integrations/email/templates";
-import { getWhatsAppBusinessAdapter } from "@/integrations/whatsapp-business";
 import { siteConfig } from "@/config/site";
 import { getSiteUrl } from "@/lib/seo/site-url";
+import { notifyNewLead } from "@/lib/notifications";
 
 /**
  * 503 + `code` legível por máquina (2026-09-23) - o cliente precisa
@@ -36,8 +36,8 @@ function storageUnavailable(reason: "not_configured" | "write_failed") {
  * só staff — ver `0010_leads_table.sql`). Provider de e-mail escolhido em
  * 2026-09-17 (Resend, seção 36) — notifica o time WJB por e-mail além de
  * gravar no banco (só pra lead de verdade, não newsletter — ver abaixo).
- * WhatsApp (Meta WhatsApp Business Platform, escolhido em 2026-09-18) avisa
- * o mesmo time por template aprovado, ver abaixo. CRM foi cancelado pelo
+ * Também cria um aviso interno no Admin para a equipe (Fase 9.1; o aviso
+ * pela WhatsApp Cloud API foi removido). CRM foi cancelado pelo
  * usuário em 2026-09-18 — fora do escopo da FASE 5 (`docs/api/integrations.md`).
  *
  * `formContext === "Newsletter"` valida contra um schema menor
@@ -222,27 +222,16 @@ export async function POST(request: Request) {
   }
 
   /**
-   * Best-effort, mesmo racional do e-mail acima. Sem
-   * `WHATSAPP_LEAD_TEMPLATE_NAME` configurada (template ainda não criado/
-   * aprovado no Meta Business Manager), não tenta enviar — a Cloud API
-   * exige um template pré-aprovado pra mensagem business-initiated (fora da
-   * janela de 24h), então não há um nome de template genérico pra chutar
-   * aqui. Ver `docs/api/integrations.md`.
+   * Aviso interno no Admin (Fase 9.1, 21/11/2026): substitui o aviso pela
+   * WhatsApp Cloud API (removido; a WJB não usa a Cloud API). Só para lead
+   * gravado (o link abre o registro em /admin/leads, que exige login da
+   * equipe) e sem dado pessoal no texto. Best-effort: nunca derruba o envio.
    */
-  const whatsappTemplateName = process.env.WHATSAPP_LEAD_TEMPLATE_NAME;
-  const notifyPhone = siteConfig.contact.phones[0];
-  if (whatsappTemplateName && notifyPhone) {
+  if (persisted && !isNewsletter) {
     try {
-      await getWhatsAppBusinessAdapter().sendTemplate({
-        to: notifyPhone.e164,
-        templateName: whatsappTemplateName,
-        bodyParams: [result.data.name, result.data.serviceInterest],
-      });
-    } catch (sendError) {
-      console.error(
-        "[leads] falha ao enviar WhatsApp de novo lead:",
-        sendError,
-      );
+      await notifyNewLead({ formContext: result.data.formContext });
+    } catch (notifyError) {
+      console.error("[leads] falha ao criar aviso interno de novo lead:", notifyError);
     }
   }
 

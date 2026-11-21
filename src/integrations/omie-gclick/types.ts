@@ -244,7 +244,7 @@ export interface ProviderError {
 }
 
 /**
- * Mesmo padrão já consolidado no projeto (`email`, `whatsapp-business`,
+ * Mesmo padrão já consolidado no projeto (`email`,
  * `antivirus`): adapter NUNCA lança exceção, sempre resolve com um
  * resultado tipado. Preferido aqui em vez do estilo de exceções do
  * exemplo conceitual do prompt - ver `decisions.md` D1.

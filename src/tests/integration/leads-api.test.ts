@@ -16,6 +16,10 @@ vi.mock("@/lib/db/supabase/server", () => ({
   }),
 }));
 
+// Aviso interno de novo lead (Fase 9.1): substituiu o aviso pela WhatsApp Cloud API.
+const notifyNewLeadMock = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/lib/notifications", () => ({ notifyNewLead: (...a: unknown[]) => notifyNewLeadMock(...a) }));
+
 const { POST } = await import("@/app/api/leads/route");
 
 /**
@@ -178,5 +182,17 @@ describe("POST /api/leads", () => {
     expect(response.status).toBe(503);
     const json = await response.json();
     expect(json.code).toBe("storage_unavailable");
+  });
+
+  it("cria o aviso interno só para lead gravado, sem dado pessoal", async () => {
+    notifyNewLeadMock.mockClear();
+    await POST(makeRequest(validPayload));
+    expect(notifyNewLeadMock).toHaveBeenCalledTimes(1);
+    expect(notifyNewLeadMock).toHaveBeenCalledWith({ formContext: "Contato" });
+    expect(JSON.stringify(notifyNewLeadMock.mock.calls)).not.toMatch(/maria|11999998888/i);
+    notifyNewLeadMock.mockClear();
+    insertMock.mockResolvedValueOnce({ error: { message: "boom" } });
+    await POST(makeRequest(validPayload));
+    expect(notifyNewLeadMock).not.toHaveBeenCalled();
   });
 });
