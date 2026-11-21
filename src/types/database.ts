@@ -492,6 +492,48 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      commercial_plans: {
+        Row: { id: string; sku: string; product: string; name: string; description: string; monthly_cents: number | null; quota: number | null; overage_cents: number | null; status: string; version: number; updated_by: string | null; updated_at: string };
+        Insert: { id?: string; sku: string; product: string; name: string; description?: string; monthly_cents?: number | null; quota?: number | null; overage_cents?: number | null; status?: string };
+        Update: Partial<Database["public"]["Tables"]["commercial_plans"]["Insert"]>;
+        Relationships: [];
+      };
+      commercial_plan_changes: {
+        Row: { id: number; plan_id: string; changed_by: string | null; before: Record<string, unknown> | null; after: Record<string, unknown>; changed_at: string };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      commercial_settings: {
+        Row: { key: string; value: unknown; updated_by: string | null; updated_at: string };
+        Insert: { key: string; value: unknown; updated_by?: string | null };
+        Update: { value?: unknown; updated_by?: string | null };
+        Relationships: [];
+      };
+      commercial_accounts: {
+        Row: { tenant_id: string; relationship: string; created_at: string };
+        Insert: { tenant_id: string; relationship: string };
+        Update: { relationship?: string };
+        Relationships: [];
+      };
+      commercial_subscriptions: {
+        Row: { id: string; tenant_id: string; plan_id: string; mode: string; plan_sku: string; monthly_cents: number | null; quota: number | null; overage_cents: number | null; discount_bp: number; status: string; cycle_start: string; cycle_end: string; overage_authorized: boolean; spending_limit_cents: number | null; pending_plan_id: string | null; created_by: string | null; created_at: string; canceled_at: string | null; cancel_reason: string | null };
+        Insert: { id?: string; tenant_id: string; plan_id: string; plan_sku: string; monthly_cents?: number | null; quota?: number | null; overage_cents?: number | null; discount_bp?: number; status?: string; cycle_start: string; cycle_end: string; overage_authorized?: boolean; spending_limit_cents?: number | null; pending_plan_id?: string | null; created_by?: string | null; canceled_at?: string | null; cancel_reason?: string | null };
+        Update: Partial<Database["public"]["Tables"]["commercial_subscriptions"]["Insert"]>;
+        Relationships: [];
+      };
+      commercial_acceptances: {
+        Row: { id: number; tenant_id: string; subscription_id: string | null; user_id: string | null; document: string; document_version: string; accepted_at: string };
+        Insert: { tenant_id: string; subscription_id?: string | null; user_id?: string | null; document: string; document_version: string };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      commercial_usage_ledger: {
+        Row: { id: number; tenant_id: string; subscription_id: string | null; request_id: string; kind: string; billable: boolean; cycle_start: string; created_at: string };
+        Insert: { tenant_id: string; subscription_id?: string | null; request_id: string; kind: string; billable?: boolean; cycle_start: string };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       fiscal_certificate_usage: {
         Row: {
           id: number;
@@ -829,6 +871,7 @@ export interface Database {
         Args: { p_tenant_id: string; p_environment: string; p_emitter_document: string; p_series: number };
         Returns: string;
       };
+      has_entitlement: { Args: { p_tenant_id: string; p_feature: string }; Returns: boolean };
       allocate_dps_number: {
         Args: { p_request_id: string; p_environment: string };
         Returns: { series: number; number: number; emitter_document: string }[];

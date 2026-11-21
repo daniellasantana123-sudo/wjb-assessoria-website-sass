@@ -1,6 +1,8 @@
 import "server-only";
 
+import { cycleFor } from "@/lib/commercial/pricing";
 import { createAdminClient } from "@/lib/db/supabase/admin";
+import { toIsoDate } from "@/lib/reports/period";
 import { notifyFiscalRequestEvent } from "@/lib/notifications";
 import type { NormalizedNfseDraft } from "@/lib/wjb-ai/fiscal/draft";
 import type { QueueJob, QueueRepo } from "@/lib/wjb-ai/fiscal/queue";
@@ -12,6 +14,32 @@ const QUEUE_STATES: FiscalStatus[] = [
 ];
 
 /** Repositório da fila: só o servidor (service role) escreve. */
+/**
+ * Consumo SIMULADO no ledger comercial (Fase 8): uma linha por pedido, nunca
+ * faturável (o banco recusa). Sem a migration 0030, ou sem assinatura, segue
+ * sem registrar: consumo nunca bloqueia o processamento da fila.
+ */
+async function recordSimulatedUsage(tenantId: string, requestId: string) {
+  try {
+    const admin = createAdminClient();
+    const { data: sub } = await admin
+      .from("commercial_subscriptions")
+      .select("id, cycle_start")
+      .eq("tenant_id", tenantId)
+      .neq("status", "cancelada")
+      .maybeSingle();
+    const cycleStart = sub?.cycle_start ?? cycleFor(toIsoDate(new Date())).start;
+    await admin
+      .from("commercial_usage_ledger")
+      .upsert(
+        { tenant_id: tenantId, subscription_id: sub?.id ?? null, request_id: requestId, kind: "simulada", billable: false, cycle_start: cycleStart },
+        { onConflict: "request_id,kind", ignoreDuplicates: true },
+      );
+  } catch {
+    /* sem tabela comercial neste ambiente: não registra */
+  }
+}
+
 export function createSupabaseQueueRepo(
   environment: "mock" | "homologacao" | "producao",
 ): QueueRepo {
@@ -85,6 +113,7 @@ export function createSupabaseQueueRepo(
 
     async notifyOutcome(job, outcome, simulated) {
       if (!simulated) return; // Resultado oficial terá aviso próprio quando houver conector real.
+      if (outcome === "AUTORIZADA") await recordSimulatedUsage(job.tenantId, job.id);
       await notifyFiscalRequestEvent({
         tenantId: job.tenantId,
         actorId: null,

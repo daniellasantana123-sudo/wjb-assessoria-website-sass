@@ -1,0 +1,7366 @@
+{
+ "geradoEm": "2026-11-21T16:53:11.897Z",
+ "ambiente": "build local de staging (homologação), Chromium com emulação",
+ "rows": [
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 15,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 15,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 15,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 15x16",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 10,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 10,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 10,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"(11) 9 7614-6375\" 97x20",
+    "a \"(11) 9 7685-4842\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 6,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"(11) 9 7614-6375\" 97x20",
+    "a \"(11) 9 7685-4842\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 13,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 13,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 13,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"contato@wjbassessoriacontabil.\" 234x20",
+    "a \"(11) 9 7614-6375\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 11,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 11,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 11,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 10,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 10,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 10,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 222x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 262x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 277x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 292x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 295x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 316x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 332x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 382x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 382x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 382x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 382x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/sobre",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/sobre",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/sobre",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/sobre",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/como-funciona",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/como-funciona",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/como-funciona",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/como-funciona",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solucoes",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solucoes",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solucoes",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solucoes",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contabilidade-digital",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contabilidade-digital",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contabilidade-digital",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/contabilidade-digital",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/armel-x-tecnologia",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/armel-x-tecnologia",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/armel-x-tecnologia",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/armel-x-tecnologia",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/duvidas",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Ver como funciona\" 110x20",
+    "a \"Conhecer o serviço\" 112x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/duvidas",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Ver como funciona\" 110x20",
+    "a \"Conhecer o serviço\" 112x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/duvidas",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Ver como funciona\" 110x20",
+    "a \"Conhecer o serviço\" 112x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/duvidas",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 14,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/blog",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/conteudos",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/conteudos",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/conteudos",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/conteudos",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solicitar-proposta",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solicitar-proposta",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 16x16",
+    "a \"Política de Privacidade\" 133x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solicitar-proposta",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 16x16",
+    "a \"Política de Privacidade\" 133x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/solicitar-proposta",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 10,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/termos",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/termos",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/termos",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/termos",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/cookies",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/cookies",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/cookies",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/cookies",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/politica-de-privacidade",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/politica-de-privacidade",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/politica-de-privacidade",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/politica-de-privacidade",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/ajuda",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 0,
+   "smallTargetSamples": [],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/ajuda",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 0,
+   "smallTargetSamples": [],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/ajuda",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 0,
+   "smallTargetSamples": [],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/ajuda",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 0,
+   "smallTargetSamples": [],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/mei",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/mei",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/mei",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/mei",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/simples-nacional",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/simples-nacional",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/simples-nacional",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/simples-nacional",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/lucro-presumido",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/lucro-presumido",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/lucro-presumido",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Planos\" 40x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/planos/lucro-presumido",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/trocar-de-contador",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/trocar-de-contador",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/trocar-de-contador",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/trocar-de-contador",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 11,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/consultoria-contabil",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/consultoria-contabil",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/consultoria-contabil",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/servicos/consultoria-contabil",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 11,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/recuperar-senha",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/recuperar-senha",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/recuperar-senha",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/recuperar-senha",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/pagina-que-nao-existe",
+   "viewport": "320x568",
+   "status": 404,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/pagina-que-nao-existe",
+   "viewport": "390x844",
+   "status": 404,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/pagina-que-nao-existe",
+   "viewport": "768x1024",
+   "status": 404,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público",
+   "route": "/pagina-que-nao-existe",
+   "viewport": "1280x800",
+   "status": 404,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 7,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "button \"Empresa\" 72x20",
+    "button \"Serviços\" 70x20",
+    "button \"Soluções\" 73x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Conhecer nossos serviços\" 151x20",
+    "a \"Já sou cliente → Área do Clien\" 189x20",
+    "a \"Ver como funciona\" 110x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/planos",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/emissao-de-notas",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "input \"\" 13x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/contato",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"(11) 9 7614-6375\" 97x20",
+    "a \"(11) 9 7685-4842\" 97x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Serviços\" 49x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20",
+    "a \"Blog\" 26x20",
+    "a \"← Voltar para o blog\" 119x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/login",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Esqueci minha senha\" 222x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "público (banner de cookies)",
+   "route": "/area-do-cliente",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Home\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Ver documentos\" 83x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver documentos\" 83x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 13x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 14x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 5,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "input \"\" 16x16",
+    "input \"\" 16x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20",
+    "button \"Marcar todas como lidas\" 142x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Ver todas\" 47x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Portal\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 254x20",
+    "summary \"Editar\" 254x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 294x20",
+    "summary \"Editar\" 294x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 309x20",
+    "summary \"Editar\" 309x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 324x20",
+    "summary \"Editar\" 324x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 327x20",
+    "summary \"Editar\" 327x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 348x20",
+    "summary \"Editar\" 348x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 364x20",
+    "summary \"Editar\" 364x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 686x20",
+    "summary \"Editar\" 686x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 738x20",
+    "summary \"Editar\" 738x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 670x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 926x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 1054x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 9,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 1054x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 8,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "summary \"Editar\" 762x20",
+    "summary \"Editar\" 762x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "input \"\" 13x13"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 20,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Revogar\" 212x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 20,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Revogar\" 252x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 267x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 282x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 285x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 306x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 322x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 644x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 696x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 31,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 31,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 31,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 31,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 30,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20",
+    "summary \"Preencher cadastro fiscal dest\" 720x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 1,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 2,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20"
+   ],
+   "zoomBlocked": false
+  }
+ ],
+ "axe": [
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/planos",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/emissao-de-notas",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/contato",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos/abrir-empresa",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/blog/reforma-tributaria-como-preparar-empresa",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/login",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/area-do-cliente",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/sobre",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/sobre",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/como-funciona",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/como-funciona",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/solucoes",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/solucoes",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/contabilidade-digital",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/contabilidade-digital",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/armel-x-tecnologia",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/armel-x-tecnologia",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/duvidas",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/duvidas",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/blog",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/blog",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/conteudos",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/conteudos",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/solicitar-proposta",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/solicitar-proposta",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/termos",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/termos",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/cookies",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/cookies",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/politica-de-privacidade",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/politica-de-privacidade",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/ajuda",
+   "viewport": "390x844",
+   "violations": [
+    "color-contrast (serious, 1)"
+   ]
+  },
+  {
+   "area": "público",
+   "route": "/ajuda",
+   "viewport": "1280x800",
+   "violations": [
+    "color-contrast (serious, 1)"
+   ]
+  },
+  {
+   "area": "público",
+   "route": "/planos/mei",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/planos/mei",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/planos/simples-nacional",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/planos/simples-nacional",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/planos/lucro-presumido",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/planos/lucro-presumido",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos/trocar-de-contador",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos/trocar-de-contador",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos/consultoria-contabil",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/servicos/consultoria-contabil",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/recuperar-senha",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/recuperar-senha",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/pagina-que-nao-existe",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "público",
+   "route": "/pagina-que-nao-existe",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/plano",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/nova",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/nfse/assistente",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/documentos",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/obrigacoes",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/notificacoes",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/relatorios",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "portal",
+   "route": "/portal/suporte",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/comercial",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/whatsapp",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/perfis",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/empresas",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/leads",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/logs",
+   "viewport": "1280x800",
+   "violations": []
+  }
+ ]
+}

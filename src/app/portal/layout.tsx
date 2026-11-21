@@ -9,7 +9,9 @@ import { AppMobileNav } from "@/components/app-shell/app-mobile-nav";
 import { AppSidebarNav } from "@/components/app-shell/app-sidebar-nav";
 import { requireSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { isCommercialEnabled } from "@/lib/commercial/config";
 import { getActiveTenant, getMyOrganizations } from "@/lib/tenant";
+import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 
 /**
  * App shell do Portal do Cliente (SAAS FASE 2/4) — sidebar de navegação
@@ -26,6 +28,11 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
     getActiveTenant(session.userId),
   ]);
   const unreadCount = await getUnreadNotificationCount();
+  // Itens novos só aparecem com o respectivo módulo ligado (desligados por padrão).
+  const enabledFeatures = [
+    ...(isWjbAiEnabled() ? ["wjb_ai"] : []),
+    ...(isCommercialEnabled() ? ["commercial"] : []),
+  ];
   const switcher = activeTenant ? (
     <OrganizationSwitcher
       organizations={organizations}
@@ -41,7 +48,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
           <Logo href="/portal" className="h-9 w-auto" />
         </div>
 
-        <AppSidebarNav area="portal" unreadCount={unreadCount} />
+        <AppSidebarNav area="portal" unreadCount={unreadCount} enabledFeatures={enabledFeatures} />
 
         <div className="border-border flex flex-col gap-3 border-t p-4">
           {switcher}
@@ -69,7 +76,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
 
       <header className="border-border bg-background sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 lg:hidden">
         <div className="flex items-center gap-2">
-          <AppMobileNav area="portal" unreadCount={unreadCount} organizationSwitcher={switcher} />
+          <AppMobileNav area="portal" unreadCount={unreadCount} organizationSwitcher={switcher} enabledFeatures={enabledFeatures} />
           <Logo href="/portal" className="h-8 w-auto" />
         </div>
         <LogoutButton />

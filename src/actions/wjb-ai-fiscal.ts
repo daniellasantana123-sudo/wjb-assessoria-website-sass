@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 
 import { requireSession } from "@/lib/auth/dal";
 import { toIsoDate } from "@/lib/reports/period";
+import { isEntitlementEnforced } from "@/lib/commercial/config";
+import { canConsume } from "@/lib/commercial/pricing";
+import { getTenantCommercial, hasEntitlement } from "@/lib/commercial/repo";
 import { isRateLimited } from "@/lib/security/rate-limit";
 import { getActiveTenant } from "@/lib/tenant";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
@@ -89,6 +92,12 @@ export async function submitNfseAction(
   const tenant = session.isWjbStaff
     ? null
     : await getActiveTenant(session.userId);
+  // Fase 8: com a exigência ligada, pedir NFS-e depende de plano ativo e de
+  // franquia/excedente autorizado. Decisão no servidor, nunca na tela.
+  if (tenant && isEntitlementEnforced()) {
+    const blocked = await entitlementBlock(tenant.id);
+    if (blocked) return { error: blocked };
+  }
   const result = await submitFiscalRequest({
     session,
     tenant,
@@ -127,4 +136,18 @@ export async function correctNfseAction(
   });
   if (!result.ok) return { error: result.error, fields: result.fields };
   redirect(`/portal/nfse/${requestId}?corrigida=1`);
+}
+
+async function entitlementBlock(tenantId: string): Promise<string | null> {
+  if (!(await hasEntitlement(tenantId, "nfse")))
+    return "Sua empresa não tem um plano de emissão ativo. Veja em Portal > Plano.";
+  const c = await getTenantCommercial(tenantId);
+  const d = canConsume(c.subscription, c.usedSimulated + c.usedBillable);
+  if (d.allowed) return null;
+  return {
+    sem_assinatura_ativa: "Sua empresa não tem um plano de emissão ativo.",
+    excedente_nao_autorizado: "A franquia do mês acabou. Autorize o excedente em Portal > Plano para continuar.",
+    limite_de_gasto: "O limite de gasto com excedente foi atingido. Ajuste em Portal > Plano.",
+    sob_proposta: "Plano sob proposta: fale com a equipe comercial.",
+  }[d.reason];
 }

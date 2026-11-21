@@ -21,10 +21,13 @@ const trackingSchema = z.object({
  * abrir empresa, trocar de contador, diagnóstico, newsletter) — seção 19.
  * Validado no cliente (react-hook-form) e no servidor (route handler).
  */
+/** Pré-cadastro da emissão de notas (Fase 8): o único formulário com telefone opcional. */
+export const NFSE_PRE_REGISTRATION_CONTEXT = "Emissão de notas - pré-cadastro";
+
 export const leadFormSchema = z.object({
   name: z.string().trim().min(2, "Informe seu nome completo."),
   email: z.string().trim().email("Informe um e-mail válido."),
-  phone: z.string().trim().min(8, "Informe um WhatsApp válido."),
+  phone: z.string().trim(),
   company: z.string().trim().optional().or(z.literal("")),
   cnpj: z.string().trim().optional().or(z.literal("")),
   city: z.string().trim().optional().or(z.literal("")),
@@ -43,6 +46,12 @@ export const leadFormSchema = z.object({
   submissionId: z.string().uuid().optional(),
   /** Campo-armadilha invisível: pessoas não preenchem, robôs costumam preencher. */
   website: z.string().max(200).optional(),
+}).superRefine((v, ctx) => {
+  // Telefone continua obrigatório em todos os formulários; no pré-cadastro de
+  // emissão é opcional, mas se vier precisa ser válido.
+  const optional = v.formContext === NFSE_PRE_REGISTRATION_CONTEXT;
+  if ((!optional || v.phone !== "") && v.phone.length < 8)
+    ctx.addIssue({ code: "custom", path: ["phone"], message: "Informe um WhatsApp válido." });
 });
 
 export type LeadFormValues = z.infer<typeof leadFormSchema>;

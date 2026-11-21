@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { PlansGrid } from "@/components/plans/PlansGrid";
+import { isCommercialEnabled } from "@/lib/commercial/config";
 import { JsonLd } from "@/components/shared/json-ld";
 import { RevealOnScroll, RevealStagger } from "@/components/shared/reveal-on-scroll";
 import { buttonVariants } from "@/components/ui/button";
@@ -75,6 +76,21 @@ export default function PlansPage() {
           </div>
         ))}
       </RevealStagger>
+
+      {isCommercialEnabled() ? (
+        <section aria-labelledby="emissao-planos" className="border-border mt-16 rounded-md border p-5 sm:p-6">
+          <p className="text-primary text-sm font-medium tracking-wide uppercase">Emissão de notas · em preparação</p>
+          <h2 id="emissao-planos" className="mt-1 text-2xl font-bold tracking-tight">Só precisa emitir notas de serviço?</h2>
+          <p className="text-muted-foreground mt-2 max-w-2xl">
+            A emissão de NFS-e pode ser contratada sozinha (ideal para MEI) ou somada à contabilidade completa, com desconto
+            para clientes de contabilidade. O emissor público é gratuito: a WJB cobra pela conveniência, suporte e automação.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/emissao-de-notas" className={buttonVariants({ variant: "cta" })}>Quero emitir notas</Link>
+            <Link href="/emissao-de-notas#lista" className={buttonVariants({ variant: "outline" })}>Entrar na lista de interesse</Link>
+          </div>
+        </section>
+      ) : null}
 
       <p className="text-muted-foreground mx-auto mt-10 max-w-2xl text-center text-sm">
         O valor da mensalidade varia conforme atividade, faturamento, número de sócios,

@@ -29,7 +29,7 @@ export function PortalStatCard({
           className={cn(
             "mt-1 text-xs font-medium",
             noteTone === "danger" && "text-danger",
-            noteTone === "success" && "text-success",
+            noteTone === "success" && "text-success-text",
             noteTone === "neutral" && "text-muted-foreground",
           )}
         >

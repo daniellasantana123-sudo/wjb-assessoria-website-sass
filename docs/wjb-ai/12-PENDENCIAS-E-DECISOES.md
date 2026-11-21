@@ -76,3 +76,8 @@ Resolvido em homologação: assinatura XMLDSig real (RSA-SHA1, C14N) verificada 
 
 ## Atualização de 21/11/2026 (certificado da WJB)
 Preparado: verificação local do PFX sem rede (`scripts/wjb-ai/certificado/verificar-certificado.mjs`), leitura autenticada só de documentação (`national/sefin-readonly.ts`) e bloqueio da assinatura real até o algoritmo ser confirmado. Pendências da WJB: avaliação de comprometimento, relatório do script, e-CNPJ (não e-CPF), cofre, autorização escrita da primeira leitura (doc 31, seção 7).
+
+## Atualização da Fase 8 (21/11/2026) - ver 34 a 40
+Implementado em homologação: planos e assinaturas simulados (emissão sozinha ou em combo com a contabilidade), consumo não faturável, WhatsApp simulado, auditoria responsiva e de acessibilidade.
+
+**Decisões da WJB:** preços, franquias e desconto do combo (todos em rascunho, doc 35); texto dos 4 aceites com revisão jurídica; premissas de custo; publicar ou não `/emissao-de-notas`; titularidade, uso atual e autorização para registrar o número do WhatsApp na Cloud API (doc 36); teste em aparelhos reais e em Firefox/Safari (doc 37).

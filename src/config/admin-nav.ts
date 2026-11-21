@@ -1,4 +1,6 @@
 import {
+  MessagesSquare,
+  Tags,
   Bell,
   Building2,
   Contact,
@@ -28,6 +30,8 @@ export const adminNavItems: PortalNavItem[] = [
   { href: "/admin/leads", label: "Leads", icon: Contact },
   // WJB AI: só com o módulo ligado e para quem tem leitura fiscal (ver admin/layout.tsx).
   { href: "/admin/nfse", label: "NFS-e (simulação)", icon: FileText, feature: "wjb_ai" },
+  { href: "/admin/comercial", label: "Comercial (simulação)", icon: Tags, feature: "commercial" },
+  { href: "/admin/whatsapp", label: "WhatsApp (canal)", icon: MessagesSquare, feature: "commercial" },
   { href: "/admin/usuarios", label: "Usuários", icon: Users },
   { href: "/admin/integracoes", label: "Integrações", icon: Plug },
   { href: "/admin/logs", label: "Logs", icon: ScrollText },

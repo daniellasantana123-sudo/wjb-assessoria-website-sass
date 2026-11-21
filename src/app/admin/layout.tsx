@@ -8,6 +8,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import { Logo } from "@/components/navigation/logo";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getUnreadNotificationCount } from "@/lib/notifications";
+import { isCommercialEnabled } from "@/lib/commercial/config";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import { hasWjbAiPermission } from "@/lib/wjb-ai/permissions";
 
@@ -29,8 +30,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const who = session.fullName ?? session.email;
   const role = session.staffRole ? roleLabels[session.staffRole] ?? session.staffRole : null;
   // Item "NFS-e" só com o módulo ligado e para quem pode ler pedidos fiscais.
-  const enabledFeatures =
-    isWjbAiEnabled() && hasWjbAiPermission(session, "fiscal.request.read") ? ["wjb_ai"] : [];
+  const enabledFeatures = [
+    ...(isWjbAiEnabled() && hasWjbAiPermission(session, "fiscal.request.read") ? ["wjb_ai"] : []),
+    ...(isCommercialEnabled() ? ["commercial"] : []),
+  ];
 
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">

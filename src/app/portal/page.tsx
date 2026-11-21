@@ -193,7 +193,7 @@ export default async function PortalPage() {
               Ver documentos
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Obrigações por categoria">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-muted-foreground text-xs tracking-wide uppercase">

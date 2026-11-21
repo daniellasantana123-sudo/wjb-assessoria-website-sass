@@ -406,7 +406,7 @@ export function LeadForm({
         </Button>
         <p role="status" className="text-sm">
           {status === "success" ? (
-            <span className="text-success">
+            <span className="text-success-text">
               Mensagem enviada! Em breve alguém da WJB entra em contato.
             </span>
           ) : null}

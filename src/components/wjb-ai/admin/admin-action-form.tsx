@@ -66,7 +66,7 @@ export function AdminActionForm({
           </p>
         ) : null}
         {state?.ok ? (
-          <p role="status" className="text-success text-sm">
+          <p role="status" className="text-success-text text-sm">
             {state.ok}
           </p>
         ) : null}

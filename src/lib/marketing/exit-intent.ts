@@ -51,6 +51,7 @@ const EXCLUDED_PREFIXES = [
   "/solicitar-proposta",
   "/servicos/abrir-empresa",
   "/servicos/trocar-de-contador",
+  "/emissao-de-notas", // tem o pré-cadastro (Fase 8)
   "/ajuda",
   "/login",
   "/recuperar-senha",

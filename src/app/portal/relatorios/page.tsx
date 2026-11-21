@@ -165,7 +165,7 @@ export default async function PortalRelatoriosPage({
             Nenhum registro no período selecionado.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Tabela do relatório do período">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-muted-foreground text-xs tracking-wide uppercase">

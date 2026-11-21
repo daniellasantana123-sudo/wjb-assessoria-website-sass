@@ -77,7 +77,7 @@ function ContentBlock({ block }: { block: BlogBlock }) {
       );
     case "table":
       return (
-        <div className="border-border mt-4 overflow-x-auto rounded-md border">
+        <div className="border-border mt-4 overflow-x-auto rounded-md border" tabIndex={0} role="region" aria-label="Tabela do artigo">
           <table className="w-full text-left text-sm">
             <thead className="bg-muted">
               <tr>

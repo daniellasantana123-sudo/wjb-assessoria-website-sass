@@ -252,7 +252,7 @@ export default async function AdminNfseDetailPage({
                 {st.changes.length === 0 ? (
                   <p className="text-muted-foreground">Nenhum campo mudou.</p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Diferenças entre versões do pedido">
                     <table className="mt-1 w-full min-w-[28rem] text-left">
                       <thead className="text-muted-foreground text-xs">
                         <tr>
