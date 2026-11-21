@@ -34,3 +34,13 @@ supabase/.temp/
 
 # Backups e usuários de teste da homologação WJB AI (nunca versionar)
 .homolog-backups/
+
+# Certificados digitais e chaves NUNCA vão para o repositório (WJB AI, doc 31)
+*.pfx
+*.p12
+*.key
+*.pem
+*.crt
+*.cer
+*.der
+relatorio-certificado*.json

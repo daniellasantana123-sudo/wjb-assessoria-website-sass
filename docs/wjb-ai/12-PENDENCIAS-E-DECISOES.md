@@ -73,3 +73,6 @@ Resolvido em homologação: cadastro fiscal completo e checklist de prontidão (
 Resolvido em homologação: assinatura XMLDSig real (RSA-SHA1, C14N) verificada de forma independente; leitura dos requisitos do certificado; cofre por interface e uso do certificado com trilha imutável (0028); regras oficiais de alíquota e regime; catálogo oficial de rejeições; alertas.
 
 **Decisões da WJB** (doc 30, seção 6, e checklist do doc 29, seção 11): cofre; e-CNPJ A1 da WJB; autorização da primeira conexão (só leitura do swagger e consulta); agendamento das rotinas de fila e alertas.
+
+## Atualização de 21/11/2026 (certificado da WJB)
+Preparado: verificação local do PFX sem rede (`scripts/wjb-ai/certificado/verificar-certificado.mjs`), leitura autenticada só de documentação (`national/sefin-readonly.ts`) e bloqueio da assinatura real até o algoritmo ser confirmado. Pendências da WJB: avaliação de comprometimento, relatório do script, e-CNPJ (não e-CPF), cofre, autorização escrita da primeira leitura (doc 31, seção 7).

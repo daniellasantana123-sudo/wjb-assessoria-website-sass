@@ -45,12 +45,16 @@ import {
   catalogSize,
   explainRejection,
 } from "@/lib/wjb-ai/fiscal/national/rejection-catalog";
-import { XmlDsigDpsSigner } from "@/lib/wjb-ai/fiscal/national/signing";
+import {
+  AlgorithmNotConfirmedError,
+  XmlDsigDpsSigner,
+} from "@/lib/wjb-ai/fiscal/national/signing";
 import { SimulatedSefinTransport } from "@/lib/wjb-ai/fiscal/national/simulated-transport";
 import type { SigningMaterial } from "@/lib/wjb-ai/fiscal/national/xmldsig";
 
 // Tudo FICTÍCIO. Certificados de TESTE gerados na hora, não ICP-Brasil.
-const TODAY = "2026-11-20";
+// Data local de hoje: os certificados de teste são gerados agora e valem a partir de hoje.
+const TODAY = new Date(Date.now() - 3 * 3_600_000).toISOString().slice(0, 10);
 const WJB = "99888777000155";
 const CLIENTE = "11222333000181";
 const tools =
@@ -575,6 +579,20 @@ describe.skipIf(!tools)(
     });
   },
 );
+
+describe("assinatura com certificado real exige algoritmo confirmado", () => {
+  it("bloqueia antes de tocar no cofre", async () => {
+    let touched = false;
+    const signer = new XmlDsigDpsSigner(async () => {
+      touched = true;
+      return "" as never;
+    }, false);
+    await expect(signer.sign("<DPS/>", "x")).rejects.toThrow(
+      AlgorithmNotConfirmedError,
+    );
+    expect(touched).toBe(false);
+  });
+});
 
 describe.skipIf(!tools)("DPS com regApTribSN e pAliq x XSD oficial", () => {
   for (const layout of LAYOUT_CONTRACTS) {

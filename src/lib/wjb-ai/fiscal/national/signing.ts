@@ -121,6 +121,15 @@ export function createIcpBrasilSigner(): DpsSigner {
  * na hora + trilha de uso). `simulated` continua verdadeiro enquanto o
  * material vier do cofre de TESTE: um certificado de teste nunca gera nota.
  */
+export class AlgorithmNotConfirmedError extends Error {
+  constructor(profile: string) {
+    super(
+      `Algoritmo de assinatura (${profile}) não confirmado na documentação oficial vigente. Assinatura com certificado real bloqueada.`,
+    );
+    this.name = "AlgorithmNotConfirmedError";
+  }
+}
+
 export class XmlDsigDpsSigner implements DpsSigner {
   constructor(
     private readonly withMaterial: <T>(
@@ -128,8 +137,17 @@ export class XmlDsigDpsSigner implements DpsSigner {
     ) => Promise<T>,
     readonly simulated: boolean,
     private readonly profile: SignatureProfile = "rsa-sha1",
+    /**
+     * O algoritmo só aparece no Manual Integrado de 2022 (pasta de documentos
+     * antigos); nenhuma especificação vigente pública o confirma. Com
+     * certificado REAL (simulated = false), assinar exige confirmação
+     * registrada a partir da documentação autenticada (doc 31).
+     */
+    private readonly algorithmConfirmedByOfficialDoc = false,
   ) {}
   async sign(xml: string, refId: string): Promise<string> {
+    if (!this.simulated && !this.algorithmConfirmedByOfficialDoc)
+      throw new AlgorithmNotConfirmedError(this.profile);
     return this.withMaterial(async (m) => signXml(xml, refId, m, this.profile));
   }
 }
