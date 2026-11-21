@@ -16,6 +16,7 @@ import { NfseAdminNav } from "@/components/wjb-ai/admin/nfse-admin-nav";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import { listApproverGrants } from "@/lib/wjb-ai/fiscal/admin.repo";
+import { StepUpNotice } from "@/components/auth/step-up-notice";
 
 export const metadata: Metadata = {
   title: "Permissão de aprovação fiscal",
@@ -37,6 +38,7 @@ export default async function AdminNfsePermissoesPage() {
           { label: "Permissão de aprovação" },
         ]}
       />
+      <StepUpNotice next="/admin/nfse/permissoes" />
       <h1 className="text-foreground text-2xl font-semibold">
         Permissão de aprovação de perfil fiscal
       </h1>

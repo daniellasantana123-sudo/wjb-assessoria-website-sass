@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { isRateLimited } from "@/lib/security/rate-limit";
 import { leadFormSchema, newsletterFormSchema } from "@/lib/validation/lead";
 import { createClient, isSupabaseConfigured } from "@/lib/db/supabase/server";
 import { getEmailAdapter } from "@/integrations/email";
@@ -8,6 +7,9 @@ import { renderNotificationEmail } from "@/integrations/email/templates";
 import { siteConfig } from "@/config/site";
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { notifyNewLead } from "@/lib/notifications";
+import { clientIp, isRateLimitedShared, LEAD_LIMITS } from "@/lib/security/shared-rate-limit";
+
+const MAX_BODY_CHARS = 16_000;
 
 /**
  * 503 + `code` legível por máquina (2026-09-23) - o cliente precisa
@@ -48,18 +50,27 @@ function storageUnavailable(reason: "not_configured" | "write_failed") {
  * mandava.
  */
 export async function POST(request: Request) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (isRateLimited(ip)) {
+  // Fase 10A: limite compartilhado (banco) por IP e teto global por hora.
+  const ip = clientIp(request.headers);
+  const limited =
+    (await isRateLimitedShared(LEAD_LIMITS.perIpMinute, ip)) ||
+    (await isRateLimitedShared(LEAD_LIMITS.perIpHour, ip)) ||
+    (await isRateLimitedShared(LEAD_LIMITS.globalHour, "todos"));
+  if (limited) {
     return NextResponse.json(
       { error: "Muitas tentativas. Aguarde um momento e tente novamente." },
       { status: 429 },
     );
   }
 
+  // Corpo limitado antes de interpretar (um lead legítimo tem poucos KB).
+  const raw = await request.text();
+  if (raw.length > MAX_BODY_CHARS) {
+    return NextResponse.json({ error: "Envio grande demais." }, { status: 413 });
+  }
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "JSON inválido." }, { status: 400 });
   }
@@ -200,7 +211,7 @@ export async function POST(request: Request) {
   try {
     const sendResult = await emailAdapter.send({
       to: siteConfig.contact.email,
-      subject: `Novo lead do site — ${result.data.name}`,
+      subject: `Novo lead do site — ${result.data.name.replace(/[\r\n\t]+/g, " ").slice(0, 80)}`,
       html: renderNotificationEmail({
         title: "Novo lead recebido",
         body: `${result.data.name} (${result.data.email}, ${result.data.phone}) preencheu "${result.data.formContext}" — assunto: ${result.data.serviceInterest}.`,

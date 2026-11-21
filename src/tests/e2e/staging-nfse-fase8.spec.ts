@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import { loginAs } from "./helpers/login";
 
 /**
  * Fase 8 em STAGING (homologação Supabase real, login real de usuários
@@ -12,19 +13,7 @@ test.beforeEach(({}, testInfo) => {
   test.skip(testInfo.project.name !== "chromium", "Staging roda só no projeto chromium.");
 });
 
-const user = (key: string) => ({ email: process.env[`HOMOLOG_USER_${key}`] ?? "", password: process.env[`HOMOLOG_PW_${key}`] ?? "" });
-async function login(browser: Browser, key: string): Promise<Page> {
-  const context = await browser.newContext();
-  await context.addInitScript(() => window.localStorage.setItem("wjb-cookie-consent", "declined"));
-  const page = await context.newPage();
-  const u = user(key);
-  await page.goto("/login");
-  await page.getByLabel("E-mail").fill(u.email);
-  await page.getByLabel("Senha", { exact: true }).fill(u.password);
-  await page.getByRole("button", { name: "Entrar" }).click();
-  await page.waitForURL(/\/(portal|admin)/);
-  return page;
-}
+const login = (browser: Browser, key: string) => loginAs(browser, key);
 
 async function contract(page: Page, planName: string) {
   const card = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: planName, exact: true }) });

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/dal";
+import { getVerifiedSession } from "@/lib/auth/dal";
 import { markNotificationAsReadAndGetLink } from "@/lib/notifications";
 import { getSiteUrl } from "@/lib/seo/site-url";
 
@@ -13,7 +13,7 @@ import { getSiteUrl } from "@/lib/seo/site-url";
  * nunca é encontrado.
  */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }

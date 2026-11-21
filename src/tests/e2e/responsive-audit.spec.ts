@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
 import { expect, test, type Browser, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 /**
  * Auditoria responsiva (Fase 8). Só roda com RESPONSIVE_AUDIT=1 contra o
@@ -92,17 +93,7 @@ async function measure(page: Page): Promise<Omit<Row, "area" | "route" | "viewpo
   });
 }
 
-async function login(browser: Browser, key: string) {
-  const context = await browser.newContext({ reducedMotion: "reduce" });
-  await context.addInitScript(() => window.localStorage.setItem("wjb-cookie-consent", "declined"));
-  const page = await context.newPage();
-  await page.goto("/login");
-  await page.getByLabel("E-mail").fill(process.env[`HOMOLOG_USER_${key}`] ?? "");
-  await page.getByLabel("Senha", { exact: true }).fill(process.env[`HOMOLOG_PW_${key}`] ?? "");
-  await page.getByRole("button", { name: "Entrar" }).click();
-  await page.waitForURL(/\/(portal|admin)/);
-  return page;
-}
+const login = (browser: Browser, key: string) => loginAs(browser, key, { reducedMotion: true });
 
 /**
  * Tab pela página: o elemento focado precisa ter indicador visível (contorno

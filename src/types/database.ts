@@ -534,6 +534,12 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      rate_limit_buckets: {
+        Row: { bucket: string; window_start: string; hits: number };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       payment_customers: {
         Row: { tenant_id: string; provider: string; mode: string; provider_customer_id: string; created_at: string };
         Insert: { tenant_id: string; mode: string; provider_customer_id: string };
@@ -914,6 +920,7 @@ export interface Database {
         Returns: string;
       };
       has_entitlement: { Args: { p_tenant_id: string; p_feature: string }; Returns: boolean };
+      rate_limit_hit: { Args: { p_bucket: string; p_window_seconds: number; p_max: number }; Returns: boolean };
       allocate_dps_number: {
         Args: { p_request_id: string; p_environment: string };
         Returns: { series: number; number: number; emitter_document: string }[];

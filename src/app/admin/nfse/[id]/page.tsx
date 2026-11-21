@@ -34,6 +34,7 @@ import {
 } from "@/lib/wjb-ai/fiscal/policy";
 import { REVIEW_DECISION_LABELS } from "@/lib/wjb-ai/fiscal/review";
 import { hasWjbAiPermission } from "@/lib/wjb-ai/permissions";
+import { StepUpNotice } from "@/components/auth/step-up-notice";
 
 export const metadata: Metadata = {
   title: "Solicitação de NFS-e",
@@ -88,6 +89,7 @@ export default async function AdminNfseDetailPage({
           { label: "Solicitação" },
         ]}
       />
+      <StepUpNotice next={`/admin/nfse/${id}`} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-foreground text-2xl font-semibold">
           {r.tenantName}

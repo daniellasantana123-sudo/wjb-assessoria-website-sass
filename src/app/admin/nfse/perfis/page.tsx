@@ -29,6 +29,7 @@ import {
   type ReadinessStatus,
 } from "@/lib/wjb-ai/fiscal/profile-settings";
 import { hasWjbAiPermission } from "@/lib/wjb-ai/permissions";
+import { StepUpNotice } from "@/components/auth/step-up-notice";
 
 export const metadata: Metadata = {
   title: "Perfis fiscais",
@@ -377,6 +378,7 @@ export default async function AdminNfsePerfisPage() {
           { label: "Perfis fiscais" },
         ]}
       />
+      <StepUpNotice next="/admin/nfse/perfis" />
       <h1 className="text-foreground text-2xl font-semibold">
         Perfis fiscais e autorizações
       </h1>

@@ -1,4 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
+import { loginAs } from "./helpers/login";
 
 /**
  * F3 em STAGING (homologação Supabase real, login real, conector SIMULADO).
@@ -10,19 +11,7 @@ test.beforeEach(({}, testInfo) => {
   test.skip(testInfo.project.name !== "chromium", "Staging roda só no projeto chromium.");
 });
 
-const user = (key: string) => ({ email: process.env[`HOMOLOG_USER_${key}`] ?? "", password: process.env[`HOMOLOG_PW_${key}`] ?? "" });
-async function login(browser: Browser, key: string): Promise<Page> {
-  const context = await browser.newContext();
-  await context.addInitScript(() => window.localStorage.setItem("wjb-cookie-consent", "declined"));
-  const page = await context.newPage();
-  const u = user(key);
-  await page.goto("/login");
-  await page.getByLabel("E-mail").fill(u.email);
-  await page.getByLabel("Senha", { exact: true }).fill(u.password);
-  await page.getByRole("button", { name: "Entrar" }).click();
-  await page.waitForURL(/\/(portal|admin)/);
-  return page;
-}
+const login = (browser: Browser, key: string) => loginAs(browser, key);
 const tenantSection = (page: Page, name: string) => page.locator("section").filter({ has: page.getByRole("heading", { name, exact: true }) });
 const run = Date.now().toString(36);
 
@@ -35,7 +24,9 @@ test("super admin concede fiscal_profile.approve ao contador", async ({ browser 
   await expect(page.getByText(/Permissão concedida\.|Já existe uma concessão ativa igual\./)).toBeVisible();
 });
 
-test("contador sem concessão não consegue aprovar perfil", async ({ browser }) => {
+// Fase 10A: este contador também não tem MFA, então é barrado antes pelo
+// step-up. A checagem da concessão no banco segue coberta pelo run.sh e pela API.
+test("contador sem concessão e sem MFA não consegue aprovar perfil", async ({ browser }) => {
   const page = await login(browser, "CONTADORSEM");
   await page.goto("/admin/nfse/perfis");
   const a = tenantSection(page, "Empresa Ficticia A");
@@ -46,7 +37,7 @@ test("contador sem concessão não consegue aprovar perfil", async ({ browser })
   const draft = tenantSection(page, "Empresa Ficticia A").getByRole("listitem").filter({ hasText: "Rascunho" }).first();
   await draft.getByLabel("Justificativa da aprovação").fill("Tentativa sem a permissão (E2E)");
   await draft.getByRole("button", { name: "Aprovar perfil" }).click();
-  await expect(draft.getByText("Você não tem a permissão fiscal_profile.approve para esta empresa.")).toBeVisible();
+  await expect(draft.getByText(/Esta ação exige a verificação em duas etapas/)).toBeVisible();
 });
 
 test("contador preenche o cadastro fiscal completo no rascunho e vê a prontidão", async ({ browser }) => {

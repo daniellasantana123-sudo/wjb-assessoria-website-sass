@@ -91,6 +91,52 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
+/**
+ * Sessão para rotas de API e ações que não redirecionam (Fase 10A,
+ * 21/11/2026). Quem tem fator MFA verificado mas ainda está em aal1 (só
+ * passou pela senha) conta como SEM sessão, igual ao que `requireSession`
+ * já fazia nas páginas. Antes, com só a senha vazada dava para baixar
+ * documentos e ler dados pelas rotas de API.
+ */
+export async function getVerifiedSession(): Promise<Session | null> {
+  const session = await getSession();
+  if (!session) return null;
+  const { data: aal } = await getAal();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") return null;
+  return session;
+}
+
+export type StepUpResult = { ok: true } | { ok: false; reason: "sem_mfa" | "mfa_pendente" | "mfa_antigo" };
+
+/** Janela da confirmação recente (step-up) para ações críticas. */
+export const STEP_UP_MAX_AGE_SECONDS = 15 * 60;
+
+/** Regra pura do step-up (testável): exige aal2 e um código TOTP confirmado há no máximo `maxAge`. */
+export function evaluateStepUp(
+  aal: { currentLevel: string | null; nextLevel: string | null; currentAuthenticationMethods?: (string | { method: string; timestamp: number })[] } | null,
+  nowSeconds: number,
+  maxAgeSeconds = STEP_UP_MAX_AGE_SECONDS,
+): StepUpResult {
+  if (!aal || aal.nextLevel !== "aal2") return { ok: false, reason: "sem_mfa" };
+  if (aal.currentLevel !== "aal2") return { ok: false, reason: "mfa_pendente" };
+  // Formato antigo (só o nome do método, sem horário) nunca conta como recente.
+  const last = Math.max(0, ...(aal.currentAuthenticationMethods ?? []).flatMap((m) => (typeof m === "object" && m.method === "totp" ? [m.timestamp] : [])));
+  if (!last || nowSeconds - last > maxAgeSeconds) return { ok: false, reason: "mfa_antigo" };
+  return { ok: true };
+}
+
+/** Confirmação recente de MFA para ações que mudam dinheiro ou autoridade fiscal. */
+export async function checkRecentStepUp(maxAgeSeconds = STEP_UP_MAX_AGE_SECONDS): Promise<StepUpResult> {
+  const { data: aal } = await getAal();
+  return evaluateStepUp(aal, Math.floor(Date.now() / 1000), maxAgeSeconds);
+}
+
+export const STEP_UP_MESSAGES: Record<"sem_mfa" | "mfa_pendente" | "mfa_antigo", string> = {
+  sem_mfa: "Esta ação exige a verificação em duas etapas. Ative-a em Segurança e tente de novo.",
+  mfa_pendente: "Confirme o código do autenticador antes desta ação.",
+  mfa_antigo: "Por segurança, confirme de novo o código do autenticador (vale 15 minutos) e repita a ação.",
+};
+
 /** Exige sessão de um membro do time WJB (Admin WJB, SAAS FASE 4). */
 export async function requireStaffSession(): Promise<Session> {
   const session = await requireSession();

@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import { loginAs } from "./helpers/login";
 
 /**
  * Fase 9 em STAGING (homologação Supabase real, usuários fictícios): preços
@@ -23,17 +24,7 @@ const ALLOWED_MESSAGES = new Set([
 ]);
 const nb = (s: string) => s.replace(/ /g, " ");
 
-async function login(browser: Browser, key: string): Promise<Page> {
-  const context = await browser.newContext();
-  await context.addInitScript(() => window.localStorage.setItem("wjb-cookie-consent", "declined"));
-  const page = await context.newPage();
-  await page.goto("/login");
-  await page.getByLabel("E-mail").fill(process.env[`HOMOLOG_USER_${key}`] ?? "");
-  await page.getByLabel("Senha", { exact: true }).fill(process.env[`HOMOLOG_PW_${key}`] ?? "");
-  await page.getByRole("button", { name: "Entrar" }).click();
-  await page.waitForURL(/\/(portal|admin)/);
-  return page;
-}
+const login = (browser: Browser, key: string) => loginAs(browser, key);
 
 async function checkWhatsAppLinks(page: Page) {
   // Fora o rodapé, que lista os números de contato da WJB sem mensagem (anterior à Fase 9).

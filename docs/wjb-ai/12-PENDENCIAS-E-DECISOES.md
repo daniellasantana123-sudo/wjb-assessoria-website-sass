@@ -96,3 +96,6 @@ Implementado em homologação: planos e assinaturas simulados (emissão sozinha 
 **Decidido pela WJB:** Stripe e Link aprovados para testes; WhatsApp só Click-to-Chat no número principal; remover o aviso de lead pela Cloud API (feito) e usar Resend + aviso interno (feito).
 
 **Pendentes:** a WJB colocar as chaves de teste com `configurar-chaves.mjs` e rodar (ou pedir para rodar) `sandbox.sh`; URL pública de homologação para o webhook (ou Stripe CLI); confirmar a finalidade do (11) 97685-4842 (oculto, não apagado); itens de ativação comercial do doc 47, B.
+
+## Fase 10A (21/11/2026) - ver 49 a 52
+Feito em homologação: dependências corrigidas (`next` 16.4.6, `zod` 4.6.7, `npm audit` sem vulnerabilidade); MFA nas rotas de API; step-up de 15 min nas ações fiscais e de preço; limites e contador compartilhado nos formulários públicos (0034). **Decisões pendentes:** doc 52 (etapa A só de dependências na produção, step-up nas ações de equipe, MFA obrigatório para a equipe, reforço de `aal2` no banco, plano Supabase, cabeçalho de IP da Hostinger).

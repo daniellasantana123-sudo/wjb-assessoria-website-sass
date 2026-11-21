@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const getSessionMock = vi.fn();
 const getActiveTenantMock = vi.fn();
-vi.mock("@/lib/auth/dal", () => ({ getSession: () => getSessionMock() }));
+vi.mock("@/lib/auth/dal", () => ({ getSession: () => getSessionMock(), getVerifiedSession: () => getSessionMock() }));
 vi.mock("@/lib/tenant", () => ({
   getActiveTenant: (id: string) => getActiveTenantMock(id),
 }));

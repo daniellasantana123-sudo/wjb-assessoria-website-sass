@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function MfaChallengeForm() {
+export function MfaChallengeForm({ next }: { next?: string } = {}) {
   const [state, formAction, pending] = useActionState(verifyLoginMfaChallenge, undefined);
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="code">Código do aplicativo autenticador</Label>
         <Input

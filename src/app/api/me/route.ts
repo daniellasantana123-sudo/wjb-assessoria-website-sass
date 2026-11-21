@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession, getTenantRole } from "@/lib/auth/dal";
+import { getVerifiedSession, getTenantRole } from "@/lib/auth/dal";
 import { getActiveTenant } from "@/lib/tenant";
 import { getPermissions } from "@/lib/permissions/permissions";
 
@@ -16,7 +16,7 @@ import { getPermissions } from "@/lib/permissions/permissions";
  * de `is_staff()`, não via vínculo de tenant.
  */
 export async function GET() {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }

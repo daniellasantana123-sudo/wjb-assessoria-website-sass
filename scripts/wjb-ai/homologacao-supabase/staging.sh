@@ -21,12 +21,14 @@ export HOMOLOG_STAGING=1
 # Segredo só desta execução, para a rota agendada da fila simulada.
 export CRON_SECRET="$(openssl rand -hex 24)"
 
+node -e 'import("@supabase/supabase-js").then(async ({createClient}) => { const c = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } }); await c.from("rate_limit_buckets").delete().like("bucket", "leads:%"); })'
+node scripts/wjb-ai/homologacao-supabase/08-mfa-usuarios.mjs > /tmp/wjb-staging-mfa.log 2>&1 || { echo "MFA dos usuários de teste falhou (ver /tmp/wjb-staging-mfa.log)"; exit 1; }
 node scripts/wjb-ai/homologacao-supabase/05-comercial-catalogo.mjs > /tmp/wjb-staging-comercial.log 2>&1 || { echo "cenário comercial falhou (ver /tmp/wjb-staging-comercial.log)"; exit 1; }
 pkill -f next-server 2>/dev/null || true
 npm run build > /tmp/wjb-staging-build.log 2>&1 || { echo "build falhou (ver /tmp/wjb-staging-build.log)"; exit 1; }
 (npx next start -p 3000 > /tmp/wjb-staging-start.log 2>&1 &)
 sleep 6
-npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts src/tests/e2e/staging-nfse-fase7.spec.ts src/tests/e2e/staging-nfse-fase8.spec.ts src/tests/e2e/staging-nfse-fase9.spec.ts --workers=1 --reporter=line
+npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts src/tests/e2e/staging-nfse-fase7.spec.ts src/tests/e2e/staging-nfse-fase8.spec.ts src/tests/e2e/staging-nfse-fase9.spec.ts src/tests/e2e/staging-fase10a.spec.ts --workers=1 --reporter=line
 status=$?
 pkill -f next-server 2>/dev/null || true
 

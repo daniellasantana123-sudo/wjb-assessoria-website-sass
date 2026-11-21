@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/db/supabase/server";
-import { getSession, getTenantRole } from "@/lib/auth/dal";
+import { getVerifiedSession, getTenantRole } from "@/lib/auth/dal";
 import { hasPermission } from "@/lib/permissions/permissions";
 
 /**
@@ -24,7 +24,7 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }

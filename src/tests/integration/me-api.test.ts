@@ -10,6 +10,7 @@ const getSessionMock = vi.fn();
 const getTenantRoleMock = vi.fn();
 vi.mock("@/lib/auth/dal", () => ({
   getSession: getSessionMock,
+  getVerifiedSession: getSessionMock,
   getTenantRole: getTenantRoleMock,
 }));
 

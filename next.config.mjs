@@ -125,6 +125,8 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Fase 10A: não anunciar o framework no cabeçalho `x-powered-by`.
+  poweredByHeader: false,
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
     NEXT_PUBLIC_APP_COMMIT: appCommit,

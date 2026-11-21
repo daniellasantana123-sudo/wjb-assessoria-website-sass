@@ -20,6 +20,14 @@ vi.mock("@/lib/db/supabase/server", () => ({
 const notifyNewLeadMock = vi.fn().mockResolvedValue(undefined);
 vi.mock("@/lib/notifications", () => ({ notifyNewLead: (...a: unknown[]) => notifyNewLeadMock(...a) }));
 
+// Limitador compartilhado (Fase 10A) controlado pelo teste: o real cai em
+// memória sem service role e teria um teto global que estoura com a suíte.
+const limitedMock = vi.fn().mockResolvedValue(false);
+vi.mock("@/lib/security/shared-rate-limit", async (orig) => ({
+  ...(await orig<typeof import("@/lib/security/shared-rate-limit")>()),
+  isRateLimitedShared: (...a: unknown[]) => limitedMock(...a),
+}));
+
 const { POST } = await import("@/app/api/leads/route");
 
 /**
@@ -194,5 +202,21 @@ describe("POST /api/leads", () => {
     insertMock.mockResolvedValueOnce({ error: { message: "boom" } });
     await POST(makeRequest(validPayload));
     expect(notifyNewLeadMock).not.toHaveBeenCalled();
+  });
+
+  it("responde 429 quando o limitador compartilhado barra", async () => {
+    limitedMock.mockResolvedValueOnce(true);
+    const response = await POST(makeRequest(validPayload));
+    expect(response.status).toBe(429);
+  });
+
+  it("recusa corpo grande demais (413) antes de interpretar", async () => {
+    const response = await POST(makeRequest({ ...validPayload, message: "x".repeat(20_000) }));
+    expect(response.status).toBe(413);
+  });
+
+  it("recusa campos acima do limite de tamanho (400)", async () => {
+    const response = await POST(makeRequest({ ...validPayload, name: "a".repeat(200) }));
+    expect(response.status).toBe(400);
   });
 });

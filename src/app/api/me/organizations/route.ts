@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/dal";
+import { getVerifiedSession } from "@/lib/auth/dal";
 import { getMyOrganizations } from "@/lib/tenant";
 
 /**
@@ -11,7 +11,7 @@ import { getMyOrganizations } from "@/lib/tenant";
  * que é o resultado correto, não uma falha de busca.
  */
 export async function GET() {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }

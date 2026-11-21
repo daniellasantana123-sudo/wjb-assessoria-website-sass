@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireStaffSession, type Session } from "@/lib/auth/dal";
+import { checkRecentStepUp, requireStaffSession, STEP_UP_MESSAGES, type Session } from "@/lib/auth/dal";
 import { createAdminClient } from "@/lib/db/supabase/admin";
 import { createClient } from "@/lib/db/supabase/server";
 import { notifyFiscalRequestEvent } from "@/lib/notifications";
@@ -43,6 +43,17 @@ async function guard(
   return allowed
     ? session
     : { error: "Você não tem permissão para esta ação." };
+}
+/**
+ * Ações que mudam autoridade fiscal (Fase 10A): além da permissão, exigem
+ * confirmação recente do MFA (step-up). A permissão é conferida ANTES, para
+ * quem não pode continuar recebendo a mesma mensagem de sempre.
+ */
+async function criticalGuard(permission: WjbAiPermission | "super_admin"): Promise<Session | AdminActionState> {
+  const session = await guard(permission);
+  if ("error" in session) return session;
+  const step = await checkRecentStepUp();
+  return step.ok ? session : { error: STEP_UP_MESSAGES[step.reason] };
 }
 const isState = (v: Session | AdminActionState): v is AdminActionState =>
   "error" in v;
@@ -159,7 +170,7 @@ export async function authorizeSendAction(
   _prev: AdminActionState | undefined,
 ): Promise<AdminActionState> {
   void _prev;
-  const session = await guard("fiscal.review");
+  const session = await criticalGuard("fiscal.review");
   if (isState(session)) return session;
   const request = await loadRequest(requestId);
   if (!request) return { error: "Pedido não encontrado." };
@@ -303,7 +314,7 @@ export async function approveProfileAction(
   _prev: AdminActionState | undefined,
   formData: FormData,
 ): Promise<AdminActionState> {
-  const session = await guard("fiscal.review");
+  const session = await criticalGuard("fiscal.review");
   if (isState(session)) return session;
   const supabase = await createClient();
   // A checagem decisiva é do banco: só contador com fiscal_profile.approve para a empresa.
@@ -328,7 +339,7 @@ export async function registerAuthorizationAction(
   _prev: AdminActionState | undefined,
   formData: FormData,
 ): Promise<AdminActionState> {
-  const session = await guard("fiscal.profile.manage");
+  const session = await criticalGuard("fiscal.profile.manage");
   if (isState(session)) return session;
   const parsed = parseAuthorizationForm(formData);
   if (!parsed.ok) return { error: parsed.error };
@@ -365,7 +376,7 @@ export async function revokeAuthorizationAction(
   _prev: AdminActionState | undefined,
   formData: FormData,
 ): Promise<AdminActionState> {
-  const session = await guard("fiscal.profile.manage");
+  const session = await criticalGuard("fiscal.profile.manage");
   if (isState(session)) return session;
   const reason = String(formData.get("reason") ?? "").trim();
   if (reason.length < 10)
@@ -440,7 +451,7 @@ export async function configureDpsSeriesAction(
   _prev: AdminActionState | undefined,
   formData: FormData,
 ): Promise<AdminActionState> {
-  const session = await guard("fiscal.review");
+  const session = await criticalGuard("fiscal.review");
   if (isState(session)) return session;
   const environment = String(formData.get("environment") ?? "");
   if (environment !== "simulado" && environment !== "producao_restrita")
@@ -483,7 +494,7 @@ export async function grantApproverAction(
   _prev: AdminActionState | undefined,
   formData: FormData,
 ): Promise<AdminActionState> {
-  const session = await guard("super_admin");
+  const session = await criticalGuard("super_admin");
   if (isState(session)) return session;
   const supabase = await createClient();
   const tenant = String(formData.get("tenantId") ?? "");
@@ -508,7 +519,7 @@ export async function revokeApproverAction(
   _prev: AdminActionState | undefined,
   formData: FormData,
 ): Promise<AdminActionState> {
-  const session = await guard("super_admin");
+  const session = await criticalGuard("super_admin");
   if (isState(session)) return session;
   const reason = String(formData.get("reason") ?? "").trim();
   if (reason.length < 5) return { error: "Informe o motivo da revogação." };

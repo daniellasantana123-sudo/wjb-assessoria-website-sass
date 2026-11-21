@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/db/supabase/server";
 import { getSession, requireSession } from "@/lib/auth/dal";
+import { safeAppPath } from "@/lib/auth/safe-next";
 
 /**
  * MFA (Fase 2 do wjb-saas-mvp, 2026-09-20) — "preparar a estrutura": TOTP
@@ -135,5 +136,8 @@ export async function verifyLoginMfaChallenge(
     return { error: "Código inválido ou expirado. Tente de novo." };
   }
 
-  redirect(session.isWjbStaff ? "/admin" : "/portal");
+  // Reconfirmação para ação crítica (Fase 10A): volta para onde a pessoa estava.
+  const next = safeAppPath(formData.get("next"));
+  const home = session.isWjbStaff ? "/admin" : "/portal";
+  redirect(next && next.startsWith(home) ? next : home);
 }

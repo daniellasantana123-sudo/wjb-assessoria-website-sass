@@ -19,6 +19,7 @@ import { requireStaffSession } from "@/lib/auth/dal";
 import { isCommercialEnabled } from "@/lib/commercial/config";
 import { formatBrlCents, marginAt } from "@/lib/commercial/pricing";
 import { getComboDiscountBp, getCostPremises, getPlanHistory, getSettingHistory, listCatalog, listSubscriptionsForAdmin } from "@/lib/commercial/repo";
+import { StepUpNotice } from "@/components/auth/step-up-notice";
 
 export const metadata: Metadata = { title: "Comercial", robots: { index: false, follow: false } };
 
@@ -68,6 +69,7 @@ export default async function AdminComercialPage() {
   return (
     <Container className="flex flex-1 flex-col gap-8 py-16">
       <Breadcrumb items={[{ label: "Admin WJB", href: "/admin" }, { label: "Comercial" }]} />
+      <StepUpNotice next="/admin/comercial" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-foreground text-2xl font-semibold">Comercial</h1>
         <Badge tone="warning">Simulação: preços aprovados, sem cobrança</Badge>

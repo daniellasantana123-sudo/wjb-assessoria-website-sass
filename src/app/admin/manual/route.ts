@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/dal";
+import { getVerifiedSession } from "@/lib/auth/dal";
 import { manualResponse, readManual } from "@/lib/manual";
 import { getSiteUrl } from "@/lib/seo/site-url";
 
@@ -9,7 +9,7 @@ import { getSiteUrl } from "@/lib/seo/site-url";
  * permissões e o G-Click - não é para clientes; a versão deles é /ajuda).
  */
 export async function GET() {
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (!session) {
     return NextResponse.redirect(new URL("/login?next=/admin/manual", getSiteUrl()));
   }

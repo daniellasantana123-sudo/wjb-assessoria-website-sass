@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const getSessionMock = vi.fn();
 vi.mock("@/lib/auth/dal", () => ({
   getSession: getSessionMock,
+  getVerifiedSession: getSessionMock,
 }));
 
 const markNotificationAsReadAndGetLinkMock = vi.fn();

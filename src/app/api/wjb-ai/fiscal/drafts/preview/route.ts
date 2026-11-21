@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/lib/auth/dal";
+import { getVerifiedSession } from "@/lib/auth/dal";
 import { toIsoDate } from "@/lib/reports/period";
 import { isRateLimited } from "@/lib/security/rate-limit";
 import { getActiveTenant } from "@/lib/tenant";
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const session = await getSession();
+  const session = await getVerifiedSession();
   if (session && isRateLimited(`wjb-ai:${session.userId}`)) {
     return NextResponse.json(
       { ok: false, error: "rate_limited" },

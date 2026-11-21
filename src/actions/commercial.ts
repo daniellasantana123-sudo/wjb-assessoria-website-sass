@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireSession, requireStaffSession, type Session } from "@/lib/auth/dal";
+import { checkRecentStepUp, requireSession, requireStaffSession, STEP_UP_MESSAGES, type Session } from "@/lib/auth/dal";
 import { isCommercialEnabled } from "@/lib/commercial/config";
 import {
   ACCEPTANCE_DOCUMENTS,
@@ -159,6 +159,14 @@ async function superAdmin(): Promise<Session | CommercialState> {
   return session.staffRole === "super_admin" ? session : { error: "Só super admin altera catálogo, preços e descontos." };
 }
 
+/** Preço e desconto mexem em dinheiro: super admin com MFA confirmado há pouco (Fase 10A). */
+async function superAdminStepUp(): Promise<Session | CommercialState> {
+  const session = await superAdmin();
+  if (isErr(session)) return session;
+  const step = await checkRecentStepUp();
+  return step.ok ? session : { error: STEP_UP_MESSAGES[step.reason] };
+}
+
 const cents = (v: FormDataEntryValue | null): number | null => {
   const s = String(v ?? "").replace(/\./g, "").replace(",", ".").trim();
   if (!s) return null;
@@ -167,7 +175,7 @@ const cents = (v: FormDataEntryValue | null): number | null => {
 };
 
 export async function savePlanAction(planId: string | null, _prev: CommercialState | undefined, formData: FormData): Promise<CommercialState> {
-  const session = await superAdmin();
+  const session = await superAdminStepUp();
   if (isErr(session)) return session;
   const name = String(formData.get("name") ?? "").trim();
   const sku = String(formData.get("sku") ?? "").trim();
@@ -208,7 +216,7 @@ export async function savePlanAction(planId: string | null, _prev: CommercialSta
 }
 
 export async function saveComboDiscountAction(_prev: CommercialState | undefined, formData: FormData): Promise<CommercialState> {
-  const session = await superAdmin();
+  const session = await superAdminStepUp();
   if (isErr(session)) return session;
   const pct = Number(String(formData.get("percent") ?? "").replace(",", "."));
   if (!Number.isFinite(pct) || pct < 0 || pct * 100 > MAX_COMBO_DISCOUNT_BP) return { error: `Desconto entre 0% e ${MAX_COMBO_DISCOUNT_BP / 100}%.` };

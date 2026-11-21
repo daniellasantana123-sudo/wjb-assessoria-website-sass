@@ -1,5 +1,5 @@
 {
- "geradoEm": "2026-11-21T21:52:21.752Z",
+ "geradoEm": "2026-11-21T23:31:23.476Z",
  "ambiente": "build local de staging (homologação), Chromium com emulação",
  "rows": [
   {
@@ -5632,7 +5632,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5648,7 +5648,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5664,7 +5664,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5680,7 +5680,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5696,7 +5696,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5712,7 +5712,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5728,7 +5728,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5744,7 +5744,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5760,7 +5760,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5776,7 +5776,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -5792,7 +5792,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 14,
+   "smallTargets": 15,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -5808,7 +5808,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 14,
+   "smallTargets": 15,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -5824,7 +5824,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 14,
+   "smallTargets": 15,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -5840,7 +5840,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 14,
+   "smallTargets": 15,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -5856,7 +5856,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 13,
+   "smallTargets": 14,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6341,7 +6341,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 28,
+   "smallTargets": 30,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6357,7 +6357,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 28,
+   "smallTargets": 30,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6373,7 +6373,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6389,7 +6389,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6405,7 +6405,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6421,7 +6421,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6437,7 +6437,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6453,7 +6453,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6469,7 +6469,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6485,7 +6485,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6501,7 +6501,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 49,
+   "smallTargets": 52,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6517,7 +6517,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 49,
+   "smallTargets": 52,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6533,7 +6533,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 49,
+   "smallTargets": 52,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6549,7 +6549,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 49,
+   "smallTargets": 52,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6565,7 +6565,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 48,
+   "smallTargets": 51,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -8195,7 +8195,9 @@
    "area": "portal",
    "route": "/portal/obrigacoes",
    "viewport": "390x844",
-   "problems": []
+   "problems": [
+    "voltou ao corpo da página após 6 de 9 elementos visíveis"
+   ]
   },
   {
    "area": "portal",
@@ -8231,7 +8233,9 @@
    "area": "portal",
    "route": "/portal/suporte",
    "viewport": "390x844",
-   "problems": []
+   "problems": [
+    "voltou ao corpo da página após 8 de 11 elementos visíveis"
+   ]
   },
   {
    "area": "portal",
@@ -8267,7 +8271,9 @@
    "area": "admin",
    "route": "/admin/whatsapp",
    "viewport": "390x844",
-   "problems": []
+   "problems": [
+    "voltou ao corpo da página após 11 de 14 elementos visíveis"
+   ]
   },
   {
    "area": "admin",
