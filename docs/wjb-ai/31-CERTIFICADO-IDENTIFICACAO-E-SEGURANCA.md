@@ -2,6 +2,14 @@
 
 **Data:** 21/11/2026 · **Situação:** a WJB informou ter um certificado ICP-Brasil **A1 (arquivo PFX)** associado à responsável pela empresa. **Ninguém do projeto teve acesso ao arquivo nem à senha**, e nada foi pedido no chat. Este documento prepara a verificação, que a própria responsável faz no computador dela.
 
+## Atualização de 21/11/2026: decisão da WJB
+
+- O certificado existente é um **e-CPF A1** da responsável legal da WJB.
+- O arquivo PFX **foi enviado por e-mail junto com a senha**, e a senha e dados pessoais da titular também foram digitados no chat do projeto. Esses dados **não foram gravados** em código, documento, memória ou log.
+- A senha usada é trivial.
+- **Conclusão: o certificado está comprometido e não será usado.** Recomendação: a titular pede à AC a **revogação**, troca as senhas de e-mail onde o arquivo circulou, confere no e-CAC procurações e acessos recentes, e a WJB emite um **e-CNPJ A1 novo**, com senha forte e exclusivo para a plataforma.
+- A preparação continua só com **certificados fictícios**, sem nenhuma conexão oficial até existir um certificado adequado e seguro.
+
 ## 1. Segurança imediata: o certificado pode estar comprometido?
 
 Antes de qualquer uso, a responsável responde estas perguntas. **Um único "sim" basta para considerar o certificado comprometido.**
@@ -33,6 +41,28 @@ O tipo não aparece no nome do arquivo: precisa ser lido dentro do certificado.
 | Assina DPS da WJB (modelo B) | sim, é o emitente | só se a SEFIN aceitar a representação legal (FAQ 17.7/28.4); o documento de 2022 exige a raiz do CNPJ ou o CPF do emitente |
 | Serve para a WJB emitir pelos clientes (modelo A) | sim, com procuração dos clientes para o CNPJ da WJB | só com procuração dos clientes para o CPF da pessoa |
 | Recomendação | **usar** | **não usar na plataforma**: amarra a emissão de todos os clientes a uma pessoa física, que pode sair da empresa, e expõe dados pessoais e responsabilidade individual |
+
+## 2.1 Avaliação: a WJB precisa de um e-CNPJ A1?
+
+**Sim, para emitir por múltiplos clientes com procuração.** Motivos:
+
+| Ponto | e-CNPJ A1 da WJB | e-CPF da responsável |
+| --- | --- | --- |
+| Procuração dos clientes | outorgada ao **CNPJ da WJB**: vale enquanto a empresa existir, independente de quem trabalha nela | outorgada à **pessoa física**: se ela sair, se afastar ou o certificado vencer, todas as procurações precisam ser refeitas |
+| Responsabilidade | da empresa | pessoal, da titular, por todas as notas de todos os clientes |
+| Emitir em nome da própria WJB | titular = emitente, sem procuração (modelo B) | depende de a SEFIN aceitar a representação legal; o documento de 2022 exige a raiz do CNPJ ou o CPF do emitente |
+| LGPD e exposição | o certificado da empresa contém o CPF do responsável, mas o uso é institucional | cada assinatura usa a identidade pessoal da titular |
+| Rodar sem pessoa presente | A1 funciona num processo automático | igual, mas com identidade pessoal |
+| Revogar sem afetar a vida pessoal da titular | sim | não: revogar o e-CPF afeta os outros usos pessoais dela |
+
+**Como deve ser o novo certificado:**
+- e-CNPJ **A1**, de AC credenciada na ICP-Brasil, no CNPJ da WJB;
+- senha longa e única, guardada só pelo responsável;
+- **exclusivo da plataforma**, sem uso em outros sistemas;
+- entregue diretamente ao responsável pela AC, nunca por e-mail ou mensagem;
+- verificado com o script local, cadastrado no cofre pelo console com MFA.
+
+O PFX também nunca deve ser enviado a ninguém do projeto. As procurações dos clientes são outorgadas no Portal de Serviços da RFB, no serviço da NFS-e, **ao CNPJ da WJB**.
 
 ## 3. Procedimento local de verificação
 
