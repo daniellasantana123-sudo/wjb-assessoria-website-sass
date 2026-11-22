@@ -10,9 +10,9 @@ import type { EmailAdapter, SendEmailInput, SendEmailResult } from "./types";
  */
 const noopAdapter: EmailAdapter = {
   async send(input: SendEmailInput): Promise<SendEmailResult> {
-    console.log(
-      `[email:noop] RESEND_API_KEY/EMAIL_FROM não configuradas — e-mail não enviado ("${input.subject}" → ${input.to})`,
-    );
+    void input;
+    // Fase 10A.1: sem assunto nem destinatário no log (o assunto do lead tem o nome da pessoa).
+    console.warn("[email:noop] RESEND_API_KEY/EMAIL_FROM não configuradas: e-mail não enviado (detalhes omitidos).");
     return { ok: false, error: "no-provider" };
   },
 };

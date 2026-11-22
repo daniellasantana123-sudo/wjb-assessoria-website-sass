@@ -10,6 +10,7 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 import { loadHomologEnv, parseEnvFile, projectRef, ROOT } from "./env.mjs";
+import { ensureTotp, saveTotpSecret } from "./mfa.mjs";
 
 const env = loadHomologEnv({ needDb: false });
 const URL_ = env.HOMOLOG_SUPABASE_URL;
@@ -53,7 +54,9 @@ for (const [key, p] of Object.entries(PEOPLE)) {
     if (error) throw new Error(`perfil ${key}: ${error.message}`);
   }
 }
-writeFileSync(USERS_FILE, Object.entries(PEOPLE).map(([k, p]) => `HOMOLOG_USER_${k.toUpperCase()}=${p.email}\nHOMOLOG_PW_${k.toUpperCase()}=${passwords[k]}`).join("\n") + "\n", { mode: 0o600 });
+// Preserva os segredos TOTP (Fase 10A.1): reescrever o arquivo sem eles trancava os usuários com MFA.
+const keptTotp = Object.entries(saved).filter(([k]) => k.startsWith("HOMOLOG_TOTP_")).map(([k, v]) => `${k}=${v}`);
+writeFileSync(USERS_FILE, [...Object.entries(PEOPLE).map(([k, p]) => `HOMOLOG_USER_${k.toUpperCase()}=${p.email}\nHOMOLOG_PW_${k.toUpperCase()}=${passwords[k]}`), ...keptTotp].join("\n") + "\n", { mode: 0o600 });
 
 const tenantIds = {};
 for (const [k, name] of Object.entries(TENANTS)) {
@@ -84,6 +87,11 @@ const newReq = (tenant, creator, key, extra = {}) => ({ tenant_id: tenantIds[ten
 
 const A = await as("clienteA"), B = await as("clienteB");
 const atend = await as("atendimento"), cont = await as("contador"), contSem = await as("contadorSem"), contA = await as("contadorA"), sa = await as("superadmin");
+// 0035: operações sensíveis exigem aal2 no banco; quem as faz nos testes completa o MFA (contadorSem e atendimento ficam sem).
+for (const [key, client] of [["SUPERADMIN", sa], ["CONTADOR", cont], ["CONTADORA", contA]]) {
+  const secret = await ensureTotp({ admin, client, secret: saved[`HOMOLOG_TOTP_${key}`], label: key.toLowerCase() });
+  saveTotpSecret(USERS_FILE, key, secret);
+}
 
 // ---------- regressão: tabelas que já existiam ----------
 for (const t of ["A", "B"]) {

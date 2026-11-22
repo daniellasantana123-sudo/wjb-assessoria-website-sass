@@ -1,0 +1,21 @@
+-- Rollback da 0035 (homologação): volta as funções originais e tira as políticas aal2.
+drop function if exists public.approve_fiscal_profile(uuid, text);
+alter function public.approve_fiscal_profile_impl(uuid, text) rename to approve_fiscal_profile;
+grant execute on function public.approve_fiscal_profile(uuid, text) to authenticated;
+drop function if exists public.revoke_fiscal_profile_approver(uuid, text);
+alter function public.revoke_fiscal_profile_approver_impl(uuid, text) rename to revoke_fiscal_profile_approver;
+grant execute on function public.revoke_fiscal_profile_approver(uuid, text) to authenticated;
+drop function if exists public.grant_fiscal_profile_approver(uuid, uuid, text);
+alter function public.grant_fiscal_profile_approver_impl(uuid, uuid, text) rename to grant_fiscal_profile_approver;
+grant execute on function public.grant_fiscal_profile_approver(uuid, uuid, text) to authenticated;
+drop function if exists public.configure_dps_series(uuid, text, text, integer);
+alter function public.configure_dps_series_impl(uuid, text, text, integer) rename to configure_dps_series;
+grant execute on function public.configure_dps_series(uuid, text, text, integer) to authenticated;
+drop policy if exists commercial_plans_insert_aal2 on public.commercial_plans;
+drop policy if exists commercial_plans_update_aal2 on public.commercial_plans;
+drop policy if exists commercial_settings_insert_aal2 on public.commercial_settings;
+drop policy if exists commercial_settings_update_aal2 on public.commercial_settings;
+drop policy if exists fiscal_grants_insert_aal2 on public.fiscal_authorization_grants;
+drop policy if exists fiscal_grants_update_aal2 on public.fiscal_authorization_grants;
+drop function if exists public.require_aal2();
+drop function if exists public.has_aal2();

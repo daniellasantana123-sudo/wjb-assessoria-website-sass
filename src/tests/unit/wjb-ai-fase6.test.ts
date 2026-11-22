@@ -53,8 +53,10 @@ import { SimulatedSefinTransport } from "@/lib/wjb-ai/fiscal/national/simulated-
 import type { SigningMaterial } from "@/lib/wjb-ai/fiscal/national/xmldsig";
 
 // Tudo FICTÍCIO. Certificados de TESTE gerados na hora, não ICP-Brasil.
-// Data local de hoje: os certificados de teste são gerados agora e valem a partir de hoje.
-const TODAY = new Date(Date.now() - 3 * 3_600_000).toISOString().slice(0, 10);
+// "Hoje" na MESMA referência dos certificados de teste (UTC), gerados agora:
+// com a data de Brasília, entre 21h e 0h o certificado parecia "ainda não
+// válido" (CERT_NOT_YET_VALID). Corrigido na Fase 10A.1.
+const TODAY = new Date().toISOString().slice(0, 10);
 const WJB = "99888777000155";
 const CLIENTE = "11222333000181";
 const tools =

@@ -8,6 +8,8 @@ grant usage on schema homolog_test to authenticated, service_role, anon;
 create function homolog_test.act_as(p_user uuid) returns void language plpgsql as $$
 begin
   perform set_config('request.jwt.claim.sub', coalesce(p_user::text, ''), true);
+  -- 0035: sessão simulada com MFA concluído (aal2), como a equipe usa na aplicação.
+  perform set_config('request.jwt.claims', case when p_user is null then '' else json_build_object('sub', p_user, 'aal', 'aal2')::text end, true);
   if p_user is null then execute 'set local role anon'; else execute 'set local role authenticated'; end if;
 end $$;
 create function homolog_test.expect_error(p_sql text, p_label text) returns void language plpgsql as $$

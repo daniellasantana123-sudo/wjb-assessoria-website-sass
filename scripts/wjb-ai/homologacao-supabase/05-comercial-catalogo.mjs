@@ -12,6 +12,7 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 import { loadHomologEnv, parseEnvFile, projectRef, ROOT } from "./env.mjs";
+import { ensureTotp, saveTotpSecret } from "./mfa.mjs";
 
 const env = loadHomologEnv({ needDb: false });
 console.log(`Projeto de homologação: ${projectRef(env)}`);
@@ -22,6 +23,8 @@ const admin = createClient(env.HOMOLOG_SUPABASE_URL, env.HOMOLOG_SUPABASE_SERVIC
 const sa = createClient(env.HOMOLOG_SUPABASE_URL, env.HOMOLOG_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
 const { error: le } = await sa.auth.signInWithPassword({ email: users.HOMOLOG_USER_SUPERADMIN, password: users.HOMOLOG_PW_SUPERADMIN });
 if (le) throw new Error(`login super admin: ${le.message}`);
+// 0035: preço e configuração exigem aal2 no banco (como na aplicação, com MFA).
+saveTotpSecret(USERS, "SUPERADMIN", await ensureTotp({ admin, client: sa, secret: users.HOMOLOG_TOTP_SUPERADMIN, label: "superadmin" }));
 
 const APPROVAL = "Aprovado pelo responsável pela WJB em 21/11/2026 (decisões da Fase 8)";
 const EFFECTIVE_FROM = "2026-11-21";

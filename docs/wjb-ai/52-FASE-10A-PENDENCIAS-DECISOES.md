@@ -37,3 +37,23 @@
 - IA: nada generativo (regras determinísticas).
 - WhatsApp: só Click-to-Chat no número oficial.
 - Omie/G-Click: nenhum arquivo alterado.
+
+---
+
+## Atualização da Fase 10A.1 (22/11/2026): aprovações necessárias, em ordem
+| # | Aprovação | Situação |
+| --- | --- | --- |
+| A1 | **Emergência:** a WJB conferir o banco de produção no painel e cobrar o suporte do Supabase (doc 54: API sem tabelas, Auth com 0 usuários) | **urgente**; nada foi tocado |
+| A2 | Deploy da **etapa A** (hotfix `hotfix/next-16.4.6-security`, `70d08787`) na `main` | pronto para revisão; independe do banco |
+| A3 | Decidir a reconstrução, caso os dados não voltem (migrations 0001-0023, conta da CEO, reimportação do G-Click) | depende de A1 |
+| A4 | Etapa B (0034 + formulários) | depende de A1 |
+| A5 | MFA **obrigatório** para a equipe (super admin, contador) antes da 0035 em produção | pré-requisito da etapa D4 |
+| A6 | Etapas C, D e E | dependem de A1, A2 e A5 |
+| A7 | Etapa F (pagamentos e fiscal) | Sandbox, jurídico, certificado |
+
+**Resolvido nesta fase (em homologação):** item 4 do quadro acima (reforço de `aal2` no banco), com a migration 0035 testada local e na API real.
+
+**Técnicas novas:**
+- A validade do certificado é comparada em fusos diferentes (data de Brasília x data UTC do certificado); revisar na Fase 10B.
+- Os erros do Supabase vão inteiros para o log do servidor; avaliar reduzir para código e mensagem.
+- O `vitest` do hotfix fica com 3 moderadas (só ferramenta de teste); atualizar junto com a etapa C.

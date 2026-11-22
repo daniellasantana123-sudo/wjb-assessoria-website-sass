@@ -10,6 +10,7 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 import { loadHomologEnv, parseEnvFile, projectRef, ROOT } from "./env.mjs";
+import { ensureTotp, saveTotpSecret } from "./mfa.mjs";
 
 const env = loadHomologEnv({ needDb: false });
 const ref = projectRef(env);
@@ -42,6 +43,11 @@ async function login(key) {
 
 const A = await login("CLIENTEA");
 const contA = await login("CONTADORA");
+// 0035: configurar a série da DPS exige aal2 no banco.
+{
+  const adminMfa = createClient(env.HOMOLOG_SUPABASE_URL, env.HOMOLOG_SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  saveTotpSecret(path.join(ROOT, ".env.homolog.users.local"), "CONTADORA", await ensureTotp({ admin: adminMfa, client: contA, secret: users.HOMOLOG_TOTP_CONTADORA, label: "contadora" }));
+}
 const { data: me } = await A.auth.getUser();
 const { data: tenant } = await A.from("tenants").select("id").limit(1).single();
 const tenantId = tenant.id;
