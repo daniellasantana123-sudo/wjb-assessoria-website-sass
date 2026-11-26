@@ -1,4 +1,7 @@
+import "server-only";
+
 import { isFiscalProductionAllowed } from "@/lib/wjb-ai/config";
+import { OpenGateToken } from "@/lib/wjb-ai/fiscal/national/gate-token";
 import { createCertificateVault } from "@/lib/wjb-ai/fiscal/certificate-vault";
 import {
   createIcpBrasilTrustStore,
@@ -85,10 +88,14 @@ export function evaluateTransmissionGate(state: GateState): GateDecision {
   return b.length ? { open: false, blockers: b } : { open: true };
 }
 
-function configured(factory: () => unknown): boolean {
+/**
+ * Uma fábrica só conta como configurada se devolver o tipo REAL (cofre de
+ * teste, cadeia de teste ou revogação simulada nunca abrem o portão).
+ */
+function configured(factory: () => unknown, realKind: string): boolean {
   try {
-    factory();
-    return true;
+    const v = factory() as { kind?: unknown } | null;
+    return !!v && v.kind === realKind;
   } catch {
     return false;
   }
@@ -105,9 +112,12 @@ export function currentGateState(environment: GateEnvironment): GateState {
     productionAllowed: isFiscalProductionAllowed(),
     unconfirmedContractFields: unconfirmedContractFields(),
     signatureAlgorithmConfirmed: SIGNATURE_ALGORITHM_PENDING.confirmed,
-    vaultConfigured: configured(createCertificateVault),
-    trustStoreConfigured: configured(createIcpBrasilTrustStore),
-    revocationConfigured: configured(createRevocationChecker),
+    vaultConfigured: configured(
+      createCertificateVault,
+      "gerenciador-de-segredos",
+    ),
+    trustStoreConfigured: configured(createIcpBrasilTrustStore, "icp-brasil"),
+    revocationConfigured: configured(createRevocationChecker, "lcr-ocsp"),
   };
 }
 
@@ -136,9 +146,9 @@ export async function requireOpenGate(
   state: GateState,
   audit: GateAuditSink,
   origin: string,
-): Promise<void> {
+): Promise<OpenGateToken> {
   const decision = evaluateTransmissionGate(state);
-  if (decision.open) return;
+  if (decision.open) return OpenGateToken.issue();
   try {
     await audit.blocked({
       environment: state.environment,

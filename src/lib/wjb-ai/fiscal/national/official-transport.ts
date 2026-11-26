@@ -1,3 +1,7 @@
+import "server-only";
+
+import { isOpenGateToken } from "@/lib/wjb-ai/fiscal/national/gate-token";
+import { maskDocument } from "@/lib/wjb-ai/fiscal/mask";
 import type {
   SefinCallContext,
   SefinEmitResult,
@@ -82,6 +86,20 @@ export const SEFIN_API_CONTRACT = {
     status: "pendente",
     source: "códigos HTTP não publicados",
   },
+  /** Formato da chave de acesso da NFS-e aceito como autorização. */
+  accessKeyPattern: {
+    name: "^[0-9]{50}$",
+    status: "inferido",
+    source:
+      "chave de acesso de 50 posições do leiaute da NFS-e; conferir no swagger",
+  },
+  /** Status HTTP aceitos como REJEIÇÃO definitiva (o resto é indeterminado). */
+  rejectionHttpStatuses: {
+    name: "400,422",
+    status: "pendente",
+    source:
+      "códigos HTTP não publicados; restrição deliberada (revisão de segurança)",
+  },
 } as const satisfies Record<string, ContractField>;
 
 export function unconfirmedContractFields(): string[] {
@@ -123,6 +141,13 @@ export const OFFICIAL_TRANSPORT_HOSTS = [
 
 const DPS_ID = /^DPS[0-9A-Z]{42}$/;
 
+/** Mascara sequências que parecem CPF/CNPJ (11 a 14 dígitos). */
+function maskDocuments(text: string): string {
+  return text.replace(/\d[\d./-]{9,17}\d/g, (m) =>
+    m.replace(/\D/g, "").length >= 11 ? maskDocument(m) : m,
+  );
+}
+
 function safeJson(body: string): Record<string, unknown> | null {
   try {
     const v = JSON.parse(body);
@@ -144,11 +169,23 @@ export class OfficialSefinTransport implements SefinTransport {
       baseUrl?: string;
       timeoutMs?: number;
       contract?: typeof SEFIN_API_CONTRACT;
+      /** Comprovante emitido por `requireOpenGate`. */
+      gate?: unknown;
     } = {},
   ) {
+    // Cliente mTLS REAL só com o comprovante do portão aberto. O cliente falso
+    // dos testes não abre rede e não precisa.
+    if (client.kind !== "falso-teste" && !isOpenGateToken(options.gate))
+      throw new Error(
+        "Transporte oficial com cliente real exige o portão de transmissão aberto.",
+      );
     this.base = new URL(options.baseUrl ?? SEFIN_API_CONTRACT.baseUrl.name);
     if (this.base.protocol !== "https:")
       throw new Error("Transporte oficial exige HTTPS.");
+    if (this.base.port || this.base.username || this.base.password)
+      throw new Error(
+        "URL do transporte oficial não pode ter porta, usuário ou senha.",
+      );
     if (
       !(OFFICIAL_TRANSPORT_HOSTS as readonly string[]).includes(
         this.base.hostname,
@@ -162,6 +199,10 @@ export class OfficialSefinTransport implements SefinTransport {
   }
   private readonly timeoutMs: number;
   private readonly contract: typeof SEFIN_API_CONTRACT;
+
+  private validKey(key: string) {
+    return new RegExp(this.contract.accessKeyPattern.name).test(key);
+  }
 
   private url(path: string) {
     return new URL(this.base.pathname.replace(/\/$/, "") + path, this.base);
@@ -198,7 +239,7 @@ export class OfficialSefinTransport implements SefinTransport {
     const json = safeJson(res.body);
     if (res.status >= 200 && res.status < 300) {
       const key = json?.[c.responseAccessKeyField.name];
-      if (typeof key === "string" && key.length > 0) {
+      if (typeof key === "string" && this.validKey(key)) {
         const nfse = json?.[c.responseNfseField.name];
         return {
           kind: "authorized",
@@ -206,9 +247,14 @@ export class OfficialSefinTransport implements SefinTransport {
           nfseXml: typeof nfse === "string" ? nfse : undefined,
         };
       }
-      throw new SefinIndeterminateError("Resposta 2xx sem chave de acesso.");
+      throw new SefinIndeterminateError(
+        "Resposta 2xx sem chave de acesso válida.",
+      );
     }
-    if (res.status >= 400 && res.status < 500) {
+    const rejectionStatuses = c.rejectionHttpStatuses.name
+      .split(",")
+      .map(Number);
+    if (rejectionStatuses.includes(res.status)) {
       const raw = json?.[c.responseErrorsField.name];
       const errors = Array.isArray(raw)
         ? raw
@@ -216,12 +262,14 @@ export class OfficialSefinTransport implements SefinTransport {
               const o = (e ?? {}) as Record<string, unknown>;
               const code = o[c.errorCodeField.name];
               const msg = o[c.errorMessageField.name];
-              return typeof code === "string"
+              // Só código oficial (E + 4 dígitos) conta como rejeição; a
+              // mensagem pode citar o tomador: documentos são mascarados.
+              return typeof code === "string" && /^E\d{4}$/.test(code)
                 ? {
-                    code: code.slice(0, 20),
+                    code,
                     message:
                       typeof msg === "string"
-                        ? msg.slice(0, 500)
+                        ? maskDocuments(msg.slice(0, 500))
                         : "Sem detalhe.",
                   }
                 : null;
@@ -260,7 +308,7 @@ export class OfficialSefinTransport implements SefinTransport {
       const key = safeJson(res.body)?.[
         this.contract.responseAccessKeyField.name
       ];
-      return typeof key === "string" && key ? key : null;
+      return typeof key === "string" && this.validKey(key) ? key : null;
     }
     throw new SefinIndeterminateError(`GET /dps respondeu ${res.status}.`);
   }

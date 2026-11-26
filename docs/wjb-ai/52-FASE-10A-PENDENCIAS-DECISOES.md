@@ -57,3 +57,19 @@
 - A validade do certificado é comparada em fusos diferentes (data de Brasília x data UTC do certificado); revisar na Fase 10B.
 - Os erros do Supabase vão inteiros para o log do servidor; avaliar reduzir para código e mensagem.
 - O `vitest` do hotfix fica com 3 moderadas (só ferramenta de teste); atualizar junto com a etapa C.
+
+---
+
+## Atualização da Fase 10B (26/11/2026)
+Detalhe nos documentos `FASE-10B-*`.
+
+| # | Decisão ou ação | Quem | Situação |
+| --- | --- | --- | --- |
+| B1 | Revogar na AC o certificado exposto e pedir a reemissão (e-CNPJ da WJB, depois de 26/11) | titular / WJB | **urgente** |
+| B2 | Conferir no painel o estado do banco de produção. Em 26/11 a API voltou a ver as tabelas (resposta `[]`, sem `PGRST205`); não se sabe se há dados | WJB / suporte | **urgente** |
+| B3 | Autorizar o deploy da etapa A (hotfix 16.4.6, ainda a estável mais recente) | WJB | pronto |
+| B4 | Contador confirmar `indDest=0` (tomador = destinatário) para o leiaute da NT 009 release 2 | contador WJB | pendente |
+| B5 | Escolha e contratação do cofre (depende da confirmação do algoritmo de assinatura) | WJB | sem custo novo nesta fase |
+| B6 | Chaves de teste da Stripe e execução do Sandbox | WJB | inalterado |
+
+**Resolvido nesta fase:** a validade do certificado passou a ser comparada por instante (pendência técnica da 10A.1).

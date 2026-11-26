@@ -1,4 +1,4 @@
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect as baseExpect, test, type Browser, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import { loginAs } from "./helpers/login";
 
@@ -9,7 +9,11 @@ import { loginAs } from "./helpers/login";
  */
 const enabled = process.env.HOMOLOG_STAGING === "1" && process.env.HOMOLOG_PAYMENTS === "mock";
 test.skip(!enabled, "Só no staging com pagamentos simulados (staging.sh).");
-test.describe.configure({ mode: "serial" });
+// Ações de pagamento simulado fazem várias chamadas seguidas ao Supabase de
+// homologação (remoto, 200-800 ms cada em 26/11/2026). Os limites padrão
+// (5 s por verificação, 30 s por teste) estouravam sem erro no fluxo.
+const expect = baseExpect.configure({ timeout: 20_000 });
+test.describe.configure({ mode: "serial", timeout: 120_000 });
 test.beforeEach(({}, testInfo) => {
   test.skip(testInfo.project.name !== "chromium", "Staging roda só no projeto chromium.");
 });

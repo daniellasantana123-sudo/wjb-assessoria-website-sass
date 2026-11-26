@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { EmitterAuthorization } from "@/lib/wjb-ai/fiscal/emitter-authorization";
 import { inspectCertificate } from "@/lib/wjb-ai/fiscal/national/certificate-inspect";
 import {
@@ -110,7 +112,8 @@ export async function useCertificate<T>(
      */
     trust: TrustStore | null;
     revocation: RevocationChecker | null;
-    today?: string;
+    /** Instante da verificação (padrão: agora). */
+    at?: Date;
     policyConfig?: CertificatePolicyConfig;
   },
   fn: (material: SigningMaterial) => Promise<T>,
@@ -184,8 +187,9 @@ export async function useCertificate<T>(
   }
   const policy = await evaluateCertificatePolicy({
     certificate: material.certificateDer,
-    role: auth.model === "wjb_procuracao" ? "wjb" : "cliente",
-    today: deps.today ?? new Date().toISOString().slice(0, 10),
+    // Modelo desconhecido cai no papel MAIS restritivo (regras da WJB).
+    role: auth.model === "certificado_cliente" ? "cliente" : "wjb",
+    at: deps.at,
     trust: deps.trust,
     revocation: deps.revocation,
     config: deps.policyConfig,

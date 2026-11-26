@@ -27,6 +27,10 @@ export interface LeafOptions {
   notAfter?: string;
   days?: number;
   issuer?: "ca" | "outra-ca";
+  /** Emite um certificado de AC no lugar do de usuário final. */
+  ca?: boolean;
+  /** Omite a Autenticação de Cliente (clientAuth). */
+  noClientAuth?: boolean;
 }
 
 export interface TestPki {
@@ -96,7 +100,7 @@ export function createTestPki(): TestPki {
         .join(",");
       writeFileSync(
         path.join(dir, `${name}.cnf`),
-        `[req]\ndistinguished_name=dn\nprompt=no\n[dn]\nCN=${name} FICTICIO\n[ext]\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,nonRepudiation\nextendedKeyUsage=clientAuth\n${san ? `subjectAltName=${san}\n` : ""}`,
+        `[req]\ndistinguished_name=dn\nprompt=no\n[dn]\nCN=${name} FICTICIO\n[ext]\nbasicConstraints=critical,CA:${opts.ca ? "TRUE" : "FALSE"}\nkeyUsage=critical,digitalSignature,nonRepudiation${opts.ca ? ",keyCertSign" : ""}\nextendedKeyUsage=${opts.noClientAuth ? "emailProtection" : "clientAuth"}\n${san ? `subjectAltName=${san}\n` : ""}`,
       );
       run(dir, [
         "req",
@@ -155,7 +159,10 @@ export function createTestPki(): TestPki {
   };
 }
 
-/** Início do dia de hoje em UTC, no formato do OpenSSL. */
+/** Agora menos 1 minuto (UTC), no formato do OpenSSL. */
 export function todayStamp(): string {
-  return `${new Date().toISOString().slice(0, 10).replace(/-/g, "")}000000Z`;
+  return `${new Date(Date.now() - 60_000)
+    .toISOString()
+    .slice(0, 19)
+    .replace(/[-T:]/g, "")}Z`;
 }

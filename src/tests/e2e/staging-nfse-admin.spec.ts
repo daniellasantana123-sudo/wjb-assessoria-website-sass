@@ -163,6 +163,9 @@ test("cliente vê autorizada EM SIMULAÇÃO, sem valor fiscal, e a rejeição", 
 
 let correctionId = "";
 test("contador pede correção: cliente recebe aviso, corrige o mesmo pedido e o histórico é mantido", async ({ browser }) => {
+  // Dois logins com MFA + revisão contra o Supabase remoto: passa perto dos
+  // 30 s padrão (estourou por pouco na Fase 10B, sem erro no fluxo).
+  test.setTimeout(60_000);
   const client = await login(browser, "CLIENTEA");
   correctionId = await request(client, "2.000,00", `f3-corr-${run}`);
   await expect(client.getByText("Em revisão pelo contador").first()).toBeVisible();

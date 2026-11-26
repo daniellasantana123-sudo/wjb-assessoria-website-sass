@@ -90,7 +90,6 @@ afterAll(() => {
 const policyDeps = () => ({
   trust: { kind: "teste" as const, anchors: [pki!.ca], intermediates: [] },
   revocation: new SimulatedRevocationChecker(),
-  today: TODAY,
 });
 
 const base: RegimeInput = {

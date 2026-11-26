@@ -1,6 +1,12 @@
+import "server-only";
+
 import { X509Certificate } from "node:crypto";
 
-import { readIcpIdentity } from "@/lib/wjb-ai/fiscal/national/certificate-inspect";
+import { siteConfig } from "@/config/site";
+import {
+  readIcpIdentity,
+  readKeyUsage,
+} from "@/lib/wjb-ai/fiscal/national/certificate-inspect";
 
 /**
  * Política de aceitação de certificado (Fase 10B, 26/11/2026).
@@ -22,22 +28,48 @@ import { readIcpIdentity } from "@/lib/wjb-ai/fiscal/national/certificate-inspec
  *
  * Nenhum dado pessoal (CPF, nome) entra nesta configuração nem nos códigos de
  * bloqueio.
+ *
+ * Revisão de segurança da Fase 10B (aplicada): a regra do incidente vale pelo
+ * TITULAR (CNPJ da WJB), não só pelo modelo de emissão; impressões digitais
+ * são normalizadas e validadas; datas comparadas por instante; o certificado
+ * final precisa ser de usuário final; algoritmos por lista de PERMITIDOS.
  */
 export const CERTIFICATE_INCIDENT_DATE = "2026-11-26";
+/** Início do dia do incidente em Brasília. */
+export const CERTIFICATE_INCIDENT_CUTOFF = "2026-11-26T00:00:00-03:00";
 
 export interface CertificatePolicyConfig {
-  /** SHA-256 em hexadecimal minúsculo, sem dois-pontos. */
+  /** SHA-256 em hexadecimal (aceita dois-pontos e maiúsculas: é normalizado). */
   compromisedFingerprints: readonly string[];
-  /** Certificados da WJB (modelo A) com `notBefore` anterior são recusados. */
-  wjbMinimumIssuanceDate: string;
+  /** Certificados da WJB com `notBefore` anterior são recusados (ISO com fuso). */
+  wjbMinimumIssuance: string;
+  /** Documentos (só dígitos) que identificam a WJB como titular. */
+  wjbDocuments: readonly string[];
   minRsaBits: number;
 }
 
 export const CERTIFICATE_POLICY: CertificatePolicyConfig = {
   compromisedFingerprints: [],
-  wjbMinimumIssuanceDate: CERTIFICATE_INCIDENT_DATE,
+  wjbMinimumIssuance: CERTIFICATE_INCIDENT_CUTOFF,
+  wjbDocuments: [siteConfig.company.cnpj.replace(/\D/g, "")],
   minRsaBits: 2048,
 };
+
+/** Normaliza e valida uma impressão digital SHA-256. Inválida = erro. */
+export function normalizeFingerprint(raw: string): string {
+  const v = raw.replace(/[:\s]/g, "").toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(v))
+    throw new Error("Impressão digital SHA-256 inválida na política.");
+  return v;
+}
+
+function assertConfig(cfg: CertificatePolicyConfig) {
+  cfg.compromisedFingerprints.forEach(normalizeFingerprint);
+  if (Number.isNaN(Date.parse(cfg.wjbMinimumIssuance)))
+    throw new Error("Data mínima de emissão inválida na política.");
+}
+// Configuração inválida derruba o módulo na carga, nunca desliga o bloqueio.
+assertConfig(CERTIFICATE_POLICY);
 
 export interface PolicyIssue {
   code: string;
@@ -67,16 +99,17 @@ export function createIcpBrasilTrustStore(): TrustStore {
   throw new TrustStoreNotConfiguredError();
 }
 
-const iso = (s: string) => new Date(s).toISOString().slice(0, 10);
-
-function withinValidity(c: X509Certificate, today: string) {
-  return iso(c.validFrom) <= today && today <= iso(c.validTo);
+function withinValidity(c: X509Certificate, at: Date) {
+  return (
+    new Date(c.validFrom).getTime() <= at.getTime() &&
+    at.getTime() <= new Date(c.validTo).getTime()
+  );
 }
 
 export function verifyChain(
   leaf: X509Certificate,
   store: TrustStore,
-  today: string,
+  at: Date,
 ): PolicyIssue | null {
   const pool = [...store.intermediates, ...store.anchors];
   const isAnchor = (c: X509Certificate) =>
@@ -95,7 +128,7 @@ export function verifyChain(
         code: "CERT_CHAIN_UNTRUSTED",
         message: "A cadeia do certificado não chega a uma raiz confiável.",
       };
-    if (!withinValidity(issuer, today))
+    if (!withinValidity(issuer, at))
       return {
         code: "CERT_CHAIN_EXPIRED",
         message: "Um certificado da cadeia (AC) está fora da validade.",
@@ -147,13 +180,20 @@ export class SimulatedRevocationChecker implements RevocationChecker {
 export const fingerprintOf = (c: X509Certificate) =>
   c.fingerprint256.replace(/:/g, "").toLowerCase();
 
-const WEAK_SIGNATURE = /sha1|md5|md2/i;
+/** Algoritmos de assinatura do CERTIFICADO aceitos (lista de permitidos). */
+const ALLOWED_CERT_SIGNATURES = new Set([
+  "sha256WithRSAEncryption",
+  "sha384WithRSAEncryption",
+  "sha512WithRSAEncryption",
+]);
+const EKU_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2";
 
 export interface PolicyInput {
   certificate: Buffer | string | X509Certificate;
   /** "wjb": certificado da WJB (modelo A). "cliente": do próprio cliente (B). */
   role: "wjb" | "cliente";
-  today: string;
+  /** Instante da verificação (padrão: agora). */
+  at?: Date;
   trust: TrustStore | null;
   revocation: RevocationChecker | null;
   config?: CertificatePolicyConfig;
@@ -171,6 +211,8 @@ export async function evaluateCertificatePolicy(
   input: PolicyInput,
 ): Promise<PolicyResult> {
   const cfg = input.config ?? CERTIFICATE_POLICY;
+  assertConfig(cfg);
+  const at = input.at ?? new Date();
   let x: X509Certificate;
   try {
     x =
@@ -187,20 +229,28 @@ export async function evaluateCertificatePolicy(
   const fingerprint = fingerprintOf(x);
   const blockers: PolicyIssue[] = [];
 
-  if (cfg.compromisedFingerprints.includes(fingerprint))
+  if (
+    cfg.compromisedFingerprints.map(normalizeFingerprint).includes(fingerprint)
+  )
     blockers.push({
       code: "CERT_COMPROMISED",
       message:
         "Certificado marcado como comprometido (incidente de segurança). Uso proibido.",
     });
 
-  if (input.role === "wjb") {
-    if (iso(x.validFrom) < cfg.wjbMinimumIssuanceDate)
+  // A regra do incidente vale para o PAPEL "wjb" e também para qualquer
+  // certificado cujo titular seja a WJB, cadastrado em qualquer modelo.
+  const identity = readIcpIdentity(x.raw);
+  const wjbHolder = !!identity.cnpj && cfg.wjbDocuments.includes(identity.cnpj);
+  if (input.role === "wjb" || wjbHolder) {
+    if (new Date(x.validFrom).getTime() < Date.parse(cfg.wjbMinimumIssuance))
       blockers.push({
         code: "CERT_ISSUED_BEFORE_INCIDENT",
-        message: `Certificado da WJB emitido antes de ${cfg.wjbMinimumIssuanceDate} (data do incidente). Só o certificado reemitido é aceito.`,
+        message: `Certificado da WJB emitido antes de ${CERTIFICATE_INCIDENT_DATE} (data do incidente). Só o certificado reemitido é aceito.`,
       });
-    if (!readIcpIdentity(x.raw).cnpj)
+  }
+  if (input.role === "wjb") {
+    if (!identity.cnpj)
       blockers.push({
         code: "WJB_CERT_NOT_ECNPJ",
         message: "O modelo A exige certificado e-CNPJ da WJB.",
@@ -216,13 +266,26 @@ export async function evaluateCertificatePolicy(
     });
   const sigAlg = (x as X509Certificate & { signatureAlgorithm?: string })
     .signatureAlgorithm;
-  if (!sigAlg || WEAK_SIGNATURE.test(sigAlg))
+  if (!sigAlg || !ALLOWED_CERT_SIGNATURES.has(sigAlg))
     blockers.push({
       code: "CERT_SIGNATURE_ALGORITHM",
       message: "Certificado assinado com algoritmo fraco ou desconhecido.",
     });
 
-  if (!withinValidity(x, input.today))
+  if (x.ca)
+    blockers.push({
+      code: "CERT_LEAF_IS_CA",
+      message: "Certificado de AC apresentado como certificado de usuário.",
+    });
+  const ku = readKeyUsage(x.raw);
+  if (!ku.digitalSignature || !(x.keyUsage ?? []).includes(EKU_CLIENT_AUTH))
+    blockers.push({
+      code: "CERT_LEAF_USAGE",
+      message:
+        "Certificado sem Assinatura Digital ou sem Autenticação de Cliente.",
+    });
+
+  if (!withinValidity(x, at))
     blockers.push({
       code: "CERT_OUT_OF_VALIDITY",
       message: "Certificado fora da validade.",
@@ -235,7 +298,7 @@ export async function evaluateCertificatePolicy(
         "Cadeia não verificada: repositório de confiança não configurado.",
     });
   else {
-    const chain = verifyChain(x, input.trust, input.today);
+    const chain = verifyChain(x, input.trust, at);
     if (chain) blockers.push(chain);
   }
 

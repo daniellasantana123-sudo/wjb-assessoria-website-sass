@@ -60,6 +60,11 @@ const WJB = "99888777000155";
 const CLIENTE = "11222333000181";
 const TODAY = new Date().toISOString().slice(0, 10);
 const DPS_ID = `DPS${"3".repeat(42)}`;
+// Chaves de acesso fictícias no formato de 50 dígitos.
+const KEY_A = "1".repeat(50);
+const KEY_B = "2".repeat(50);
+const KEY_C = "3".repeat(50);
+const WJB_REAL_CNPJ = "33152193000155"; // CNPJ público da WJB (siteConfig), em certificado FICTÍCIO
 
 let pki: TestPki | null = null;
 const trustOf = (p: TestPki): TrustStore => ({
@@ -83,7 +88,6 @@ describe.skipIf(!opensslAvailable)("política de certificado (Fase 10B)", () => 
       certificate: pki!.leaf(`c${Math.random().toString(36).slice(2)}`, opts)
         .x509,
       role,
-      today: TODAY,
       trust: trustOf(pki!),
       revocation: new SimulatedRevocationChecker(),
       ...extra,
@@ -121,7 +125,6 @@ describe.skipIf(!opensslAvailable)("política de certificado (Fase 10B)", () => 
     const r = await evaluateCertificatePolicy({
       certificate: leaf.x509,
       role: "wjb",
-      today: TODAY,
       trust: trustOf(pki!),
       revocation: new SimulatedRevocationChecker(),
       config: {
@@ -166,7 +169,6 @@ describe.skipIf(!opensslAvailable)("política de certificado (Fase 10B)", () => 
     const base = {
       certificate: leaf.x509,
       role: "wjb" as const,
-      today: TODAY,
       trust: trustOf(pki!),
     };
     expect(
@@ -195,11 +197,52 @@ describe.skipIf(!opensslAvailable)("política de certificado (Fase 10B)", () => 
     const r = await evaluateCertificatePolicy({
       certificate: Buffer.from("isto não é um certificado"),
       role: "wjb",
-      today: TODAY,
       trust: null,
       revocation: null,
     });
     expect(codes(r)).toEqual(["CERT_UNREADABLE"]);
+  });
+
+  it("impressão digital colada com dois-pontos e maiúsculas também bloqueia", async () => {
+    const leaf = pki!.leaf("comprometido2", { cnpj: WJB });
+    const pretty = leaf.x509.fingerprint256; // "AB:CD:..." como o openssl mostra
+    const r = await evaluateCertificatePolicy({
+      certificate: leaf.x509,
+      role: "wjb",
+      trust: trustOf(pki!),
+      revocation: new SimulatedRevocationChecker(),
+      config: { ...CERTIFICATE_POLICY, compromisedFingerprints: [pretty] },
+    });
+    expect(codes(r)).toContain("CERT_COMPROMISED");
+  });
+
+  it("impressão digital malformada na configuração derruba a avaliação (nunca desliga o bloqueio)", async () => {
+    await expect(
+      evaluateCertificatePolicy({
+        certificate: pki!.leaf("x1", { cnpj: WJB }).x509,
+        role: "wjb",
+        trust: null,
+        revocation: null,
+        config: { ...CERTIFICATE_POLICY, compromisedFingerprints: ["abc"] },
+      }),
+    ).rejects.toThrow(/inválida/);
+  });
+
+  it("certificado da WJB cadastrado como de CLIENTE também cai na regra do incidente", async () => {
+    const r = await ok(
+      { cnpj: WJB_REAL_CNPJ, notBefore: "20261101000000Z", days: 400 },
+      "cliente",
+    );
+    expect(codes(r)).toContain("CERT_ISSUED_BEFORE_INCIDENT");
+  });
+
+  it("certificado de AC ou sem Autenticação de Cliente não serve como certificado final", async () => {
+    expect(codes(await ok({ cnpj: WJB, ca: true }))).toContain(
+      "CERT_LEAF_IS_CA",
+    );
+    expect(codes(await ok({ cnpj: WJB, noClientAuth: true }))).toContain(
+      "CERT_LEAF_USAGE",
+    );
   });
 
   it("useCertificate: certificado recusado pela política é negado e auditado sem dados pessoais", async () => {
@@ -244,7 +287,6 @@ describe.skipIf(!opensslAvailable)("política de certificado (Fase 10B)", () => 
           audit,
           trust: trustOf(pki!),
           revocation: new SimulatedRevocationChecker(),
-          today: TODAY,
         },
         async () => {
           called = true;
@@ -256,7 +298,8 @@ describe.skipIf(!opensslAvailable)("política de certificado (Fase 10B)", () => 
     expect(audit.entries[0]).toMatchObject({ outcome: "negado" });
     expect(audit.entries[0].reason).toContain("CERT_ISSUED_BEFORE_INCIDENT");
     const dump = JSON.stringify(audit.entries);
-    expect(dump).not.toMatch(/\d{11,14}/); // nenhum CPF/CNPJ completo
+    // nenhum CPF/CNPJ completo (a impressão digital é hexadecimal e pública)
+    for (const doc of [WJB, CLIENTE]) expect(dump).not.toContain(doc);
     expect(dump).not.toMatch(/PRIVATE|BEGIN|MII/);
   });
 });
@@ -314,13 +357,13 @@ describe("transporte oficial com cliente falso (testes de contrato, sem rede)", 
 
   it("emissão: monta POST /nfse com a DPS no campo do contrato", async () => {
     const c = new FakeSefinClient(() =>
-      json(201, { [C.responseAccessKeyField.name]: "CHAVE-TESTE" }),
+      json(201, { [C.responseAccessKeyField.name]: KEY_A }),
     );
     const t = new OfficialSefinTransport(c);
     const r = await t.emit("ZGFkb3M=", DPS_ID, ctx);
     expect(r).toEqual({
       kind: "authorized",
-      accessKey: "CHAVE-TESTE",
+      accessKey: KEY_A,
       nfseXml: undefined,
     });
     expect(c.requests[0].method).toBe("POST");
@@ -361,6 +404,71 @@ describe("transporte oficial com cliente falso (testes de contrato, sem rede)", 
     await expect(t.emit("x", DPS_ID, ctx)).rejects.toBeInstanceOf(
       SefinIndeterminateError,
     );
+  });
+
+  it.each([
+    [
+      "409 com lista de erros",
+      json(409, { erros: [{ Codigo: "E0014", Descricao: "x" }] }),
+    ],
+    [
+      "429 com lista de erros",
+      json(429, { erros: [{ Codigo: "E0010", Descricao: "x" }] }),
+    ],
+    [
+      "400 com código fora do padrão oficial",
+      json(400, { erros: [{ Codigo: "PROXY-1", Descricao: "x" }] }),
+    ],
+    [
+      "2xx com chave fora do formato",
+      json(201, { chaveAcesso: "CHAVE-QUALQUER" }),
+    ],
+  ])("%s: indeterminado, nunca rejeição nem autorização", async (_n, res) => {
+    const t = new OfficialSefinTransport(new FakeSefinClient(() => res));
+    await expect(t.emit("x", DPS_ID, ctx)).rejects.toBeInstanceOf(
+      SefinIndeterminateError,
+    );
+  });
+
+  it("mensagem de rejeição com CPF/CNPJ do tomador é mascarada", async () => {
+    const t = new OfficialSefinTransport(
+      new FakeSefinClient(() =>
+        json(400, {
+          [C.responseErrorsField.name]: [
+            {
+              [C.errorCodeField.name]: "E0200",
+              [C.errorMessageField.name]: "Tomador 11222333000181 inválido",
+            },
+          ],
+        }),
+      ),
+    );
+    const r = await t.emit("x", DPS_ID, ctx);
+    expect(JSON.stringify(r)).not.toMatch(/11222333000181/);
+  });
+
+  it("URL com porta ou credencial é recusada; cliente real sem portão aberto é recusado", () => {
+    const fake = new FakeSefinClient(() => json(200, {}));
+    expect(
+      () =>
+        new OfficialSefinTransport(fake, {
+          baseUrl: "https://sefin.producaorestrita.nfse.gov.br:8443/x",
+        }),
+    ).toThrow(/porta/);
+    expect(
+      () =>
+        new OfficialSefinTransport(fake, {
+          baseUrl: "https://u:p@sefin.producaorestrita.nfse.gov.br/x",
+        }),
+    ).toThrow(/porta, usuário ou senha/);
+    const real: SefinHttpClient = {
+      kind: "mtls",
+      send: async () => json(200, {}),
+    };
+    expect(() => new OfficialSefinTransport(real)).toThrow(/portão/);
+    expect(
+      () => new OfficialSefinTransport(real, { gate: { falso: true } }),
+    ).toThrow(/portão/);
   });
 
   it("HEAD /dps: 200 existe, 404 não existe, outro status é indeterminado", async () => {
@@ -439,7 +547,7 @@ describe("conector nacional com transporte oficial falso", () => {
       }
       if (r.method === "HEAD")
         return { status: generated ? 200 : 404, body: "" };
-      return json(200, { [C.responseAccessKeyField.name]: "CHAVE-CONCILIADA" });
+      return json(200, { [C.responseAccessKeyField.name]: KEY_B });
     });
     const p = connector(client);
     const first = await p.submitAuthorizedDocument({
@@ -455,7 +563,7 @@ describe("conector nacional com transporte oficial falso", () => {
     });
     expect(again).toMatchObject({
       status: "AUTORIZADA",
-      officialId: "CHAVE-CONCILIADA",
+      officialId: KEY_B,
     });
     expect(emitted).toBe(1);
   });
@@ -466,11 +574,11 @@ describe("conector nacional com transporte oficial falso", () => {
     const client = new FakeSefinClient((r) => {
       if (r.method === "HEAD") return { status: n > 0 ? 200 : 404, body: "" };
       if (r.method === "GET")
-        return json(200, { [C.responseAccessKeyField.name]: "CHAVE-UNICA" });
+        return json(200, { [C.responseAccessKeyField.name]: KEY_C });
       bodies.push(r.body!);
       n++;
       return n === 1
-        ? json(201, { [C.responseAccessKeyField.name]: "CHAVE-UNICA" })
+        ? json(201, { [C.responseAccessKeyField.name]: KEY_C })
         : json(400, {
             [C.responseErrorsField.name]: [
               {
@@ -495,11 +603,11 @@ describe("conector nacional com transporte oficial falso", () => {
     ]);
     expect(a).toMatchObject({
       status: "AUTORIZADA",
-      officialId: "CHAVE-UNICA",
+      officialId: KEY_C,
     });
     expect(b).toMatchObject({
       status: "AUTORIZADA",
-      officialId: "CHAVE-UNICA",
+      officialId: KEY_C,
     });
     // os dois envios carregam a MESMA DPS (mesmo Id = mesma série/número):
     // o segundo recebeu E0014 e foi conciliado, nunca renumerado.
@@ -585,7 +693,7 @@ describe("portão único de transmissão oficial", () => {
         "teste",
       ),
     ).rejects.toBeInstanceOf(TransmissionBlockedError);
-    expect(JSON.stringify(entries)).not.toMatch(/\d{11,14}|vault:\/\//);
+    expect(JSON.stringify(entries)).not.toMatch(/\d{11}|vault:\/\//);
     await expect(
       requireOpenGate(
         currentGateState("producao_restrita"),
