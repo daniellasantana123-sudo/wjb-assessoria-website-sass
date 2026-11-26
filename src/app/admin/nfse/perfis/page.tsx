@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SimulationNotice } from "@/components/wjb-ai/fiscal-status-badge";
 import { notFound } from "next/navigation";
 
 import {
@@ -379,6 +380,7 @@ export default async function AdminNfsePerfisPage() {
         ]}
       />
       <StepUpNotice next="/admin/nfse/perfis" />
+      <SimulationNotice audience="equipe" />
       <h1 className="text-foreground text-2xl font-semibold">
         Perfis fiscais e autorizações
       </h1>

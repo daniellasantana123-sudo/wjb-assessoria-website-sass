@@ -1,7 +1,5 @@
-import { execFileSync, spawnSync } from "node:child_process";
-import { createPrivateKey, X509Certificate } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -51,6 +49,8 @@ import {
 } from "@/lib/wjb-ai/fiscal/national/signing";
 import { SimulatedSefinTransport } from "@/lib/wjb-ai/fiscal/national/simulated-transport";
 import type { SigningMaterial } from "@/lib/wjb-ai/fiscal/national/xmldsig";
+import { SimulatedRevocationChecker } from "@/lib/wjb-ai/fiscal/national/certificate-policy";
+import { createTestPki, type TestPki } from "@/tests/helpers/test-pki";
 
 // Tudo FICTÍCIO. Certificados de TESTE gerados na hora, não ICP-Brasil.
 // "Hoje" na MESMA referência dos certificados de teste (UTC), gerados agora:
@@ -67,48 +67,30 @@ let dir = "";
 const material: Record<string, SigningMaterial> = {};
 const pem: Record<string, string> = {};
 
+let pki: TestPki | null = null;
 function makeCert(name: string, cnpj: string) {
-  writeFileSync(
-    path.join(dir, `${name}.cnf`),
-    `[req]\ndistinguished_name=dn\nprompt=no\n[dn]\nCN=${name} FICTICIO:${cnpj}\n[ext]\nbasicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,nonRepudiation\nextendedKeyUsage=clientAuth\nsubjectAltName=otherName:2.16.76.1.3.3;OCTETSTRING:${cnpj}\n`,
-  );
-  execFileSync(
-    "openssl",
-    [
-      "req",
-      "-x509",
-      "-newkey",
-      "rsa:2048",
-      "-nodes",
-      "-keyout",
-      `${name}.key`,
-      "-out",
-      `${name}.pem`,
-      "-days",
-      "60",
-      "-config",
-      `${name}.cnf`,
-      "-extensions",
-      "ext",
-    ],
-    { cwd: dir, stdio: "ignore" },
-  );
-  pem[name] = readFileSync(path.join(dir, `${name}.pem`), "utf8");
-  material[name] = {
-    privateKey: createPrivateKey(readFileSync(path.join(dir, `${name}.key`))),
-    certificateDer: new X509Certificate(pem[name]).raw,
-  };
+  const leaf = pki!.leaf(name, { cnpj });
+  pem[name] = leaf.pem;
+  material[name] = leaf.material;
 }
 
 beforeAll(() => {
   if (!tools) return;
-  dir = mkdtempSync(path.join(tmpdir(), "wjb-f6-"));
+  pki = createTestPki();
+  dir = pki.dir;
   makeCert("wjb", WJB);
   makeCert("cliente", CLIENTE);
   makeCert("intruso", WJB); // mesmo CNPJ, outro par de chaves
 });
 afterAll(() => {
-  if (dir) rmSync(dir, { recursive: true, force: true });
+  pki?.dispose();
+});
+
+/** Política com a AC de teste como raiz e revogação simulada (Fase 10B). */
+const policyDeps = () => ({
+  trust: { kind: "teste" as const, anchors: [pki!.ca], intermediates: [] },
+  revocation: new SimulatedRevocationChecker(),
+  today: TODAY,
 });
 
 const base: RegimeInput = {
@@ -378,7 +360,7 @@ describe.skipIf(!tools)("custódia e uso do certificado", () => {
         purpose: "assinatura",
         environment: "simulado",
       },
-      { authorize, vault, audit },
+      { authorize, vault, audit, ...policyDeps() },
       async () => "assinado",
     );
     expect(out).toBe("assinado");
@@ -405,7 +387,7 @@ describe.skipIf(!tools)("custódia e uso do certificado", () => {
           purpose: "assinatura",
           environment: "simulado",
         },
-        { authorize, vault, audit },
+        { authorize, vault, audit, ...policyDeps() },
         async () => "x",
       ),
     ).rejects.toThrow(CertificateUseDeniedError);
@@ -425,7 +407,7 @@ describe.skipIf(!tools)("custódia e uso do certificado", () => {
           purpose: "mtls",
           environment: "simulado",
         },
-        { authorize, vault, audit },
+        { authorize, vault, audit, ...policyDeps() },
         async () => "x",
       ),
     ).rejects.toThrow(/não é o registrado/);
@@ -445,7 +427,7 @@ describe.skipIf(!tools)("custódia e uso do certificado", () => {
           purpose: "assinatura",
           environment: "producao",
         },
-        { authorize, vault, audit },
+        { authorize, vault, audit, ...policyDeps() },
         async () => "x",
       ),
     ).rejects.toThrow(/produção/);
@@ -517,7 +499,7 @@ describe.skipIf(!tools)(
               purpose: "assinatura",
               environment: "simulado",
             },
-            { authorize, vault, audit },
+            { authorize, vault, audit, ...policyDeps() },
             fn,
           ),
         true,

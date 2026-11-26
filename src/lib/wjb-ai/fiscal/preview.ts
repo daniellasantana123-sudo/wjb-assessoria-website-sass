@@ -1,4 +1,5 @@
 import type { Session } from "@/lib/auth/dal";
+import { SIMULATION_LABEL } from "@/lib/wjb-ai/fiscal/labels";
 import type { MyOrganization } from "@/lib/tenant";
 import { parseNfseDraft } from "@/lib/wjb-ai/fiscal/draft";
 import { buildIdempotencyKey } from "@/lib/wjb-ai/fiscal/idempotency";
@@ -96,6 +97,8 @@ export async function previewFiscalDraft(
       ok: true,
       simulated: true,
       transmitted: false,
+      fiscalValue: false,
+      notice: SIMULATION_LABEL,
       // Nunca devolver o CPF/CNPJ completo do tomador: a tela já o tem.
       preview: {
         serviceDescription: parsed.draft.serviceDescription,

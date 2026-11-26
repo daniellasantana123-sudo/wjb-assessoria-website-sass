@@ -129,6 +129,13 @@ export function buildDpsXml(input: {
     tag("cLocEmi", input.emitter.municipalityIbge),
     `<prest>${tag(input.emitter.documentKind, input.emitter.document)}<regTrib>${tag("opSimpNac", p.opSimpNac!)}${p.regApTribSN ? tag("regApTribSN", p.regApTribSN) : ""}${tag("regEspTrib", p.regEspTrib!)}</regTrib></prest>`,
     `<toma>${tag(d.taker.documentKind, d.taker.document)}${tag("xNome", d.taker.name)}${d.taker.email ? tag("email", d.taker.email) : ""}</toma>`,
+    // NT 009 release 2 (24/11/2026): `indDest` obrigatório em infDPS, logo
+    // depois do tomador. O pedido da plataforma só tem um destinatário, o
+    // próprio tomador: valor oficial 0 ("tomador = adquirente =
+    // destinatário"). Destinatário diferente (1 + grupo `dest`) não é
+    // suportado e não tem caminho automático. Conferência pendente com o
+    // contador (doc FASE-10B-API-NFSE-PENDENCIAS).
+    input.layout.rules.indDestInInfDps ? tag("indDest", "0") : "",
     `<serv><locPrest>${tag("cLocPrestacao", p.cLocPrestacao!)}</locPrest><cServ>${tag("cTribNac", p.cTribNac!)}${tag("xDescServ", d.serviceDescription)}</cServ></serv>`,
     `<valores><vServPrest>${tag("vServ", valor)}</vServPrest><trib><tribMun>${tag("tribISSQN", p.tribISSQN!)}${tag("tpRetISSQN", p.tpRetISSQN!)}${p.pAliq ? tag("pAliq", p.pAliq) : ""}</tribMun><totTrib>${tag("indTotTrib", p.indTotTrib!)}</totTrib></trib></valores>`,
     `</infDPS>`,

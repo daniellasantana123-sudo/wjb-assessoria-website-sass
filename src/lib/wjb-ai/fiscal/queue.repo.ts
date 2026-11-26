@@ -28,11 +28,19 @@ async function recordSimulatedUsage(tenantId: string, requestId: string) {
       .eq("tenant_id", tenantId)
       .neq("status", "cancelada")
       .maybeSingle();
-    const cycleStart = sub?.cycle_start ?? cycleFor(toIsoDate(new Date())).start;
+    const cycleStart =
+      sub?.cycle_start ?? cycleFor(toIsoDate(new Date())).start;
     await admin
       .from("commercial_usage_ledger")
       .upsert(
-        { tenant_id: tenantId, subscription_id: sub?.id ?? null, request_id: requestId, kind: "simulada", billable: false, cycle_start: cycleStart },
+        {
+          tenant_id: tenantId,
+          subscription_id: sub?.id ?? null,
+          request_id: requestId,
+          kind: "simulada",
+          billable: false,
+          cycle_start: cycleStart,
+        },
         { onConflict: "request_id,kind", ignoreDuplicates: true },
       );
   } catch {
@@ -113,7 +121,8 @@ export function createSupabaseQueueRepo(
 
     async notifyOutcome(job, outcome, simulated) {
       if (!simulated) return; // Resultado oficial terá aviso próprio quando houver conector real.
-      if (outcome === "AUTORIZADA") await recordSimulatedUsage(job.tenantId, job.id);
+      if (outcome === "AUTORIZADA")
+        await recordSimulatedUsage(job.tenantId, job.id);
       await notifyFiscalRequestEvent({
         tenantId: job.tenantId,
         actorId: null,

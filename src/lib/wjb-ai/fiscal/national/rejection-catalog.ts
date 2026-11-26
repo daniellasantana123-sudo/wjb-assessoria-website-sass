@@ -1,5 +1,6 @@
 import producao from "@/lib/wjb-ai/fiscal/national/rejeicoes-producao-v1.01-20260209.json";
 import restrita from "@/lib/wjb-ai/fiscal/national/rejeicoes-producao-restrita-v1.01-20261020.json";
+import restritaR2 from "@/lib/wjb-ai/fiscal/national/rejeicoes-producao-restrita-v1.01-20261124.json";
 
 /**
  * Catálogo OFICIAL de rejeições (código -> mensagem), extraído do Anexo I de
@@ -17,6 +18,7 @@ type Catalog = {
 const CATALOGS: Record<string, Catalog> = {
   "producao-v1.01-20260209": producao as Catalog,
   "producao-restrita-nt009-r1-20261020": restrita as Catalog,
+  "producao-restrita-nt009-r2-20261124": restritaR2 as Catalog,
 };
 
 export type RejectionCategory =

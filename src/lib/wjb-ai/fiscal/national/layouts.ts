@@ -30,6 +30,8 @@ export interface LayoutContract {
     deductionGroup: "vDedRed" | "vAjusteBC";
     /** Onde fica `finNFSe`. */
     finNFSeLocation: "IBSCBS" | "infDPS";
+    /** NT 009 release 2: `indDest` obrigatório direto em infDPS. */
+    indDestInInfDps: boolean;
   };
   source: string;
 }
@@ -50,6 +52,7 @@ export const LAYOUT_CONTRACTS: readonly LayoutContract[] = [
       seriesMax: 99999,
       deductionGroup: "vDedRed",
       finNFSeLocation: "IBSCBS",
+      indDestInInfDps: false,
     },
     source:
       "nfse-esquemas_xsd-v1-01-20260209.zip (NT 004 v2.0 + NT 007), gov.br/nfse",
@@ -68,9 +71,29 @@ export const LAYOUT_CONTRACTS: readonly LayoutContract[] = [
       seriesMax: 89999,
       deductionGroup: "vAjusteBC",
       finNFSeLocation: "infDPS",
+      indDestInInfDps: false,
     },
     source:
       "esquemas_prod_restrita_20261020.zip (NT 009 release 1), gov.br/nfse",
+  },
+  {
+    id: "producao-restrita-nt009-r2-20261124",
+    dpsVersion: "1.01",
+    namespace: NFSE_NAMESPACE,
+    xsdDir: "docs/wjb-ai/oficial/xsd/producao-restrita-nt009-r2-20261124",
+    // Release 2 da NT 009 (Fase 10B): produção restrita desde 24/11/2026
+    // (notícia CGNFS-e de 25/11/2026). Em produção a notícia fala em
+    // "prevista para 07/12/2026", sem cronograma formal: fica null.
+    validFrom: { producao_restrita: "2026-11-24", producao: null },
+    rules: {
+      alphanumericCnpj: true,
+      seriesMax: 89999,
+      deductionGroup: "vAjusteBC",
+      finNFSeLocation: "infDPS",
+      indDestInInfDps: true,
+    },
+    source:
+      "esquemas-xsd-producao-restrita-20261124.zip (NT 009 release 2), gov.br/nfse",
   },
 ];
 

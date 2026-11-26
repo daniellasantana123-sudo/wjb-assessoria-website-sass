@@ -1,3 +1,5 @@
+import { SIMULATION_LABEL } from "@/lib/wjb-ai/fiscal/labels";
+
 /**
  * Textos dos avisos ao cliente sobre a solicitação de NFS-e (F3). Sem dado
  * pessoal: nada de CPF/CNPJ do tomador nem valores; o detalhe fica na tela
@@ -19,7 +21,7 @@ export function buildFiscalNotice(
   const reason = note?.trim() ? ` Motivo: ${note.trim().slice(0, 300)}` : "";
   const body: Record<FiscalNoticeKind, string> = {
     approved:
-      "Sua solicitação de NFS-e foi revisada pela WJB e seguirá para envio.",
+      "Sua solicitação de NFS-e foi revisada pela WJB e seguirá para o envio simulado. Nenhuma nota é emitida nesta fase.",
     correction_requested: `A WJB pediu uma correção na sua solicitação de NFS-e.${reason}`,
     blocked: `Sua solicitação de NFS-e não poderá seguir.${reason}`,
     authorized_simulated:
@@ -31,5 +33,10 @@ export function buildFiscalNotice(
     kind === "authorized_simulated" || kind === "rejected_simulated"
       ? "fiscal_request.processed"
       : "fiscal_request.reviewed";
-  return { type, body: body[kind], link } as const;
+  // Fase 10B: todo aviso de NFS-e termina com o rótulo único de simulação.
+  return {
+    type,
+    body: `${body[kind]} (${SIMULATION_LABEL})`,
+    link,
+  } as const;
 }

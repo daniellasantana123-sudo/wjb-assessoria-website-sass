@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SimulationNotice } from "@/components/wjb-ai/fiscal-status-badge";
 import { notFound } from "next/navigation";
 
 import {
@@ -39,6 +40,7 @@ export default async function AdminNfsePermissoesPage() {
         ]}
       />
       <StepUpNotice next="/admin/nfse/permissoes" />
+      <SimulationNotice audience="equipe" />
       <h1 className="text-foreground text-2xl font-semibold">
         Permissão de aprovação de perfil fiscal
       </h1>

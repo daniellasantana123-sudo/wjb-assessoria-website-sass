@@ -1,6 +1,13 @@
 import type { FiscalStatus } from "@/lib/wjb-ai/fiscal/status";
 
 /**
+ * Rótulo ÚNICO de simulação (Fase 10B). Toda tela, arquivo, notificação, API
+ * e mensagem do assistente sobre NFS-e usa este texto enquanto não houver
+ * emissão oficial: nada do que o módulo gera hoje tem valor fiscal.
+ */
+export const SIMULATION_LABEL = "SIMULAÇÃO - SEM VALOR FISCAL";
+
+/**
  * Texto de cada estado para o cliente. Nenhum estado anterior a AUTORIZADA
  * fala em "nota emitida".
  */

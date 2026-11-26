@@ -14,7 +14,10 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminActionForm } from "@/components/wjb-ai/admin/admin-action-form";
-import { FiscalStatusBadge } from "@/components/wjb-ai/fiscal-status-badge";
+import {
+  FiscalStatusBadge,
+  SimulationNotice,
+} from "@/components/wjb-ai/fiscal-status-badge";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import {
@@ -71,14 +74,12 @@ export default async function AdminNfseDetailPage({
     })),
     { label: "atual", draft: r.draft, at: null as string | null },
   ];
-  const steps = chain
-    .slice(1)
-    .map((cur, i) => ({
-      from: chain[i].label,
-      to: cur.label,
-      at: chain[i].at,
-      changes: diffDrafts(chain[i].draft, cur.draft),
-    }));
+  const steps = chain.slice(1).map((cur, i) => ({
+    from: chain[i].label,
+    to: cur.label,
+    at: chain[i].at,
+    changes: diffDrafts(chain[i].draft, cur.draft),
+  }));
 
   return (
     <Container className="flex flex-1 flex-col gap-6 py-16">
@@ -90,6 +91,7 @@ export default async function AdminNfseDetailPage({
         ]}
       />
       <StepUpNotice next={`/admin/nfse/${id}`} />
+      <SimulationNotice audience="equipe" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-foreground text-2xl font-semibold">
           {r.tenantName}
@@ -254,7 +256,12 @@ export default async function AdminNfseDetailPage({
                 {st.changes.length === 0 ? (
                   <p className="text-muted-foreground">Nenhum campo mudou.</p>
                 ) : (
-                  <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Diferenças entre versões do pedido">
+                  <div
+                    className="overflow-x-auto"
+                    tabIndex={0}
+                    role="region"
+                    aria-label="Diferenças entre versões do pedido"
+                  >
                     <table className="mt-1 w-full min-w-[28rem] text-left">
                       <thead className="text-muted-foreground text-xs">
                         <tr>

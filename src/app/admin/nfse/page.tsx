@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TransmissionGatePanel } from "@/components/wjb-ai/admin/transmission-gate-panel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,7 +10,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { NfseAdminNav } from "@/components/wjb-ai/admin/nfse-admin-nav";
-import { FiscalStatusBadge } from "@/components/wjb-ai/fiscal-status-badge";
+import {
+  FiscalStatusBadge,
+  SimulationNotice,
+} from "@/components/wjb-ai/fiscal-status-badge";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import {
@@ -85,6 +89,8 @@ export default async function AdminNfsePage({
         <Badge tone="warning">Conector simulado</Badge>
       </div>
       <NfseAdminNav current="/admin/nfse" />
+      <SimulationNotice audience="equipe" />
+      <TransmissionGatePanel />
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[

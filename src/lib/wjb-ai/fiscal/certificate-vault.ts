@@ -1,5 +1,11 @@
 import type { EmitterAuthorization } from "@/lib/wjb-ai/fiscal/emitter-authorization";
 import { inspectCertificate } from "@/lib/wjb-ai/fiscal/national/certificate-inspect";
+import {
+  evaluateCertificatePolicy,
+  type CertificatePolicyConfig,
+  type RevocationChecker,
+  type TrustStore,
+} from "@/lib/wjb-ai/fiscal/national/certificate-policy";
 import type { SigningMaterial } from "@/lib/wjb-ai/fiscal/national/xmldsig";
 
 /**
@@ -97,6 +103,15 @@ export async function useCertificate<T>(
     authorize: () => Promise<EmitterAuthorization>;
     vault: CertificateVault;
     audit: CertificateUsageSink;
+    /**
+     * Fase 10B: política do certificado REAL (cadeia, revogação, algoritmo,
+     * incidente de 26/11/2026). Obrigatórios: `null` = não configurado =
+     * uso negado (falha fechada).
+     */
+    trust: TrustStore | null;
+    revocation: RevocationChecker | null;
+    today?: string;
+    policyConfig?: CertificatePolicyConfig;
   },
   fn: (material: SigningMaterial) => Promise<T>,
 ): Promise<T> {
@@ -165,6 +180,21 @@ export async function useCertificate<T>(
     });
     throw new CertificateUseDeniedError(
       "Titular do certificado no cofre diverge do registrado.",
+    );
+  }
+  const policy = await evaluateCertificatePolicy({
+    certificate: material.certificateDer,
+    role: auth.model === "wjb_procuracao" ? "wjb" : "cliente",
+    today: deps.today ?? new Date().toISOString().slice(0, 10),
+    trust: deps.trust,
+    revocation: deps.revocation,
+    config: deps.policyConfig,
+  });
+  if (!policy.ok) {
+    const reason = policy.blockers.map((b) => b.code).join(",");
+    await deps.audit.record({ ...ctx, outcome: "negado", reason });
+    throw new CertificateUseDeniedError(
+      `Certificado recusado pela política: ${reason}.`,
     );
   }
   try {

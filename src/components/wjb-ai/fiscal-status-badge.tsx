@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   FISCAL_STATUS_LABELS,
   FISCAL_STATUS_TONE,
+  SIMULATION_LABEL,
 } from "@/lib/wjb-ai/fiscal/labels";
 import {
   isOfficiallyAuthorized,
@@ -26,13 +27,21 @@ export function FiscalStatusBadge({
   );
 }
 
-export function SimulationNotice() {
+export function SimulationNotice({
+  audience = "cliente",
+}: {
+  audience?: "cliente" | "equipe";
+}) {
   return (
-    <div className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm">
-      <Badge tone="warning">Simulação</Badge>{" "}
+    <div
+      role="note"
+      className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm"
+    >
+      <Badge tone="warning">{SIMULATION_LABEL}</Badge>{" "}
       <span className="text-foreground">
-        As solicitações ficam registradas e são revisadas pela WJB, mas nenhuma
-        nota fiscal é emitida nesta fase.
+        {audience === "equipe"
+          ? "Conector, assinatura e certificado são simulados. Nada aqui é transmitido ao governo e nenhuma nota tem valor fiscal."
+          : "As solicitações ficam registradas e são revisadas pela WJB, mas nenhuma nota fiscal é emitida nesta fase."}
       </span>
     </div>
   );

@@ -4,6 +4,12 @@ import { getFiscalProviderMode, isWjbAiEnabled } from "@/lib/wjb-ai/config";
 import { getFiscalProvider } from "@/lib/wjb-ai/fiscal/provider";
 import { processQueue } from "@/lib/wjb-ai/fiscal/queue";
 import { createSupabaseQueueRepo } from "@/lib/wjb-ai/fiscal/queue.repo";
+import {
+  currentGateState,
+  requireOpenGate,
+  TransmissionBlockedError,
+} from "@/lib/wjb-ai/fiscal/national/transmission-gate";
+import { createSupabaseGateAuditSink } from "@/lib/wjb-ai/fiscal/national/transmission-gate.repo";
 import { isCronAuthorized } from "@/lib/security/cron-auth";
 
 /**
@@ -32,8 +38,28 @@ export async function POST(request: NextRequest) {
   }
   const mode = getFiscalProviderMode();
   if (mode !== "mock") {
+    // Fase 10B: qualquer modo oficial passa pelo portão único, que audita o
+    // bloqueio. Mesmo com o portão aberto, o transporte real não existe
+    // nesta fase: a resposta continua 503.
+    const codes: string[] = [];
+    try {
+      await requireOpenGate(
+        currentGateState(
+          mode === "producao" ? "producao" : "producao_restrita",
+        ),
+        createSupabaseGateAuditSink(),
+        "cron/processar-fila",
+      );
+    } catch (e) {
+      if (!(e instanceof TransmissionBlockedError)) throw e;
+      codes.push(...e.blockers.map((b) => b.code));
+    }
     return NextResponse.json(
-      { ok: false, error: "Só o conector simulado é permitido nesta fase." },
+      {
+        ok: false,
+        error: "Só o conector simulado é permitido nesta fase.",
+        blockers: codes,
+      },
       { status: 503 },
     );
   }
