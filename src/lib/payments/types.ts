@@ -88,6 +88,11 @@ export interface PaymentProvider {
 export const HANDLED_EVENTS = [
   "checkout.session.completed",
   "checkout.session.expired",
+  // Fase 10D: Pix e boleto são ASSÍNCRONOS. O Checkout termina "complete" com
+  // pagamento "unpaid" (nada é liberado) e a confirmação chega depois por
+  // estes eventos. Como em todos, o estado é buscado de novo no provedor.
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
   "invoice.paid",
   "invoice.payment_failed",
   "customer.subscription.updated",

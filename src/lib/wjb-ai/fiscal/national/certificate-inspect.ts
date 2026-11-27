@@ -121,6 +121,35 @@ export function readKeyUsage(der: Buffer): {
   };
 }
 
+/**
+ * Algoritmo de assinatura do CERTIFICADO, lido do DER (Fase 10D). O Node 24
+ * expõe `X509Certificate.signatureAlgorithm`, mas o 22 e o 20 não (achado na
+ * CI em Linux): sem esta leitura a política recusaria TODO certificado por
+ * motivo de versão. Certificate ::= SEQUENCE { tbsCertificate,
+ * signatureAlgorithm AlgorithmIdentifier, signatureValue }.
+ */
+const SIGNATURE_OIDS: Record<string, string> = {
+  "1.2.840.113549.1.1.5": "sha1WithRSAEncryption",
+  "1.2.840.113549.1.1.4": "md5WithRSAEncryption",
+  "1.2.840.113549.1.1.11": "sha256WithRSAEncryption",
+  "1.2.840.113549.1.1.12": "sha384WithRSAEncryption",
+  "1.2.840.113549.1.1.13": "sha512WithRSAEncryption",
+  "1.2.840.113549.1.1.10": "rsassaPss",
+};
+export function readCertificateSignatureAlgorithm(der: Buffer): string | null {
+  try {
+    const cert = readTlv(der, 0);
+    const [, algId] = children(der, cert);
+    if (!algId || algId.tag !== 0x30) return null;
+    const oidT = readTlv(der, algId.start);
+    if (oidT.tag !== 0x06) return null;
+    const oid = decodeOid(der.subarray(oidT.start, oidT.end));
+    return SIGNATURE_OIDS[oid] ?? oid;
+  } catch {
+    return null;
+  }
+}
+
 const isoDate = (s: string) => new Date(s).toISOString().slice(0, 10);
 
 /**

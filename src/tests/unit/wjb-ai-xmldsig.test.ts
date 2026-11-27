@@ -23,6 +23,7 @@ import {
   verifyXmlSignature,
   type SigningMaterial,
 } from "@/lib/wjb-ai/fiscal/national/xmldsig";
+import { isKnownOfficialXsdIssue } from "@/tests/helpers/xsd-known-issues";
 
 /**
  * Assinatura XMLDSig REAL, com certificado de TESTE gerado na hora:
@@ -229,7 +230,7 @@ describe.skipIf(!tools)("assinatura XMLDSig real da DPS", () => {
       const errors = `${x.stdout}${x.stderr}`
         .split("\n")
         .filter(
-          (l) => l.includes("validity error") && !l.includes("element serie:"),
+          (l) => l.includes("validity error") && !isKnownOfficialXsdIssue(layout.id, l),
         );
       expect(errors).toEqual([]);
     });

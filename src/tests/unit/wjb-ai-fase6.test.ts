@@ -51,6 +51,7 @@ import { SimulatedSefinTransport } from "@/lib/wjb-ai/fiscal/national/simulated-
 import type { SigningMaterial } from "@/lib/wjb-ai/fiscal/national/xmldsig";
 import { SimulatedRevocationChecker } from "@/lib/wjb-ai/fiscal/national/certificate-policy";
 import { createTestPki, type TestPki } from "@/tests/helpers/test-pki";
+import { isKnownOfficialXsdIssue } from "@/tests/helpers/xsd-known-issues";
 
 // Tudo FICTÍCIO. Certificados de TESTE gerados na hora, não ICP-Brasil.
 // "Hoje" na MESMA referência dos certificados de teste (UTC), gerados agora:
@@ -635,7 +636,7 @@ describe.skipIf(!tools)("DPS com regApTribSN e pAliq x XSD oficial", () => {
       const errors = `${r.stdout}${r.stderr}`
         .split("\n")
         .filter(
-          (l) => l.includes("validity error") && !l.includes("element serie:"),
+          (l) => l.includes("validity error") && !isKnownOfficialXsdIssue(layout.id, l),
         );
       expect(errors).toEqual([]);
     });

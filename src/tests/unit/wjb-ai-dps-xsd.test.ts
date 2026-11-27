@@ -16,6 +16,7 @@ import {
   type LayoutContract,
 } from "@/lib/wjb-ai/fiscal/national/layouts";
 import { SimulatedDpsSigner } from "@/lib/wjb-ai/fiscal/national/signing";
+import { isKnownOfficialXsdIssue } from "@/tests/helpers/xsd-known-issues";
 
 /**
  * Teste de contrato contra os XSD OFICIAIS (docs/wjb-ai/oficial/xsd).
@@ -61,11 +62,7 @@ const draft = {
  * (libxml2) recusam qualquer série. O pacote de produção restrita corrigiu
  * para `[0-9]{1,4}|[0-8][0-9]{4}`. Só ESTE erro é tolerado, e só nesse pacote.
  */
-const KNOWN_OFFICIAL_XSD_ISSUES: Record<string, RegExp[]> = {
-  "producao-v1.01-20260209": [
-    /element serie: Schemas validity error .*\[facet 'pattern'\] The value '\d+' is not accepted by the pattern '\^0\{0,4\}\\d\{1,5\}\$'/,
-  ],
-};
+// Defeito conhecido do XSD oficial de produção: ver tests/helpers/xsd-known-issues.ts.
 
 function validate(layout: LayoutContract, xml: string) {
   const dir = mkdtempSync(path.join(tmpdir(), "wjb-dps-"));
@@ -87,7 +84,7 @@ function validate(layout: LayoutContract, xml: string) {
     .filter((l) => l.includes("validity error"))
     .filter(
       (l) =>
-        !(KNOWN_OFFICIAL_XSD_ISSUES[layout.id] ?? []).some((re) => re.test(l)),
+        !isKnownOfficialXsdIssue(layout.id, l),
     );
   return {
     ok:

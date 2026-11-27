@@ -4,6 +4,7 @@ import { X509Certificate } from "node:crypto";
 
 import { siteConfig } from "@/config/site";
 import {
+  readCertificateSignatureAlgorithm,
   readIcpIdentity,
   readKeyUsage,
 } from "@/lib/wjb-ai/fiscal/national/certificate-inspect";
@@ -264,8 +265,11 @@ export async function evaluateCertificatePolicy(
       code: "CERT_KEY_UNSUPPORTED",
       message: `Chave não suportada: exige RSA de ${cfg.minRsaBits} bits ou mais.`,
     });
-  const sigAlg = (x as X509Certificate & { signatureAlgorithm?: string })
-    .signatureAlgorithm;
+  // Node 24 tem a propriedade; Node 20/22 não: lê do DER (Fase 10D). Se as
+  // duas existirem e divergirem, vale a mais restritiva (recusa).
+  const fromNode = (x as X509Certificate & { signatureAlgorithm?: string }).signatureAlgorithm;
+  const fromDer = readCertificateSignatureAlgorithm(x.raw);
+  const sigAlg = fromNode && fromDer && fromNode !== fromDer ? undefined : (fromNode ?? fromDer ?? undefined);
   if (!sigAlg || !ALLOWED_CERT_SIGNATURES.has(sigAlg))
     blockers.push({
       code: "CERT_SIGNATURE_ALGORITHM",

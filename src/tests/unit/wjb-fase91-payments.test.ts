@@ -182,7 +182,7 @@ describe("troca de plano, prévia e eventos na Stripe (fetch falso)", () => {
     HANDLED_EVENTS.forEach((t, i) => expect(url).toContain(`types[${i}]=${t}`));
     expect(url).toContain("created[gte]=100");
   });
-  it("são exatamente 8 eventos de webhook", () => {
-    expect([...HANDLED_EVENTS].sort()).toEqual(["charge.dispute.created", "charge.refunded", "checkout.session.completed", "checkout.session.expired", "customer.subscription.deleted", "customer.subscription.updated", "invoice.paid", "invoice.payment_failed"]);
+  it("são exatamente 10 eventos de webhook (Fase 10D: + pagamento assíncrono de Pix e boleto)", () => {
+    expect([...HANDLED_EVENTS].sort()).toEqual(["charge.dispute.created", "charge.refunded", "checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired", "customer.subscription.deleted", "customer.subscription.updated", "invoice.paid", "invoice.payment_failed"]);
   });
 });

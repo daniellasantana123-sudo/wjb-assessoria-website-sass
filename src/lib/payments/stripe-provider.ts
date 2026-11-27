@@ -10,8 +10,9 @@ import { HANDLED_EVENTS, type PaymentProvider, type PCharge, type PCheckoutSessi
  * chave que não seja de teste ANTES de qualquer chamada.
  *
  * Checkout sem `payment_method_types`: os meios exibidos vêm da configuração
- * do Dashboard. Pix não é usado em assinatura (a Stripe não oferece Pix
- * recorrente para contas no Brasil). Link (Fase 10C, 26/11/2026): a tabela
+ * do Dashboard (cartão, Apple Pay/Google Pay, boleto e Pix Automático, cada um
+ * ligado lá; ver docs/wjb-ai/fase-10d/04). Pix e boleto confirmam DEPOIS do
+ * Checkout (eventos async_payment_*). Link (Fase 10C, 26/11/2026): a tabela
  * oficial de países da Stripe não lista o Brasil como local de empresa do
  * Link e o Payment Element não aceita Link no Brasil; por isso nada aqui
  * pede Link explicitamente (docs/wjb-ai/fase-10c/08).
