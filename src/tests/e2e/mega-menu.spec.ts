@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }, testInfo) => {
   // O mega menu só existe no nav desktop (xl, 1280px).
-  testInfo.skip(testInfo.project.name === "mobile-chrome");
+  testInfo.skip(testInfo.project.name.startsWith("mobile-"));
   await page.goto("/");
 });
 
