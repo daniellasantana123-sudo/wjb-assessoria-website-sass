@@ -56,3 +56,31 @@ export const isLivePaymentsEnabled = () => false;
 
 /** Versão da API da Stripe fixada: formatos de objeto previsíveis. */
 export const STRIPE_API_VERSION = "2024-06-20";
+
+/**
+ * Fase 10E: opções de Pix Automático e boleto lidas em runtime. Ausentes =
+ * nada é enviado (o Checkout usa o padrão do Dashboard). Inválidas = erro de
+ * configuração (aparece em `problems` via checkCheckoutMethodOptions).
+ *   WJB_PAYMENTS_PIX_AUTOMATICO_MAX_CENTS  limite autorizado no banco
+ *   WJB_PAYMENTS_BOLETO_EXPIRES_DAYS       vencimento do boleto (0 a 60)
+ */
+export function checkoutMethodOptionsFromEnv(e: (k: string) => string = env): {
+  options: import("./types").CheckoutMethodOptions;
+  problems: string[];
+} {
+  const options: import("./types").CheckoutMethodOptions = {};
+  const problems: string[] = [];
+  const pix = e("WJB_PAYMENTS_PIX_AUTOMATICO_MAX_CENTS");
+  if (pix) {
+    const n = Number(pix);
+    if (Number.isInteger(n) && n >= 50) options.pixAutomaticMaxCents = n;
+    else problems.push("WJB_PAYMENTS_PIX_AUTOMATICO_MAX_CENTS inválido");
+  }
+  const bol = e("WJB_PAYMENTS_BOLETO_EXPIRES_DAYS");
+  if (bol) {
+    const n = Number(bol);
+    if (Number.isInteger(n) && n >= 0 && n <= 60) options.boletoExpiresAfterDays = n;
+    else problems.push("WJB_PAYMENTS_BOLETO_EXPIRES_DAYS inválido (0 a 60)");
+  }
+  return { options, problems };
+}

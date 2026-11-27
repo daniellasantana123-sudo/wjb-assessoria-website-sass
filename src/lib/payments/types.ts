@@ -54,7 +54,12 @@ export interface PaymentProvider {
   ensureCustomer(input: { tenantId: string; idempotencyKey: string }): Promise<string>;
   ensurePrice(input: { lookupKey: string; productName: string; amountCents: number; recurring: boolean }): Promise<{ priceId: string; productId: string }>;
   createCheckoutSession(input: {
-    kind: "subscription" | "setup";
+    /**
+     * subscription: assinatura mensal. setup: só cadastra o meio (nota
+     * avulsa). payment (Fase 10E): pagamento único, para serviço adicional;
+     * o preço vem do catálogo aprovado (nenhum preço é inventado no código).
+     */
+    kind: "subscription" | "setup" | "payment";
     customerId: string;
     priceId: string | null;
     successUrl: string;
@@ -62,6 +67,8 @@ export interface PaymentProvider {
     clientReferenceId: string;
     metadata: Record<string, string>;
     idempotencyKey: string;
+    /** Opções de Pix Automático e boleto (Fase 10E); ausentes = padrão do Dashboard. */
+    methodOptions?: CheckoutMethodOptions;
   }): Promise<{ id: string; url: string }>;
   expireCheckoutSession(id: string): Promise<void>;
   createPortalSession(input: { customerId: string; returnUrl: string }): Promise<{ url: string }>;
@@ -85,6 +92,21 @@ export interface PaymentProvider {
  * + `customer.subscription.updated`; meios assíncronos (boleto/Pix) não são
  * usados em assinatura.
  */
+/**
+ * Fase 10E: opções dos métodos brasileiros no Checkout. Desligadas por
+ * padrão; ligadas por variável de ambiente (config.ts) quando a WJB decidir.
+ * - pixAutomaticMaxCents: limite que o cliente autoriza no banco (Pix
+ *   Automático, só assinatura). Precisa cobrir o plano mais caro, senão a
+ *   troca de plano falha na cobrança.
+ * - boletoExpiresAfterDays: vencimento do boleto (0 a 60; padrão Stripe 3).
+ * Nomes dos parâmetros conforme a documentação pública da Stripe (doc 04 da
+ * Fase 10D); conferir no Sandbox antes de ligar.
+ */
+export interface CheckoutMethodOptions {
+  pixAutomaticMaxCents?: number;
+  boletoExpiresAfterDays?: number;
+}
+
 export const HANDLED_EVENTS = [
   "checkout.session.completed",
   "checkout.session.expired",

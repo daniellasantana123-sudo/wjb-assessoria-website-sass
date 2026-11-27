@@ -1,7 +1,7 @@
 import "server-only";
 
 import { checkStripeKeys, STRIPE_API_VERSION, stripeKeysFromEnv } from "./config";
-import { HANDLED_EVENTS, type PaymentProvider, type PCharge, type PCheckoutSession, type PInvoice, type PSubscription } from "./types";
+import { HANDLED_EVENTS, type CheckoutMethodOptions, type PaymentProvider, type PCharge, type PCheckoutSession, type PInvoice, type PSubscription } from "./types";
 
 /**
  * Provedor Stripe em MODO DE TESTE (Fase 9.1), pela API REST oficial
@@ -17,6 +17,31 @@ import { HANDLED_EVENTS, type PaymentProvider, type PCharge, type PCheckoutSessi
  * Link e o Payment Element não aceita Link no Brasil; por isso nada aqui
  * pede Link explicitamente (docs/wjb-ai/fase-10c/08).
  */
+/**
+ * Fase 10E: `payment_method_options` só com o que foi configurado. Pix
+ * Automático só existe em assinatura (mandato com valor MÁXIMO mensal);
+ * boleto vale para assinatura e pagamento único. Valores fora da faixa são
+ * recusados aqui, antes de qualquer chamada.
+ */
+export function checkoutMethodOptionsBody(
+  kind: "subscription" | "setup" | "payment",
+  o: CheckoutMethodOptions | undefined,
+): { payment_method_options?: Record<string, unknown> } {
+  if (!o || kind === "setup") return {};
+  const pmo: Record<string, unknown> = {};
+  if (o.pixAutomaticMaxCents !== undefined && kind === "subscription") {
+    if (!Number.isInteger(o.pixAutomaticMaxCents) || o.pixAutomaticMaxCents < 50)
+      throw new Error("Limite do Pix Automático inválido.");
+    pmo.pix = { mandate_options: { amount: o.pixAutomaticMaxCents, amount_type: "maximum", payment_schedule: "monthly" } };
+  }
+  if (o.boletoExpiresAfterDays !== undefined) {
+    if (!Number.isInteger(o.boletoExpiresAfterDays) || o.boletoExpiresAfterDays < 0 || o.boletoExpiresAfterDays > 60)
+      throw new Error("Vencimento do boleto inválido (0 a 60 dias).");
+    pmo.boleto = { expires_after_days: o.boletoExpiresAfterDays };
+  }
+  return Object.keys(pmo).length ? { payment_method_options: pmo } : {};
+}
+
 export class StripeApiError extends Error {
   constructor(
     readonly status: number,
@@ -113,10 +138,14 @@ export class StripeTestProvider implements PaymentProvider {
       locale: "pt-BR",
       metadata: i.metadata,
     };
+    if (i.kind !== "setup" && !i.priceId) throw new Error("Checkout de assinatura ou pagamento exige um preço do catálogo.");
+    const methodOptions = checkoutMethodOptionsBody(i.kind, i.methodOptions);
     const body =
       i.kind === "subscription"
-        ? { ...common, mode: "subscription", line_items: [{ price: i.priceId, quantity: 1 }], subscription_data: { metadata: i.metadata } }
-        : { ...common, mode: "setup", currency: "brl", setup_intent_data: { metadata: i.metadata } };
+        ? { ...common, mode: "subscription", line_items: [{ price: i.priceId, quantity: 1 }], subscription_data: { metadata: i.metadata }, ...methodOptions }
+        : i.kind === "payment"
+          ? { ...common, mode: "payment", line_items: [{ price: i.priceId, quantity: 1 }], payment_intent_data: { metadata: i.metadata }, ...methodOptions }
+          : { ...common, mode: "setup", currency: "brl", setup_intent_data: { metadata: i.metadata } };
     const s = await this.call<{ id: string; url: string }>("POST", "/checkout/sessions", body, i.idempotencyKey);
     return { id: s.id, url: s.url };
   }

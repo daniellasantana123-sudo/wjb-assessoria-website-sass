@@ -7,7 +7,7 @@ import { getComboDiscountBp } from "@/lib/commercial/repo";
 import { createAdminClient } from "@/lib/db/supabase/admin";
 import { toIsoDate } from "@/lib/reports/period";
 
-import { getPaymentsStatus } from "./config";
+import { checkoutMethodOptionsFromEnv, getPaymentsStatus } from "./config";
 import { mapInvoiceStatus, mapSubscriptionStatus, nextStatus, priceLookupKey, sessionIsPaid } from "./mapping";
 import { MockPaymentProvider } from "./mock-provider";
 import { StripeTestProvider } from "./stripe-provider";
@@ -121,9 +121,13 @@ export async function startCheckout(input: { userId: string; tenantId: string; s
     .single();
   if (!checkout) return { ok: false, error: "Não foi possível iniciar a contratação." };
 
+  // Fase 10E: Pix Automático e boleto, se configurados (desligados por padrão).
+  const methods = checkoutMethodOptionsFromEnv();
+  if (methods.problems.length) return { ok: false, error: "Configuração de pagamento inválida. Avise a equipe da WJB." };
   try {
     const session = await provider.createCheckoutSession({
       kind,
+      methodOptions: methods.options,
       customerId: customer.provider_customer_id,
       priceId,
       successUrl: `${input.baseUrl}/portal/plano?pagamento=retorno`,
