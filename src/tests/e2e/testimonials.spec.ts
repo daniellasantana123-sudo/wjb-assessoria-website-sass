@@ -19,7 +19,7 @@ test("mostra o primeiro depoimento ativo", async ({ page }) => {
 });
 
 test("botão próximo avança o depoimento ativo", async ({ page }, testInfo) => {
-  testInfo.skip(testInfo.project.name === "mobile-chrome");
+  testInfo.skip(testInfo.project.name.startsWith("mobile-"));
   await page.getByRole("button", { name: "Próximo depoimento" }).click();
   await expect(
     page.getByRole("button", { name: "Ir para o depoimento de Rafael Mendes" }),
