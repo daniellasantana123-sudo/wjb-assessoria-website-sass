@@ -3,6 +3,7 @@ import {
   isApiSeries,
   type LayoutContract,
 } from "@/lib/wjb-ai/fiscal/national/layouts";
+import { resolveIndDest } from "@/lib/wjb-ai/fiscal/national/ind-dest";
 
 /**
  * Montagem da DPS (TCInfDPS) com a ordem e os tipos dos XSD oficiais
@@ -81,14 +82,38 @@ export function formatDhEmi(date: Date): string {
   return local.toISOString().slice(0, 19) + "-03:00";
 }
 
+// Caracteres proibidos no XML 1.0 (controle exceto tab/LF/CR, U+FFFE/FFFF e
+// substitutos isolados) gerariam XML inválido: são removidos (revisão B7).
+const XML_INVALID = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g;
+
 function esc(v: string): string {
   return v
+    .replace(XML_INVALID, "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
 const tag = (name: string, value: string) => `<${name}>${esc(value)}</${name}>`;
+export const escapeXml = esc;
+
+/** TSCodJustSubst (XSD oficial): motivo da substituição de NFS-e. */
+export const SUBSTITUTION_REASONS = {
+  "01": "Desenquadramento de NFS-e do Simples Nacional",
+  "02": "Enquadramento de NFS-e no Simples Nacional",
+  "03": "Inclusão Retroativa de Imunidade/Isenção para NFS-e",
+  "04": "Exclusão Retroativa de Imunidade/Isenção para NFS-e",
+  "05": "Rejeição de NFS-e pelo tomador ou pelo intermediário se responsável pelo recolhimento do tributo",
+  "99": "Outros",
+} as const;
+export type SubstitutionReason = keyof typeof SUBSTITUTION_REASONS;
+export interface DpsSubstitution {
+  /** Chave de acesso da NFS-e substituída (TSChaveNFSe). */
+  accessKey: string;
+  reason: SubstitutionReason;
+  /** TSMotivo, opcional no XSD: 15 a 255 caracteres. */
+  description?: string;
+}
 
 export function buildDpsXml(input: {
   dpsId: string;
@@ -102,9 +127,25 @@ export function buildDpsXml(input: {
   params: FiscalParameters;
   /** Identificação do aplicativo (TSVerAplic, 1-20). */
   appVersion?: string;
+  /** Fase 10C: grupo `subst` (DPS que substitui uma NFS-e). */
+  substitution?: DpsSubstitution;
 }): string {
   const p = input.params;
   const missing = missingFiscalParameters(p);
+  // Fase 10C: `indDest` nunca é presumido (ind-dest.ts).
+  const indDest = input.layout.rules.indDestInInfDps
+    ? resolveIndDest(input.draft.recipientIsTaker)
+    : null;
+  if (indDest && !indDest.ok) missing.push(indDest.message);
+  const sub = input.substitution;
+  if (sub) {
+    if (!/^[0-9]{6}[0-9A-Z]{14}[0-9]{30}$/.test(sub.accessKey))
+      missing.push("chave da NFS-e substituída fora do padrão oficial");
+    if (!(sub.reason in SUBSTITUTION_REASONS)) missing.push("motivo da substituição fora da tabela oficial");
+    const d = sub.description?.trim();
+    if (d !== undefined && (d.length < 15 || d.length > 255))
+      missing.push("descrição da substituição precisa ter de 15 a 255 caracteres");
+  }
   if (!isApiSeries(input.series, input.layout))
     missing.push("série da DPS fora da faixa do canal API (00001-49999)");
   if (missing.length) throw new FiscalParametersMissingError(missing);
@@ -127,15 +168,16 @@ export function buildDpsXml(input: {
     // um valor só (0 = NFS-e regular): não é decisão tributária.
     input.layout.rules.finNFSeLocation === "infDPS" ? tag("finNFSe", "0") : "",
     tag("cLocEmi", input.emitter.municipalityIbge),
+    sub
+      ? `<subst>${tag("chSubstda", sub.accessKey)}${tag("cMotivo", sub.reason)}${sub.description?.trim() ? tag("xMotivo", sub.description.trim()) : ""}</subst>`
+      : "",
     `<prest>${tag(input.emitter.documentKind, input.emitter.document)}<regTrib>${tag("opSimpNac", p.opSimpNac!)}${p.regApTribSN ? tag("regApTribSN", p.regApTribSN) : ""}${tag("regEspTrib", p.regEspTrib!)}</regTrib></prest>`,
     `<toma>${tag(d.taker.documentKind, d.taker.document)}${tag("xNome", d.taker.name)}${d.taker.email ? tag("email", d.taker.email) : ""}</toma>`,
     // NT 009 release 2 (24/11/2026): `indDest` obrigatório em infDPS, logo
-    // depois do tomador. O pedido da plataforma só tem um destinatário, o
-    // próprio tomador: valor oficial 0 ("tomador = adquirente =
-    // destinatário"). Destinatário diferente (1 + grupo `dest`) não é
-    // suportado e não tem caminho automático. Conferência pendente com o
-    // contador (doc FASE-10B-API-NFSE-PENDENCIAS).
-    input.layout.rules.indDestInInfDps ? tag("indDest", "0") : "",
+    // depois do tomador. Só sai 0 quando o pedido declara que o destinatário
+    // é o próprio tomador (Fase 10C, ind-dest.ts); qualquer outro caso já
+    // foi recusado acima.
+    indDest?.ok ? tag("indDest", indDest.value) : "",
     `<serv><locPrest>${tag("cLocPrestacao", p.cLocPrestacao!)}</locPrest><cServ>${tag("cTribNac", p.cTribNac!)}${tag("xDescServ", d.serviceDescription)}</cServ></serv>`,
     `<valores><vServPrest>${tag("vServ", valor)}</vServPrest><trib><tribMun>${tag("tribISSQN", p.tribISSQN!)}${tag("tpRetISSQN", p.tpRetISSQN!)}${p.pAliq ? tag("pAliq", p.pAliq) : ""}</tribMun><totTrib>${tag("indTotTrib", p.indTotTrib!)}</totTrib></trib></valores>`,
     `</infDPS>`,

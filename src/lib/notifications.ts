@@ -7,6 +7,10 @@ import { renderNotificationEmail } from "@/integrations/email/templates";
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { isFeatureEnabled } from "@/lib/feature-flags";
 import {
+  expiryNoticeMessage,
+  type ExpiryNotice,
+} from "@/lib/wjb-ai/fiscal/certificate-lifecycle";
+import {
   buildFiscalNotice,
   type FiscalNoticeKind,
 } from "@/lib/wjb-ai/fiscal/notices";
@@ -103,14 +107,16 @@ async function dispatchNotification({
   metadataSanitized?: Record<string, unknown>;
   ctaLabel?: string;
   sendEmail?: boolean;
-}) {
-  if (recipients.length === 0) return;
-  if (!(await isFeatureEnabled("notifications"))) return;
+}): Promise<boolean> {
+  // Devolve se a notificação foi gravada (Fase 10C: aviso de vencimento que
+  // não chegou a ninguém não pode ser dado como enviado).
+  if (recipients.length === 0) return false;
+  if (!(await isFeatureEnabled("notifications"))) return false;
 
   const admin = createAdminClient();
   const title = NOTIFICATION_TITLES[type];
 
-  await admin.from("notifications").insert(
+  const { error: insertError } = await admin.from("notifications").insert(
     recipients.map((recipient) => ({
       recipient_id: recipient.id,
       tenant_id: tenantId,
@@ -122,7 +128,8 @@ async function dispatchNotification({
     })),
   );
 
-  if (!sendEmail) return;
+  if (insertError) return false;
+  if (!sendEmail) return true;
 
   /**
    * E-mail é best-effort - nunca deve derrubar a Server Action que disparou
@@ -159,6 +166,7 @@ async function dispatchNotification({
       );
     }
   }
+  return true;
 }
 
 /** Membros do tenant (se quem agiu foi staff) ou todo o time WJB (se quem agiu foi cliente) - nunca o próprio autor. */
@@ -496,6 +504,31 @@ export async function notifyFiscalAlerts({
     type: "fiscal_alert",
     body: `${critical} alerta(s) crítico(s) na emissão de NFS-e (${total} no total). Veja o painel de NFS-e.`,
     link: "/admin/nfse",
+    sendEmail: false,
+  });
+}
+
+/**
+ * Fase 10C: aviso de vencimento do certificado (90/60/30/15/7 dias e
+ * vencido), só no Admin, para contadores e super admin. Sem titular nem
+ * impressão digital no texto. Devolve se o aviso foi gravado.
+ */
+export async function notifyCertificateExpiry(n: ExpiryNotice): Promise<boolean> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("id, email, status, staff_role")
+    .eq("is_wjb_staff", true)
+    .in("staff_role", ["contador", "super_admin"]);
+  const recipients: NotificationRecipient[] = (data ?? [])
+    .filter((row) => row.status !== "suspended")
+    .map((row) => ({ id: row.id, email: row.email }));
+  return dispatchNotification({
+    recipients,
+    tenantId: n.tenantId,
+    type: "fiscal_alert",
+    body: expiryNoticeMessage(n),
+    link: "/admin/nfse/certificados",
     sendEmail: false,
   });
 }

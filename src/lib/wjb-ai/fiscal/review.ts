@@ -82,6 +82,8 @@ export interface SendReadiness {
   grantValidUntil: string | null;
   providerMode: "mock" | "homologacao" | "producao";
   today: string;
+  /** Fase 10C (indDest): o que o pedido declarou sobre o destinatário. */
+  recipientIsTaker?: boolean;
 }
 
 /** Quando o pedido pode ir para a fila de envio (sempre simulado nesta fase). */
@@ -99,5 +101,10 @@ export function checkSendReadiness(
     reasons.push("A autorização de emissão está vencida.");
   if (r.providerMode !== "mock")
     reasons.push("Nesta fase só o conector simulado pode ser usado.");
+  // Revisão B5: no envio oficial, o destinatário (indDest) precisa estar
+  // declarado como o próprio tomador antes de autorizar, e não só falhar ao
+  // montar a DPS. A simulação não monta DPS, então não é afetada.
+  if (r.providerMode !== "mock" && r.recipientIsTaker !== true)
+    reasons.push("Confirme o destinatário do serviço (indDest) antes do envio oficial.");
   return reasons.length ? { ok: false, reasons } : { ok: true };
 }

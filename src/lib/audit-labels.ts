@@ -71,6 +71,7 @@ export const auditActionLabels: Record<string, string> = {
   "fiscal.dps_series_configured": "Série da DPS configurada",
   "fiscal.request_corrected": "Solicitação de NFS-e corrigida pelo cliente",
   "fiscal.transmission_blocked": "Transmissão oficial de NFS-e bloqueada (portão de segurança)",
+  "fiscal.certificate_blocked": "Certificado digital bloqueado permanentemente",
   "ticket.created": "Chamado aberto",
   "ticket.replied": "Resposta em chamado",
   "ticket.status_changed": "Status do chamado alterado",

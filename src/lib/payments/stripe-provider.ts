@@ -9,9 +9,12 @@ import { HANDLED_EVENTS, type PaymentProvider, type PCharge, type PCheckoutSessi
  * sem SDK novo. Versão da API fixada (STRIPE_API_VERSION). Recusa qualquer
  * chave que não seja de teste ANTES de qualquer chamada.
  *
- * Checkout sem `payment_method_types`: os meios exibidos (cartão e, quando a
- * conta tiver, Link) vêm da configuração do Dashboard. Pix não é usado em
- * assinatura (a Stripe não oferece Pix recorrente para contas no Brasil).
+ * Checkout sem `payment_method_types`: os meios exibidos vêm da configuração
+ * do Dashboard. Pix não é usado em assinatura (a Stripe não oferece Pix
+ * recorrente para contas no Brasil). Link (Fase 10C, 26/11/2026): a tabela
+ * oficial de países da Stripe não lista o Brasil como local de empresa do
+ * Link e o Payment Element não aceita Link no Brasil; por isso nada aqui
+ * pede Link explicitamente (docs/wjb-ai/fase-10c/08).
  */
 export class StripeApiError extends Error {
   constructor(

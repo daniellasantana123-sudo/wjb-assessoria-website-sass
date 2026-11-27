@@ -5,7 +5,7 @@ test("home carrega com o hero e navega para Serviços pelo mega menu", async ({
 }, testInfo) => {
   // O nav desktop só aparece em xl (1280px) — no projeto mobile-chrome fica
   // dentro do menu hambúrguer, já coberto pelo teste de menu mobile abaixo.
-  testInfo.skip(testInfo.project.name === "mobile-chrome");
+  testInfo.skip(testInfo.project.name.startsWith("mobile-"));
 
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(

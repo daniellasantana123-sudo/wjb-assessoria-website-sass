@@ -1,5 +1,12 @@
 import "server-only";
 
+import { X509Certificate } from "node:crypto";
+
+import {
+  lifecycleBlocker,
+  spkiSha256,
+  type CertificateLifecycleLookup,
+} from "@/lib/wjb-ai/fiscal/certificate-lifecycle";
 import type { EmitterAuthorization } from "@/lib/wjb-ai/fiscal/emitter-authorization";
 import { inspectCertificate } from "@/lib/wjb-ai/fiscal/national/certificate-inspect";
 import {
@@ -112,6 +119,12 @@ export async function useCertificate<T>(
      */
     trust: TrustStore | null;
     revocation: RevocationChecker | null;
+    /**
+     * Fase 10C: registro do ciclo de vida (migration 0036). Só o certificado
+     * ATIVO e fora da lista permanente de bloqueio é usado. Obrigatório:
+     * `null` ou registro indisponível = uso negado (falha fechada).
+     */
+    lifecycle: CertificateLifecycleLookup | null;
     /** Instante da verificação (padrão: agora). */
     at?: Date;
     policyConfig?: CertificatePolicyConfig;
@@ -183,6 +196,31 @@ export async function useCertificate<T>(
     });
     throw new CertificateUseDeniedError(
       "Titular do certificado no cofre diverge do registrado.",
+    );
+  }
+  let lifecycleIssue: { code: string } | null;
+  if (!deps.lifecycle) lifecycleIssue = { code: "CERT_LIFECYCLE_UNVERIFIED" };
+  else {
+    try {
+      const spki = spkiSha256(
+        new X509Certificate(material.certificateDer).publicKey.export({ type: "spki", format: "der" }),
+      );
+      lifecycleIssue = lifecycleBlocker(
+        await deps.lifecycle.state(actual.fingerprintSha256, spki),
+        // Revisão M1: o ativo precisa ser do modelo e da empresa deste uso.
+        {
+          role: auth.model === "certificado_cliente" ? "cliente" : "wjb",
+          tenantId: request.tenantId,
+        },
+      );
+    } catch {
+      lifecycleIssue = { code: "CERT_LIFECYCLE_UNAVAILABLE" };
+    }
+  }
+  if (lifecycleIssue) {
+    await deps.audit.record({ ...ctx, outcome: "negado", reason: lifecycleIssue.code });
+    throw new CertificateUseDeniedError(
+      `Certificado recusado pelo registro: ${lifecycleIssue.code}.`,
     );
   }
   const policy = await evaluateCertificatePolicy({

@@ -287,6 +287,9 @@ describe.skipIf(!opensslAvailable)("política de certificado (Fase 10B)", () => 
           audit,
           trust: trustOf(pki!),
           revocation: new SimulatedRevocationChecker(),
+          lifecycle: {
+            state: async () => ({ registered: true, status: "ativo" as const, blocked: false, role: "wjb" as const, tenantId: null }),
+          },
         },
         async () => {
           called = true;
@@ -502,6 +505,8 @@ describe("transporte oficial com cliente falso (testes de contrato, sem rede)", 
 
 const draft: NormalizedNfseDraft = {
   serviceDescription: "Consultoria fictícia de teste",
+  // Fase 10C: indDest declarado (destinatário = tomador); nunca presumido.
+  recipientIsTaker: true,
   amountCents: 150000,
   competence: "2026-11",
   taker: {

@@ -70,6 +70,8 @@ export default async function PortalNfseCorrectPage({
             takerName: d.taker.name,
             takerEmail: d.taker.email ?? "",
             sourceReference: d.sourceReference ?? "",
+            recipientIsTaker:
+              d.recipientIsTaker === true ? "sim" : d.recipientIsTaker === false ? "nao" : "",
           }}
           submitAction={correctNfseAction.bind(null, id)}
           confirmLabel="Confirmar correção"

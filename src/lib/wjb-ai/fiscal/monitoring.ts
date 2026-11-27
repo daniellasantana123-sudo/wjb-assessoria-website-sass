@@ -1,3 +1,7 @@
+import {
+  expiryMilestone,
+  type RegisteredCertificate,
+} from "@/lib/wjb-ai/fiscal/certificate-lifecycle";
 import { categorize } from "@/lib/wjb-ai/fiscal/national/rejection-catalog";
 
 /**
@@ -15,7 +19,8 @@ export interface FiscalAlert {
     | "RESULTADO_INDETERMINADO_PARADO"
     | "FILA_DE_ERROS"
     | "REJEICAO_CERTIFICADO"
-    | "USO_DE_CERTIFICADO_NEGADO";
+    | "USO_DE_CERTIFICADO_NEGADO"
+    | "CERT_BLOQUEADO_EM_USO";
   severity: AlertSeverity;
   tenantId: string | null;
   refId: string | null;
@@ -41,11 +46,14 @@ export interface MonitoringInput {
     lastError: string | null;
   }[];
   usageDenied24h: { tenantId: string; reason: string | null }[];
+  /** Fase 10C: certificados ATIVOS do registro (migration 0036). */
+  registry?: RegisteredCertificate[];
+  /** Fase 10C: autorizações cujo certificado está na lista de bloqueio. */
+  blockedCertificateGrants?: { id: string; tenantId: string }[];
 }
 
 const DAY = 86_400_000;
 const STUCK_MINUTES = 30;
-const WARN_DAYS = 30;
 
 function daysUntil(date: string, now: Date) {
   return Math.floor(
@@ -69,13 +77,13 @@ export function evaluateFiscalAlerts(input: MonitoringInput): FiscalAlert[] {
           message:
             "Procuração vencida: emissões desta empresa ficam bloqueadas até nova procuração.",
         });
-      else if (d <= WARN_DAYS)
+      else if (expiryMilestone(d) !== null)
         alerts.push({
           code: "PROCURACAO_EXPIRING",
           severity: "atencao",
           tenantId: g.tenantId,
           refId: g.id,
-          message: `Procuração vence em ${d} dia(s): peça a renovação ao cliente na RFB.`,
+          message: `Procuração vence em ${d} dia(s) (aviso de ${expiryMilestone(d)} dias): peça a renovação ao cliente na RFB.`,
         });
     }
     if (g.certificateValidUntil) {
@@ -89,16 +97,41 @@ export function evaluateFiscalAlerts(input: MonitoringInput): FiscalAlert[] {
           message:
             "Certificado vencido: renove e cadastre o novo no cofre antes de emitir.",
         });
-      else if (c <= WARN_DAYS)
+      else if (expiryMilestone(c) !== null)
         alerts.push({
           code: "CERT_EXPIRING",
-          severity: "atencao",
+          severity: c <= 7 ? "critico" : "atencao",
           tenantId: g.tenantId,
           refId: g.id,
-          message: `Certificado vence em ${c} dia(s).`,
+          message: `Certificado vence em ${c} dia(s) (aviso de ${expiryMilestone(c)} dias).`,
         });
     }
   }
+  for (const c of input.registry ?? []) {
+    if (c.status !== "ativo") continue;
+    const left = Math.floor((Date.parse(c.validUntil) - input.now.getTime()) / DAY);
+    const m = expiryMilestone(left);
+    if (m === null) continue;
+    alerts.push({
+      code: m === 0 ? "CERT_EXPIRED" : "CERT_EXPIRING",
+      severity: m === 0 || m === 7 ? "critico" : "atencao",
+      tenantId: c.tenantId,
+      refId: c.id,
+      message:
+        m === 0
+          ? `${c.role === "wjb" ? "Certificado da WJB" : "Certificado de cliente"} vencido: faça a rotação antes de emitir.`
+          : `${c.role === "wjb" ? "Certificado da WJB" : "Certificado de cliente"} vence em ${left} dia(s) (aviso de ${m} dias).`,
+    });
+  }
+  for (const g of input.blockedCertificateGrants ?? [])
+    alerts.push({
+      code: "CERT_BLOQUEADO_EM_USO",
+      severity: "critico",
+      tenantId: g.tenantId,
+      refId: g.id,
+      message:
+        "Autorização aponta para um certificado bloqueado: emissões desta empresa ficam negadas até a rotação.",
+    });
   for (const r of input.requests) {
     const ageMin = (input.now.getTime() - Date.parse(r.updatedAt)) / 60_000;
     if (

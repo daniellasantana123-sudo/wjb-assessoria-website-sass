@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCents } from "@/lib/wjb-ai/fiscal/labels";
 
@@ -64,6 +65,8 @@ export interface NfseFormInitial {
   takerName: string;
   takerEmail: string;
   sourceReference: string;
+  /** Fase 10C (indDest): "sim", "nao" ou "" (não informado). */
+  recipientIsTaker?: string;
 }
 
 /**
@@ -147,6 +150,7 @@ export function NfseRequestForm({
       takerName: "",
       takerEmail: "",
       sourceReference: "",
+      recipientIsTaker: "",
     },
   );
   const [draftDismissed, setDraftDismissed] = useState(false);
@@ -290,6 +294,27 @@ export function NfseRequestForm({
           <Input id="takerEmail" {...bind("takerEmail")} type="email" />
         </Field>
       </fieldset>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="recipientIsTaker">
+          Quem recebe o serviço é o próprio tomador? (opcional)
+        </Label>
+        <Select
+          id="recipientIsTaker"
+          name="recipientIsTaker"
+          value={values.recipientIsTaker ?? ""}
+          onChange={(e) =>
+            setValues({ ...values, recipientIsTaker: e.target.value })
+          }
+        >
+          <option value="">Não sei / deixar para o contador</option>
+          <option value="sim">Sim, o próprio tomador</option>
+          <option value="nao">Não, outra pessoa ou outro estabelecimento</option>
+        </Select>
+        <p className="text-muted-foreground text-xs">
+          A nota exige essa informação. Na dúvida, o contador confirma antes do envio.
+        </p>
+      </div>
 
       <Field
         id="sourceReference"

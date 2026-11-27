@@ -38,6 +38,7 @@ import {
 import { REVIEW_DECISION_LABELS } from "@/lib/wjb-ai/fiscal/review";
 import { hasWjbAiPermission } from "@/lib/wjb-ai/permissions";
 import { StepUpNotice } from "@/components/auth/step-up-notice";
+import { recipientLabel } from "@/lib/wjb-ai/fiscal/national/ind-dest";
 
 export const metadata: Metadata = {
   title: "Solicitação de NFS-e",
@@ -135,6 +136,10 @@ export default async function AdminNfseDetailPage({
             <dd className="break-words">
               {d.taker.name} · {d.taker.documentKind} {d.taker.document}
             </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Destinatário do serviço (indDest)</dt>
+            <dd>{recipientLabel(d.recipientIsTaker)}</dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Perfil fiscal aprovado</dt>

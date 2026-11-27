@@ -111,7 +111,7 @@ async function loadRequest(requestId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("fiscal_requests")
-    .select("id, tenant_id, status, needs_intervention")
+    .select("id, tenant_id, status, needs_intervention, draft_snapshot")
     .eq("id", requestId)
     .maybeSingle();
   return data;
@@ -197,6 +197,10 @@ export async function authorizeSendAction(
     grantValidUntil: grant?.valid_until ?? null,
     providerMode: getFiscalProviderMode(),
     today: toIsoDate(new Date()),
+    recipientIsTaker:
+      (request.draft_snapshot as { recipientIsTaker?: unknown } | null)?.recipientIsTaker === true
+        ? true
+        : undefined,
   });
   if (!ready.ok) return { error: ready.reasons.join(" ") };
   const ok = await applySteps(session, requestId, request.tenant_id, [
@@ -574,4 +578,34 @@ export async function assignReviewAction(
   revalidatePath(`/admin/nfse/${requestId}`);
   revalidatePath("/admin/nfse");
   return { ok: "Atribuição e prioridade atualizadas." };
+}
+
+/**
+ * Fase 10C: bloqueio PERMANENTE de um certificado pela impressão digital
+ * SHA-256 (dado público do certificado). Super admin + MFA recente no
+ * servidor; o banco confere de novo (super admin + aal2) e nunca permite
+ * desfazer. Nada do certificado além da impressão digital é recebido.
+ */
+export async function blockCertificateAction(
+  _prev: AdminActionState | undefined,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await criticalGuard("super_admin");
+  if (isState(session)) return session;
+  const raw = String(formData.get("fingerprint") ?? "");
+  const fingerprint = raw.replace(/[:\s]/g, "").toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(fingerprint))
+    return { error: "Informe a impressão digital SHA-256 (64 caracteres hexadecimais)." };
+  if (looksLikeSecret(raw)) return { error: "Informe só a impressão digital, nunca o certificado ou a senha." };
+  const reason = String(formData.get("reason") ?? "");
+  if (reason !== "comprometido" && reason !== "revogado" && reason !== "bloqueado")
+    return { error: "Escolha o motivo." };
+  if (String(formData.get("confirm") ?? "") !== "BLOQUEAR")
+    return { error: "Digite BLOQUEAR para confirmar: o bloqueio é permanente." };
+  const { blockCertificateFingerprint } = await import("@/lib/wjb-ai/fiscal/certificate-lifecycle.repo");
+  const r = await blockCertificateFingerprint(fingerprint, reason);
+  if (!r.ok) return { error: "O banco recusou o bloqueio (confira a sessão com MFA)." };
+  await audit(session, null, "fiscal.certificate_blocked", "fiscal_certificate", fingerprint.slice(0, 16), { reason });
+  revalidatePath("/admin/nfse/certificados");
+  return { ok: "Certificado bloqueado permanentemente." };
 }

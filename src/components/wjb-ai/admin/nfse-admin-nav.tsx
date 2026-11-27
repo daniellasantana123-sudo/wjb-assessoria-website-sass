@@ -6,6 +6,7 @@ const ITEMS = [
   { href: "/admin/nfse", label: "Solicitações" },
   { href: "/admin/nfse/perfis", label: "Perfis fiscais e autorizações" },
   { href: "/admin/nfse/permissoes", label: "Permissão de aprovação" },
+  { href: "/admin/nfse/certificados", label: "Certificados" },
 ];
 
 export function NfseAdminNav({ current }: { current: string }) {

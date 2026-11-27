@@ -60,7 +60,8 @@ export type EmitterAuthorization =
     }
   | { ok: false; blockers: AuthorizationIssue[] };
 
-const EXPIRY_WARNING_DAYS = 30;
+/** Fase 10C: avisos nos marcos 90/60/30/15/7 (certificate-lifecycle). */
+const EXPIRY_WARNING_DAYS = 90;
 const VAULT_REF = /^vault:\/\/[A-Za-z0-9._/-]{3,200}$/;
 
 function daysBetween(from: string, to: string): number {

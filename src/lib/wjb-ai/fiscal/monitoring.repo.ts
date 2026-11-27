@@ -36,12 +36,12 @@ export async function loadFiscalAlerts(
 ): Promise<FiscalAlert[]> {
   const admin = createAdminClient();
   const since = new Date(now.getTime() - 86_400_000).toISOString();
-  const [{ data: grants }, { data: requests }, { data: usage }] =
+  const [{ data: grants }, { data: requests }, { data: usage }, { data: registry }, { data: blocked }] =
     await Promise.all([
       admin
         .from("fiscal_authorization_grants")
         .select(
-          "id, tenant_id, kind, valid_until, revoked_at, certificate_valid_until",
+          "id, tenant_id, kind, valid_until, revoked_at, certificate_valid_until, certificate_fingerprint_sha256",
         )
         .is("revoked_at", null),
       admin
@@ -59,7 +59,15 @@ export async function loadFiscalAlerts(
         .eq("outcome", "negado")
         .gte("used_at", since)
         .limit(1000),
+      // Fase 10C: registro e lista de bloqueio (0036). Sem a 0036, vazio.
+      admin
+        .from("fiscal_certificates")
+        .select("id, role, tenant_id, fingerprint_sha256, holder_document, valid_from, valid_until, status")
+        .eq("status", "ativo")
+        .limit(1000),
+      admin.from("fiscal_certificate_blocklist").select("fingerprint_sha256").limit(5000),
     ]);
+  const blockedSet = new Set((blocked ?? []).map((b) => b.fingerprint_sha256));
   return evaluateFiscalAlerts({
     now,
     grants: (grants ?? []).map((g) => ({
@@ -82,5 +90,18 @@ export async function loadFiscalAlerts(
       tenantId: u.tenant_id,
       reason: u.reason,
     })),
+    registry: (registry ?? []).map((c) => ({
+      id: c.id,
+      role: c.role as "wjb" | "cliente",
+      tenantId: c.tenant_id,
+      fingerprint: c.fingerprint_sha256,
+      holderDocument: c.holder_document,
+      validFrom: c.valid_from,
+      validUntil: c.valid_until,
+      status: "ativo" as const,
+    })),
+    blockedCertificateGrants: (grants ?? [])
+      .filter((g) => g.certificate_fingerprint_sha256 && blockedSet.has(g.certificate_fingerprint_sha256))
+      .map((g) => ({ id: g.id, tenantId: g.tenant_id })),
   });
 }

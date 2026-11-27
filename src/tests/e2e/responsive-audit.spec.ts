@@ -37,7 +37,7 @@ const PUBLIC_REST = [
   "/servicos/consultoria-contabil", "/recuperar-senha", "/pagina-que-nao-existe",
 ];
 const PORTAL = ["/portal", "/portal/plano", "/portal/nfse", "/portal/nfse/nova", "/portal/nfse/assistente", "/portal/documentos", "/portal/obrigacoes", "/portal/notificacoes", "/portal/relatorios", "/portal/suporte"];
-const ADMIN = ["/admin", "/admin/comercial", "/admin/whatsapp", "/admin/nfse", "/admin/nfse/perfis", "/admin/empresas", "/admin/leads", "/admin/logs"];
+const ADMIN = ["/admin", "/admin/comercial", "/admin/whatsapp", "/admin/nfse", "/admin/nfse/perfis", "/admin/nfse/certificados", "/admin/empresas", "/admin/leads", "/admin/logs"];
 
 interface Row {
   area: string;

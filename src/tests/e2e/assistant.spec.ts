@@ -98,7 +98,7 @@ test("fechar o assistente não faz a saudação reaparecer na mesma sessão (Cen
 test("mobile: painel não cobre o CTA principal do herói (Cenário 7)", async ({
   page,
 }, testInfo) => {
-  testInfo.skip(testInfo.project.name !== "mobile-chrome");
+  testInfo.skip(!testInfo.project.name.startsWith("mobile-"));
   await page.goto("/");
   await page
     .getByRole("button", { name: "Abrir Assistente Virtual WJB" })

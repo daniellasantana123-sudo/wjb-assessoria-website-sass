@@ -100,6 +100,20 @@ export const SEFIN_API_CONTRACT = {
     source:
       "códigos HTTP não publicados; restrição deliberada (revisão de segurança)",
   },
+  /**
+   * Fase 10C: eventos (cancelamento). O XML do pedido segue o XSD oficial,
+   * mas o caminho da API e o JSON só existem no swagger autenticado.
+   */
+  eventPath: {
+    name: "(não publicado)",
+    status: "pendente",
+    source: "caminho da API de eventos não encontrado em documento público lido",
+  },
+  requestEventField: {
+    name: "eventoViaXmlGZipBase64",
+    status: "inferido",
+    source: "nome citado na FAQ v1.5 (17.1); JSON completo só no swagger",
+  },
 } as const satisfies Record<string, ContractField>;
 
 export function unconfirmedContractFields(): string[] {

@@ -57,6 +57,11 @@ export const nfseDraftSchema = z
       .trim()
       .max(100, "Referência longa demais.")
       .optional(),
+    /**
+     * Fase 10C: o destinatário do serviço é o próprio tomador? (indDest).
+     * Opcional: ausente = o contador confirma; nunca presumido.
+     */
+    recipientIsTaker: z.boolean().optional(),
   })
   .strict();
 
@@ -73,6 +78,8 @@ export interface NormalizedNfseDraft {
     email?: string;
   };
   sourceReference?: string;
+  /** Fase 10C (indDest). Ausente = não informado. */
+  recipientIsTaker?: boolean;
 }
 
 export type DraftParseResult =
@@ -126,6 +133,9 @@ export function parseNfseDraft(body: unknown): DraftParseResult {
       },
       ...(data.sourceReference
         ? { sourceReference: data.sourceReference }
+        : {}),
+      ...(typeof data.recipientIsTaker === "boolean"
+        ? { recipientIsTaker: data.recipientIsTaker }
         : {}),
     },
   };

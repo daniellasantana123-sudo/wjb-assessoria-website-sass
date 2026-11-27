@@ -1,5 +1,5 @@
 {
- "geradoEm": "2026-11-26T20:20:45.971Z",
+ "geradoEm": "2026-11-27T00:25:21.599Z",
  "ambiente": "build local de staging (homologação), Chromium com emulação",
  "rows": [
   {
@@ -4548,10 +4548,9 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 2,
+   "smallTargets": 1,
    "smallTargetSamples": [
-    "a \"Pular para o conteúdo\" 32x16",
-    "a \"Portal\" 35x20"
+    "a \"Pular para o conteúdo\" 32x16"
    ],
    "zoomBlocked": false
   },
@@ -6341,7 +6340,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 35,
+   "smallTargets": 37,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6357,7 +6356,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 35,
+   "smallTargets": 37,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6373,7 +6372,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6389,7 +6388,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6405,7 +6404,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6421,7 +6420,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6437,7 +6436,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6453,7 +6452,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6469,7 +6468,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6485,7 +6484,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
@@ -6501,7 +6500,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 59,
+   "smallTargets": 62,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6517,7 +6516,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 59,
+   "smallTargets": 62,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6533,7 +6532,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 59,
+   "smallTargets": 62,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6549,7 +6548,7 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 59,
+   "smallTargets": 62,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Voltar ao site\" 65x16",
@@ -6565,12 +6564,241 @@
    "status": 200,
    "overflowPx": 0,
    "culprits": [],
-   "smallTargets": 58,
+   "smallTargets": 61,
    "smallTargetSamples": [
     "a \"Pular para o conteúdo\" 32x16",
     "a \"Admin WJB\" 66x20",
     "a \"NFS-e\" 35x20",
     "summary \"Preencher cadastro fiscal dest\" 720x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "320x568",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "360x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "375x667",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "390x844",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "393x852",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "414x896",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "430x932",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "640x400",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "768x1024",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "820x1180",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "1024x768",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "1280x800",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "1440x900",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "1920x1080",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 4,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Voltar ao site\" 65x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
+   ],
+   "zoomBlocked": false
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "844x390",
+   "status": 200,
+   "overflowPx": 0,
+   "culprits": [],
+   "smallTargets": 3,
+   "smallTargetSamples": [
+    "a \"Pular para o conteúdo\" 32x16",
+    "a \"Admin WJB\" 66x20",
+    "a \"NFS-e\" 35x20"
    ],
    "zoomBlocked": false
   },
@@ -7733,6 +7961,18 @@
   },
   {
    "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "390x844",
+   "violations": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "1280x800",
+   "violations": []
+  },
+  {
+   "area": "admin",
    "route": "/admin/empresas",
    "viewport": "390x844",
    "violations": []
@@ -8121,7 +8361,9 @@
    "area": "portal",
    "route": "/portal",
    "viewport": "390x844",
-   "problems": []
+   "problems": [
+    "voltou ao corpo da página após 10 de 13 elementos visíveis"
+   ]
   },
   {
    "area": "portal",
@@ -8171,7 +8413,9 @@
    "area": "portal",
    "route": "/portal/nfse/assistente",
    "viewport": "390x844",
-   "problems": []
+   "problems": [
+    "voltou ao corpo da página após 8 de 12 elementos visíveis"
+   ]
   },
   {
    "area": "portal",
@@ -8296,6 +8540,18 @@
   {
    "area": "admin",
    "route": "/admin/nfse/perfis",
+   "viewport": "1280x800",
+   "problems": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
+   "viewport": "390x844",
+   "problems": []
+  },
+  {
+   "area": "admin",
+   "route": "/admin/nfse/certificados",
    "viewport": "1280x800",
    "problems": []
   },

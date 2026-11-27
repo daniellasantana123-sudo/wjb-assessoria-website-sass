@@ -610,6 +610,65 @@ export interface Database {
         Update: Record<string, never>;
         Relationships: [];
       };
+      fiscal_certificates: {
+        Row: {
+          id: string;
+          role: string;
+          tenant_id: string | null;
+          fingerprint_sha256: string;
+          spki_sha256: string | null;
+          holder_document: string;
+          kind: string;
+          valid_from: string;
+          valid_until: string;
+          vault_reference: string;
+          status: string;
+          policy_checked_at: string;
+          superseded_by: string | null;
+          activated_at: string | null;
+          retired_at: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          role: string;
+          tenant_id?: string | null;
+          fingerprint_sha256: string;
+          spki_sha256?: string | null;
+          holder_document: string;
+          kind: string;
+          valid_from: string;
+          valid_until: string;
+          vault_reference: string;
+          policy_checked_at: string;
+          created_by?: string | null;
+        };
+        Update: { status?: string; superseded_by?: string | null };
+        Relationships: [];
+      };
+      fiscal_certificate_blocklist: {
+        Row: {
+          fingerprint_sha256: string;
+          reason: string;
+          blocked_at: string;
+          blocked_by: string | null;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      fiscal_certificate_key_blocklist: {
+        Row: { spki_sha256: string; reason: string; blocked_at: string };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      fiscal_certificate_expiry_notices: {
+        Row: { certificate_id: string; milestone: number; notified_at: string };
+        Insert: { certificate_id: string; milestone: number };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       fiscal_dps_numbers: {
         Row: {
           request_id: string;
@@ -921,6 +980,14 @@ export interface Database {
       };
       has_entitlement: { Args: { p_tenant_id: string; p_feature: string }; Returns: boolean };
       rate_limit_hit: { Args: { p_bucket: string; p_window_seconds: number; p_max: number }; Returns: boolean };
+      rotate_fiscal_certificate: {
+        Args: { p_new: string };
+        Returns: string | null;
+      };
+      block_fiscal_certificate: {
+        Args: { p_fingerprint: string; p_reason: string };
+        Returns: undefined;
+      };
       allocate_dps_number: {
         Args: { p_request_id: string; p_environment: string };
         Returns: { series: number; number: number; emitter_document: string }[];

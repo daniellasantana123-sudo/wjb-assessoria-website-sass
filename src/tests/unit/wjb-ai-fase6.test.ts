@@ -90,6 +90,11 @@ afterAll(() => {
 const policyDeps = () => ({
   trust: { kind: "teste" as const, anchors: [pki!.ca], intermediates: [] },
   revocation: new SimulatedRevocationChecker(),
+  // Fase 10C: registro do ciclo de vida; aqui todo certificado consta como
+  // ativo (os casos de registro estão em wjb-ai-fase10c.test.ts).
+  lifecycle: {
+    state: async () => ({ registered: true, status: "ativo" as const, blocked: false, role: "wjb" as const, tenantId: null }),
+  },
 });
 
 const base: RegimeInput = {
@@ -305,6 +310,8 @@ const params: FiscalParameters = {
 };
 const draft = {
   serviceDescription: "Serviço fictício",
+  // Fase 10C: indDest declarado (destinatário = tomador); nunca presumido.
+  recipientIsTaker: true,
   amountCents: 10000,
   competence: "2026-11",
   taker: {
@@ -498,7 +505,22 @@ describe.skipIf(!tools)(
               purpose: "assinatura",
               environment: "simulado",
             },
-            { authorize, vault, audit, ...policyDeps() },
+            {
+              authorize,
+              vault,
+              audit,
+              ...policyDeps(),
+              // Fase 10C (M1): o registro diz o papel e a empresa do certificado.
+              lifecycle: {
+                state: async () => ({
+                  registered: true,
+                  status: "ativo" as const,
+                  blocked: false,
+                  role: holderCert === "wjb" ? ("wjb" as const) : ("cliente" as const),
+                  tenantId: holderCert === "wjb" ? null : "t-a",
+                }),
+              },
+            },
             fn,
           ),
         true,

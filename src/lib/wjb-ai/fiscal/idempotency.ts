@@ -22,6 +22,9 @@ export function buildIdempotencyKey(
     draft.competence,
     draft.serviceDescription.trim().replace(/\s+/g, " ").toLowerCase(),
     draft.sourceReference ?? "",
+    // Fase 10C: só entra quando informado, para não mudar a chave dos
+    // pedidos antigos (revisão B6).
+    ...(typeof draft.recipientIsTaker === "boolean" ? [draft.recipientIsTaker] : []),
   ]);
   return createHash("sha256").update(canonical).digest("hex");
 }

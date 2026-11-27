@@ -42,6 +42,8 @@ const params: FiscalParameters = {
 };
 const draft = {
   serviceDescription: "Consultoria fictícia & teste",
+  // Fase 10C: indDest declarado (destinatário = tomador); nunca presumido.
+  recipientIsTaker: true,
   amountCents: 123456,
   competence: "2026-11",
   taker: {

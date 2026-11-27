@@ -92,6 +92,9 @@ export function createTestPki(): TestPki {
     ca: new X509Certificate(caPem),
     otherCa: new X509Certificate(otherCaPem),
     leaf(name, opts) {
+      // Os arquivos do certificado usam o nome: "ca"/"outra-ca" sobrescreveriam a AC.
+      if (!/^[a-z0-9-]{1,40}$/i.test(name) || name === "ca" || name === "outra-ca")
+        throw new Error(`Nome de certificado de teste reservado ou inválido: ${name}`);
       const san = [
         opts.cnpj ? `otherName:2.16.76.1.3.3;OCTETSTRING:${opts.cnpj}` : null,
         opts.cpf ? `otherName:2.16.76.1.3.1;OCTETSTRING:${opts.cpf}` : null,

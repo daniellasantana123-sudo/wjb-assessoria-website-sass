@@ -20,5 +20,11 @@ export function nfseBodyFromForm(formData: FormData) {
       ...(email ? { email } : {}),
     },
     ...(sourceReference ? { sourceReference } : {}),
+    // Fase 10C (indDest): "sim"/"nao" viram booleano; vazio = não informado.
+    ...(text("recipientIsTaker") === "sim"
+      ? { recipientIsTaker: true }
+      : text("recipientIsTaker") === "nao"
+        ? { recipientIsTaker: false }
+        : {}),
   };
 }
