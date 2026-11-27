@@ -4,7 +4,9 @@
 #
 # Jobs:
 # - estatico: lint, TypeScript, detecção de segredos, auditoria de dependências
-# - unitarios: Vitest em Node 20, 22 e 24 (as versões da Hostinger)
+# - unitarios: Vitest em Node 22 (o da produção, conforme o log de build da
+#   Hostinger) e 24. Node 20 não é suportado: @supabase/* e undici (jsdom)
+#   exigem Node >= 22 (achado na CI, Fase 10E); package.json declara engines.
 # - banco: migrations, RLS, isolamento entre empresas, MFA no banco, backup e
 #   rollback (scripts/wjb-ai/homologacao/run.sh, Postgres 17 em Docker)
 # - e2e: build + segurança do artefato + E2E em Chromium, Firefox, WebKit e
@@ -48,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22, 24]
+        node: [22, 24]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
