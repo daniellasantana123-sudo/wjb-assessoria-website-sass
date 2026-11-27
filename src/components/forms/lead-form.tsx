@@ -21,6 +21,7 @@ import { siteConfig } from "@/config/site";
 import { getWhatsAppLink } from "@/integrations/whatsapp";
 import type { LeadFormValues } from "@/lib/validation/lead";
 import { lazyResolver } from "@/lib/validation/lazy-resolver";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 export interface LeadFormProps {
   formContext: string;
@@ -73,6 +74,7 @@ export function LeadForm({
   onError,
 }: LeadFormProps) {
   const pathname = usePathname();
+  const hydrated = useHydrated();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   // Um identificador por envio: se a pessoa clicar duas vezes ou tentar de
   // novo após erro de rede, o servidor reconhece e não grava o lead em dobro.
@@ -180,7 +182,16 @@ export function LeadForm({
   return (
     <form
       onFocusCapture={handleFormStart}
-      onSubmit={handleSubmit(onSubmit)}
+      // Fase 10E: se o validador (baixado sob demanda) não carregar, mostra o
+      // erro com WhatsApp e e-mail em vez de não fazer nada.
+      onSubmit={(e) =>
+        handleSubmit(onSubmit)(e).catch(() => {
+          setStatus("error");
+          onError?.();
+        })
+      }
+      // POST: se o JavaScript não estiver pronto, os dados nunca vão para a URL.
+      method="post"
       noValidate
       className="flex flex-col gap-5"
     >
@@ -401,7 +412,7 @@ export function LeadForm({
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Button type="submit" variant="cta" disabled={isSubmitting}>
+        <Button type="submit" variant="cta" disabled={!hydrated || isSubmitting}>
           {isSubmitting ? "Enviando..." : submitLabel}
         </Button>
         <p role="status" className="text-sm">

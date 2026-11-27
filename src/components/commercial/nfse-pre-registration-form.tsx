@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select";
 import { pushEvent } from "@/lib/analytics/datalayer";
 import { getAttributionParams, getTrackingParams } from "@/lib/analytics/tracking";
 import { NFSE_PRE_REGISTRATION_CONTEXT } from "@/lib/validation/lead";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 /**
  * Pré-cadastro / lista de interesse da emissão de notas (Fase 8). Dados
@@ -27,6 +28,7 @@ export function NfsePreRegistrationForm({ defaultObjective }: { defaultObjective
   const pathname = usePathname();
   const submissionId = useRef(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : undefined);
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
+  const hydrated = useHydrated();
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -81,7 +83,7 @@ export function NfsePreRegistrationForm({ defaultObjective }: { defaultObjective
     );
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={onSubmit} method="post" className="flex flex-col gap-4" noValidate>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5"><Label htmlFor="pc-name">Nome</Label><Input id="pc-name" name="name" autoComplete="name" required minLength={2} /></div>
         <div className="flex flex-col gap-1.5"><Label htmlFor="pc-email">E-mail</Label><Input id="pc-email" name="email" type="email" autoComplete="email" required /></div>
@@ -106,7 +108,7 @@ export function NfsePreRegistrationForm({ defaultObjective }: { defaultObjective
       <p className="text-muted-foreground text-xs">Não pedimos CPF, certificado digital nem senha do gov.br neste cadastro.</p>
       {error ? <p role="alert" className="text-danger text-sm">{error}</p> : null}
       {status === "error" ? <p role="alert" className="text-danger text-sm">Não foi possível enviar agora. Tente de novo em instantes ou fale pelo WhatsApp.</p> : null}
-      <Button type="submit" variant="cta" disabled={status === "sending"} className="self-start">
+      <Button type="submit" variant="cta" disabled={!hydrated || status === "sending"} className="self-start">
         {status === "sending" ? "Enviando..." : "Entrar na lista de interesse"}
       </Button>
     </form>

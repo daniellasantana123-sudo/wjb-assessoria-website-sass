@@ -124,7 +124,7 @@ export function MfaSettings({ factors }: { factors: MfaFactorSummary[] }) {
             <code className="bg-muted rounded px-1 py-0.5">{enrollment.secret}</code>
           </p>
 
-          <form onSubmit={handleVerify} className="flex flex-col gap-3">
+          <form onSubmit={handleVerify} method="post" className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="code">Código de 6 dígitos</Label>
               <Input

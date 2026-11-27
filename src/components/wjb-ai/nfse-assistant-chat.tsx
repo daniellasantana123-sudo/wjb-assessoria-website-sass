@@ -121,6 +121,7 @@ export function NfseAssistantChat({ tenantId }: { tenantId: string }) {
       ) : null}
       {!closed ? (
         <form
+          method="post"
           onSubmit={(e) => {
             e.preventDefault();
             send(text);

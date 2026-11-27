@@ -192,8 +192,15 @@ export function ExitIntentPopup() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    // zod só é baixado no envio (ver lib/validation/lazy-resolver.ts).
-    const { exitIntentLeadSchema } = await import("@/lib/validation/lead");
+    // zod só é baixado no envio (ver lib/validation/lazy-resolver.ts). Se o
+    // download falhar (rede ruim), mostra o erro em vez de não fazer nada.
+    let exitIntentLeadSchema: (typeof import("@/lib/validation/lead"))["exitIntentLeadSchema"];
+    try {
+      ({ exitIntentLeadSchema } = await import("@/lib/validation/lead"));
+    } catch {
+      setStatus("error");
+      return;
+    }
     const parsed = exitIntentLeadSchema.safeParse({
       name: String(data.get("name") ?? ""),
       phone: String(data.get("phone") ?? ""),
@@ -335,6 +342,7 @@ export function ExitIntentPopup() {
             </div>
           ) : (
             <form
+              method="post"
               onSubmit={handleSubmit}
               onFocusCapture={() => {
                 if (formStartedRef.current) return;

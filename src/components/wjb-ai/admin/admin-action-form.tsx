@@ -11,6 +11,7 @@ import {
 
 import type { AdminActionState } from "@/actions/wjb-ai-admin";
 import { Button } from "@/components/ui/button";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 /**
  * Formulário genérico das ações do Admin do WJB AI: mostra o retorno da
@@ -41,6 +42,7 @@ export function AdminActionForm({
   children?: ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const hydrated = useHydrated();
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -54,10 +56,10 @@ export function AdminActionForm({
   }
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form ref={formRef} onSubmit={onSubmit} method="post" className="flex flex-col gap-3">
       {children}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" size="sm" variant={variant} disabled={pending}>
+        <Button type="submit" size="sm" variant={variant} disabled={!hydrated || pending}>
           {pending ? pendingLabel : submitLabel}
         </Button>
         {state?.error ? (
