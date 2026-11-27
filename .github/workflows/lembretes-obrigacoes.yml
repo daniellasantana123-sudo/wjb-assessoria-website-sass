@@ -13,6 +13,11 @@ on:
     - cron: "0 11 * * *"
   workflow_dispatch: {}
 
+# Padrão: só leitura. issues: write fica só no job de alerta (Fase 10F), que
+# não recebe nenhum segredo.
+permissions:
+  contents: read
+
 jobs:
   lembretes:
     runs-on: ubuntu-latest
@@ -30,3 +35,21 @@ jobs:
             -X POST \
             -H "Authorization: Bearer $CRON_SECRET" \
             https://wjbassessoriacontabil.com.br/api/cron/lembretes-obrigacoes
+
+  # Fase 10F: falha vira issue no GitHub (e e-mail para quem acompanha o
+  # repositório); sucesso fecha o alerta. Antes, a rotina falhou 44 dias
+  # seguidos sem aviso nenhum.
+  alerta:
+    needs: lembretes
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Abrir, comentar ou fechar o alerta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ci/alerta-rotina.sh "Lembretes de obrigações" "${{ needs.lembretes.result == 'success' && 'success' || 'failure' }}"
