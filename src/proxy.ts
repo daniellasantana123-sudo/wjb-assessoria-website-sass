@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import { getSupabaseEnv } from "@/lib/db/supabase/env";
 import { isSaasPublicEnabled } from "@/lib/saas-gate";
-import { isHostAllowed } from "@/lib/security/allowed-hosts";
+import { isHostAllowed, isStaticAssetPath } from "@/lib/security/allowed-hosts";
 import { isLegacyWordPressPath } from "@/lib/seo/legacy-paths";
 
 /**
@@ -62,7 +62,7 @@ export async function proxy(request: NextRequest) {
   // da produção. Fora do domínio oficial e do ambiente local, nada é atendido
   // (ver `lib/security/allowed-hosts.ts`). Primeiro de tudo: antes de sessão,
   // banco ou qualquer integração.
-  if (!isHostAllowed(request.headers.get("host"))) {
+  if (!isHostAllowed(request.headers.get("host")) && !isStaticAssetPath(request.nextUrl.pathname)) {
     return new NextResponse("Endereço não autorizado.", {
       status: 421,
       headers: {

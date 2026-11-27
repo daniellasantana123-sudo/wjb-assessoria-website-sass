@@ -56,3 +56,17 @@ export function isHostAllowed(
   if ((LOCAL_HOSTS as readonly string[]).includes(host)) return true;
   return extraHosts(env).includes(host);
 }
+
+/**
+ * Arquivos estáticos de imagem e fonte (pasta `public/`). O otimizador de
+ * imagens do Next busca o arquivo no próprio servidor com um pedido interno
+ * SEM cabeçalho Host (achado em produção em 27/11: todas as imagens
+ * otimizadas responderam 421). Esses arquivos não tocam sessão, banco nem
+ * integração e não carregam segredo, então podem passar pelo bloqueio de
+ * endereço; páginas, login, API e Server Actions continuam bloqueados.
+ */
+const STATIC_ASSET = /\.(?:png|jpe?g|webp|avif|gif|svg|ico|woff2?|ttf|otf)$/i;
+
+export function isStaticAssetPath(pathname: string): boolean {
+  return STATIC_ASSET.test(pathname) && !pathname.startsWith("/api/") && !pathname.includes("..");
+}

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildConsentBootstrapScript, buildPiiQueryScrubSource } from "@/lib/consent/consent-mode";
 
 /** Executa o script embutido com `location`/`history` falsos e devolve a URL final. */
-function run(source: string, href: string) {
+function run(source: string, href: string, referrer = "") {
   let current = href;
   const calls: string[] = [];
   const context = {
@@ -27,11 +27,11 @@ function run(source: string, href: string) {
     },
     localStorage: { getItem: () => null },
     window: {} as Record<string, unknown>,
-    document: { createElement: () => ({}), head: { appendChild: () => {} } },
+    document: { referrer, createElement: () => ({}), head: { appendChild: () => {} } },
   };
   (context.window as Record<string, unknown>).dataLayer = [];
-  runInNewContext(`var window=this.window;var dataLayer=window.dataLayer;${source}`, context);
-  return { url: current, calls };
+  runInNewContext(`var window=this.window;var dataLayer=window.dataLayer;var document=this.document;${source}`, context);
+  return { url: current, calls, dataLayer: (context.window as { dataLayer: unknown[] }).dataLayer };
 }
 
 describe("hotfix: dados de formulário fora da URL antes de qualquer tag", () => {
@@ -56,5 +56,21 @@ describe("hotfix: dados de formulário fora da URL antes de qualquer tag", () =>
     expect(script.indexOf("searchParams.delete")).toBeLessThan(script.indexOf("gtag('consent','default'"));
     const { url } = run(script, "https://wjbassessoriacontabil.com.br/?email=a%40b.com");
     expect(url).toBe("https://wjbassessoriacontabil.com.br/");
+  });
+
+  it("a ORIGEM enviada ao Google também sai sem os campos (desafio do CDN recarrega a página com dados)", () => {
+    const { dataLayer } = run(
+      buildConsentBootstrapScript("GTM-TESTE"),
+      "https://wjbassessoriacontabil.com.br/contato?utm_source=google",
+      "https://wjbassessoriacontabil.com.br/contato?name=Maria+Teste&phone=11999998888&utm_source=google",
+    );
+    const sets = dataLayer.map((a) => Array.from(a as ArrayLike<unknown>)).filter((a) => a[0] === "set" && typeof a[1] === "object");
+    expect(sets).toContainEqual(["set", { page_referrer: "https://wjbassessoriacontabil.com.br/contato?utm_source=google" }]);
+    expect(JSON.stringify(dataLayer)).not.toMatch(/Maria|9999/);
+  });
+
+  it("origem sem campos de formulário não é mexida", () => {
+    const { dataLayer } = run(buildConsentBootstrapScript("GTM-TESTE"), "https://wjbassessoriacontabil.com.br/", "https://www.google.com/");
+    expect(JSON.stringify(dataLayer)).not.toContain("page_referrer");
   });
 });

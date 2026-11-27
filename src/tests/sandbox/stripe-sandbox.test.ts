@@ -253,6 +253,35 @@ describe.runIf(READY).sequential("Stripe Sandbox (modo de teste) com o serviço 
     expect(await entitled(B)).toBe(false);
     note("recusado na contratação", "assinatura incompleta na Stripe, pendente na WJB, sem direito de uso");
   }, 180_000);
+
+  it("12. Tentativa de cobrança duplicada: segundo checkout recusado; serviço cobrado em outra origem também (Fase 10G)", async () => {
+    const accepted = ["termos_emissao", "privacidade", "precos_franquia", "representacao_fiscal"] as const;
+    // B ficou com uma contratação pendente no cenário 11: um segundo checkout não abre.
+    const dup = await svc.startCheckout({ userId: ownerB, tenantId: B, sku: "nfse_profissional", accepted: [...accepted], baseUrl: "http://localhost:3000" });
+    expect(dup.ok).toBe(false);
+    // A (sem plano aberto depois do cenário 10) com o serviço cobrado por outro meio: recusado antes de falar com a Stripe.
+    await db().from("billing_source_assignments").update({ status: "encerrada", ended_at: new Date().toISOString() }).eq("tenant_id", A).eq("status", "ativa");
+    const { data: origem } = await db().from("billing_source_assignments").insert({ tenant_id: A, service_key: "nfse_plano", source: "externo", note: "sandbox 10G" }).select("id").single();
+    const { count: antes } = await db().from("payment_checkouts").select("id", { count: "exact", head: true }).eq("tenant_id", A);
+    const blocked = await svc.startCheckout({ userId: ownerA, tenantId: A, sku: "nfse_mei", accepted: [...accepted], baseUrl: "http://localhost:3000" });
+    expect(blocked).toMatchObject({ ok: false });
+    const { count: depois } = await db().from("payment_checkouts").select("id", { count: "exact", head: true }).eq("tenant_id", A);
+    expect(depois).toBe(antes);
+    await db().from("billing_source_assignments").update({ status: "encerrada", ended_at: new Date().toISOString() }).eq("id", origem!.id);
+    note("cobrança duplicada", "segundo checkout recusado; serviço com origem externa não abre checkout");
+  }, 120_000);
+
+  it("13. Webhook com assinatura velha ou de outro segredo é recusado (Fase 10G)", async () => {
+    const ev = await stripe<{ data: { id: string }[] }>("GET", "/events", { limit: 1 });
+    const raw = JSON.stringify(await stripe("GET", `/events/${ev.data[0].id}`));
+    const { POST } = await import("@/app/api/payments/stripe/webhook/route");
+    const mk = (sig: string) => new Request("http://localhost/api/payments/stripe/webhook", { method: "POST", body: raw, headers: { "content-type": "application/json", "stripe-signature": sig } });
+    const old = await POST(mk(signStripePayload(raw, KEYS.webhook, Math.floor(Date.now() / 1000) - 3600)) as never);
+    expect(old.status).toBe(400);
+    const other = await POST(mk(signStripePayload(raw, "whsec_outrosegredoqualquer0000")) as never);
+    expect(other.status).toBe(400);
+    note("assinatura inválida", "assinatura de 1 h atrás e de outro segredo = 400");
+  }, 60_000);
 });
 
 describe.skipIf(READY)("Stripe Sandbox", () => {

@@ -79,6 +79,23 @@ export function buildPiiQueryScrubSource(): string {
   );
 }
 
+/**
+ * Fase 10G (achado em produção): a URL da página já saía limpa, mas a
+ * ORIGEM (`document.referrer`, enviada ao GA4 como `dr`) ainda podia trazer
+ * os campos, por exemplo quando o desafio anti-robô do CDN recarrega a página
+ * que chegou com dados na URL. O `document.referrer` não pode ser alterado;
+ * então a origem informada ao Google (`page_referrer`) é a mesma origem
+ * sem os campos. Roda depois de `gtag` existir e antes de qualquer tag.
+ */
+export function buildPiiReferrerScrubSource(): string {
+  const fields = JSON.stringify(PII_FORM_FIELDS);
+  return (
+    "try{if(document.referrer){var __r=new URL(document.referrer),__d=0;" +
+    `${fields}.forEach(function(k){if(__r.searchParams.has(k)){__r.searchParams.delete(k);__d=1;}});` +
+    "if(__d){gtag('set',{page_referrer:__r.origin+__r.pathname+(__r.search||'')});}}}catch(e){}"
+  );
+}
+
 type GtagWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 
 /**
@@ -94,6 +111,7 @@ export function buildConsentBootstrapScript(gtmId: string): string {
     "window.dataLayer=window.dataLayer||[];",
     "function gtag(){dataLayer.push(arguments);}",
     "window.gtag=gtag;",
+    buildPiiReferrerScrubSource(),
     `gtag('consent','default',${denied});`,
     "gtag('set','ads_data_redaction',true);",
     "try{",
