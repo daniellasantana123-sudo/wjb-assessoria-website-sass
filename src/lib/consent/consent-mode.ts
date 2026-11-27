@@ -40,6 +40,40 @@ export function isTrackedPath(pathname: string): boolean {
   return !UNTRACKED_PATH_PATTERN.test(pathname);
 }
 
+/**
+ * Hotfix de privacidade (Fase 10F): até esta correção, um envio feito antes
+ * da hidratação caía no envio nativo do navegador (GET) e levava nome, e-mail,
+ * telefone e mensagem para a URL. Links assim podem estar em histórico,
+ * favoritos ou mensagens. Antes de qualquer tag, os campos dos formulários do
+ * site são retirados da URL (os parâmetros de campanha, como `utm_*` e
+ * `gclid`, ficam). Assim o GTM/GA4 nunca recebe esses dados em `page_location`.
+ */
+export const PII_FORM_FIELDS = [
+  "name",
+  "email",
+  "phone",
+  "cnpj",
+  "company",
+  "message",
+  "city",
+  "state",
+  "businessActivity",
+  "serviceInterest",
+  "consent",
+  "website",
+  "formContext",
+  "code",
+] as const;
+
+export function buildPiiQueryScrubSource(): string {
+  const fields = JSON.stringify(PII_FORM_FIELDS);
+  return (
+    "try{if(location.search){var __u=new URL(location.href),__c=0;" +
+    `${fields}.forEach(function(k){if(__u.searchParams.has(k)){__u.searchParams.delete(k);__c=1;}});` +
+    "if(__c){history.replaceState(history.state,'',__u.pathname+(__u.search||'')+__u.hash);}}}catch(e){}"
+  );
+}
+
 type GtagWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 
 /**
@@ -51,6 +85,7 @@ export function buildConsentBootstrapScript(gtmId: string): string {
   const denied = JSON.stringify({ ...DENIED_CONSENT, functionality_storage: "granted", security_storage: "granted", wait_for_update: 500 });
   const granted = JSON.stringify(GRANTED_CONSENT);
   return [
+    buildPiiQueryScrubSource(),
     "window.dataLayer=window.dataLayer||[];",
     "function gtag(){dataLayer.push(arguments);}",
     "window.gtag=gtag;",
