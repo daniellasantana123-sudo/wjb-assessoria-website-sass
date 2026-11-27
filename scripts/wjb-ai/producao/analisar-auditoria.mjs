@@ -27,22 +27,24 @@ export function analyze(rows) {
   const add = (nivel, criterio, detalhe = "") => out.push({ nivel, criterio, detalhe });
   const need = (k, test, nivelFalha, criterio, detalhe) => {
     if (!v.has(k)) return add("AUSENTE", criterio, `item ${k} não veio no resultado`);
-    test(v.get(k)) ? add("OK", criterio) : add(nivelFalha, criterio, detalhe ?? `${k} = ${v.get(k)}`);
+    if (test(v.get(k))) add("OK", criterio);
+    else add(nivelFalha, criterio, detalhe ?? `${k} = ${v.get(k)}`);
   };
 
   if (v.get("identificacao.sessao_somente_leitura") !== "on")
     return { resultados: [{ nivel: "CRITICO", criterio: "sessão somente leitura", detalhe: "resultado inválido: rode o script inteiro, sem alterar a primeira linha" }], caminho: "INVALIDO" };
 
   // Dados
-  const usuarios = num("auth.usuarios");
   const linhas = (t) => num(`linhas.${t}`);
   need("auth.usuarios", (x) => Number(x) > 0, "CRITICO", "existem usuários no Auth", "0 usuários: o Auth foi perdido ou recriado");
   const vazio = linhas("profiles") === 0 && linhas("tenants") === 0;
   if (Number.isNaN(linhas("tenants"))) add("AUSENTE", "contagem de empresas");
   else if (vazio) add("CRITICO", "dados presentes", "profiles e tenants vazios: os dados não voltaram");
   else
-    for (const [t, ref] of Object.entries(REFERENCIA))
-      linhas(t) >= ref ? add("OK", `${t} >= referência (${ref})`) : add("ATENCAO", `${t} abaixo da referência`, `${linhas(t)} < ${ref} (24/09)`);
+    for (const [t, ref] of Object.entries(REFERENCIA)) {
+      if (linhas(t) >= ref) add("OK", `${t} >= referência (${ref})`);
+      else add("ATENCAO", `${t} abaixo da referência`, `${linhas(t)} < ${ref} (24/09)`);
+    }
 
   // Equipe e acesso administrativo
   need("equipe.super_admin", (x) => Number(x) >= 1, "CRITICO", "existe super admin", "nenhum super admin");
