@@ -17,10 +17,19 @@ on:
   push:
     branches: ["feature/**", "hotfix/**"]
   pull_request:
-  workflow_dispatch: {}
+  # Fase 10F: `ref` permite validar outra branch com esta CI sem levar o
+  # arquivo para ela (ex.: um hotfix a partir da main, que ainda não tem a
+  # CI). O job `banco` pula nesse caso: os scripts de homologação do banco só
+  # existem nas branches das Fases 10C em diante.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, etiqueta ou commit a testar (vazio = esta branch)"
+        required: false
+        default: ""
 
 concurrency:
-  group: qa-${{ github.ref }}
+  group: qa-${{ github.ref }}-${{ inputs.ref || 'self' }}
   cancel-in-progress: true
 
 permissions:
@@ -32,6 +41,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -53,6 +64,8 @@ jobs:
         node: [22, 24]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -63,10 +76,13 @@ jobs:
       - run: npx vitest run
 
   banco:
+    if: ${{ !inputs.ref }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
       - name: Migrations, RLS, isolamento, MFA no banco, backup e rollback
         run: bash scripts/wjb-ai/homologacao/run.sh
 
@@ -78,6 +94,8 @@ jobs:
       NEXT_PUBLIC_SAAS_PUBLIC_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22

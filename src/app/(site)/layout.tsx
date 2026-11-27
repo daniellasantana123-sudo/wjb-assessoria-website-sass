@@ -7,7 +7,7 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { MotionProvider } from "@/components/shared/motion-provider";
 import { SiteHeader } from "@/components/navigation/site-header";
 import { getGtmId } from "@/config/analytics";
-import { buildConsentBootstrapScript } from "@/lib/consent/consent-mode";
+import { buildConsentBootstrapScript, buildPiiQueryScrubSource } from "@/lib/consent/consent-mode";
 import { getOrganizationSchema } from "@/lib/seo/schema";
 
 /**
@@ -25,13 +25,14 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
   const gtmId = getGtmId();
   return (
     <>
-      {gtmId ? (
-        <script
-          // Precisa rodar antes de qualquer tag: define o consentimento padrão
-          // "negado" (Consent Mode v2). Ver `src/lib/consent/consent-mode.ts`.
-          dangerouslySetInnerHTML={{ __html: buildConsentBootstrapScript(gtmId) }}
-        />
-      ) : null}
+      <script
+        // Precisa rodar antes de qualquer tag: tira da URL campos de
+        // formulário (hotfix de privacidade) e define o consentimento padrão
+        // "negado" (Consent Mode v2). Ver `src/lib/consent/consent-mode.ts`.
+        dangerouslySetInnerHTML={{
+          __html: gtmId ? buildConsentBootstrapScript(gtmId) : buildPiiQueryScrubSource(),
+        }}
+      />
       <JsonLd data={getOrganizationSchema()} />
       <MotionProvider>
         <SiteHeader />

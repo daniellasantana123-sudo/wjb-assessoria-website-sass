@@ -80,3 +80,9 @@ test("o que a pessoa digita não some na hidratação (campos só liberam quando
   await page.waitForLoadState("networkidle");
   await expect(page.getByLabel("Nome completo")).toHaveValue("Maria Antes");
 });
+
+test("link antigo com dados do formulário na URL: os dados somem antes de qualquer tag", async ({ page }) => {
+  await page.goto("/contato?name=Maria+Teste&email=maria%40example.com&phone=11999998888&utm_source=google");
+  await expect(page).toHaveURL(/\/contato\?utm_source=google$/);
+  expect(page.url()).not.toMatch(/maria|9999|email=|name=|phone=/i);
+});
