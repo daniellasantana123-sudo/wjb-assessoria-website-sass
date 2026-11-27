@@ -196,6 +196,8 @@ test("desistir do pagamento libera a empresa e nada é cobrado", async ({ browse
 test("Nota Avulsa: só cadastra a forma de pagamento (nada cobrado) e empresa sem contabilidade não tem desconto", async ({ browser }) => {
   const B = await tenantId("Empresa Ficticia B");
   await admin().from("commercial_subscriptions").update({ status: "cancelada", canceled_at: new Date().toISOString(), cancel_reason: "teste E2E 9.1" }).eq("tenant_id", B).neq("status", "cancelada");
+  // Fase 10F: sem origem de cobrança externa ativa (uma execução interrompida pode deixar uma).
+  await admin().from("billing_source_assignments").update({ status: "encerrada", ended_at: new Date().toISOString() }).eq("tenant_id", B).eq("status", "ativa").neq("source", "stripe");
   const client = await login(browser, "CLIENTEB");
   await startPayment(client, "Nota Avulsa", /Cadastrar forma de pagamento \(teste\)/);
   await expect(client.getByText(/Nada é cobrado agora/)).toBeVisible();
@@ -223,8 +225,7 @@ test("Fase 10F: serviço cobrado fora da plataforma não pode ser contratado pel
   await origens.getByLabel("Cobrado por").selectOption("externo");
   await origens.getByRole("button", { name: "Registrar" }).click();
   await expect(sa.getByRole("status").filter({ hasText: "Origem de cobrança registrada." })).toBeVisible();
-  // A mesma origem de novo: o banco recusa a segunda ativa.
-  await origens.locator("summary", { hasText: "Registrar cobrança feita fora da plataforma" }).click();
+  // A mesma origem de novo (o painel continua aberto): o banco recusa a segunda ativa.
   await origens.getByLabel("Empresa").selectOption({ label: "Empresa Ficticia B" });
   await origens.getByLabel("Serviço").selectOption("nfse_plano");
   await origens.getByRole("button", { name: "Registrar" }).click();
