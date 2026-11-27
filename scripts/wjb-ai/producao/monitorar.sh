@@ -50,6 +50,18 @@ r=$(curl -s -o /dev/null -w '%{http_code}' -m 30 -X POST "$B/api/leads" -H 'cont
 grep_form=$(curl -s -m 30 "$B/contato" | grep -o '<form[^>]*method="post"' | head -1)
 [ -n "$grep_form" ] && ok "formulário de contato com method=post" || echo "AVISO formulário sem method=post (correção da Fase 10E ainda não publicada)"
 
+echo "== Prévias públicas (Fase 10F)"
+# Uma prévia da Hostinger usa o .env da produção. Com o bloqueio de endereço
+# publicado (hotfix/bloqueio-previas-hostinger), a resposta deve ser 421 ou a
+# prévia já deve ter sido apagada. AVISO (não FALHA) até a WJB decidir.
+for ph in ${WJB_MONITOR_PREVIEW_HOSTS:-calm-hotpink-okapi-85.hostingersite.com}; do
+  r=$(code "https://$ph/login")
+  case "$r" in
+    421|404|000) ok "prévia $ph fechada ($r)";;
+    *) echo "AVISO prévia $ph responde $r em /login (usa o .env da produção)";;
+  esac
+done
+
 echo "== Imagens"
 img=$(curl -s -m 30 "$B/" | grep -o '/_next/image?url=[^"&]*&amp;w=[0-9]*&amp;q=[0-9]*' | head -1 | sed 's/&amp;/\&/g')
 [ -n "$img" ] && [ "$(code "$B$img")" = "200" ] && ok "otimizador de imagens" || bad "otimizador de imagens"

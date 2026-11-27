@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 
 import { getSupabaseEnv } from "@/lib/db/supabase/env";
 import { isSaasPublicEnabled } from "@/lib/saas-gate";
+import { isHostAllowed } from "@/lib/security/allowed-hosts";
 import { isLegacyWordPressPath } from "@/lib/seo/legacy-paths";
 
 /**
@@ -57,6 +58,21 @@ function isSaasGated(pathname: string) {
 }
 
 export async function proxy(request: NextRequest) {
+  // Fase 10F: prévias da Hostinger (`*.hostingersite.com`) rodam com o `.env`
+  // da produção. Fora do domínio oficial e do ambiente local, nada é atendido
+  // (ver `lib/security/allowed-hosts.ts`). Primeiro de tudo: antes de sessão,
+  // banco ou qualquer integração.
+  if (!isHostAllowed(request.headers.get("host"))) {
+    return new NextResponse("Endereço não autorizado.", {
+      status: 421,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    });
+  }
+
   // Restos do site antigo em WordPress: 410 tira do Google mais depressa
   // que 404 (ver `lib/seo/legacy-paths.ts`).
   if (isLegacyWordPressPath(request.nextUrl.pathname)) {
