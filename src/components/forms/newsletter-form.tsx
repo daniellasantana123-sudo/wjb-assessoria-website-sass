@@ -8,6 +8,7 @@ import { pushEvent } from "@/lib/analytics/datalayer";
 import { getTrackingParams } from "@/lib/analytics/tracking";
 import type { NewsletterFormValues } from "@/lib/validation/lead";
 import { lazyResolver } from "@/lib/validation/lazy-resolver";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 
 // zod só é baixado na primeira validação (ver lazy-resolver.ts).
@@ -20,6 +21,7 @@ const newsletterFormSchemaResolver = lazyResolver(() =>
 export function NewsletterForm() {
   const pathname = usePathname();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const hydrated = useHydrated();
 
   const {
     register,
@@ -71,7 +73,16 @@ export function NewsletterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-2">
+    <form
+      onSubmit={(e) => handleSubmit(onSubmit)(e).catch(() => setStatus("error"))}
+      method="post"
+      noValidate
+      className="flex flex-col gap-2"
+    >
+      {/* Fase 10E: até a hidratação os campos ficam desativados. Antes disso o
+          react-hook-form, ao registrar os campos, apagava o que já tinha sido
+          digitado (visto no WebKit e em celular lento). */}
+      <fieldset disabled={!hydrated} className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">
       <label htmlFor="newsletter-email" className="text-sm font-medium text-neutral-100">
         Receba nossos conteúdos
       </label>
@@ -88,7 +99,7 @@ export function NewsletterForm() {
         />
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={!hydrated || isSubmitting}
           className="bg-primary focus-visible:ring-primary h-10 shrink-0 rounded-md px-4 text-sm font-medium whitespace-nowrap text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-50"
         >
           {isSubmitting ? "..." : "Assinar"}
@@ -107,6 +118,7 @@ export function NewsletterForm() {
           <span className="text-red-400">Não foi possível assinar agora.</span>
         ) : null}
       </p>
+      </fieldset>
     </form>
   );
 }
