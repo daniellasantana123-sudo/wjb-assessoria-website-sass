@@ -15,7 +15,12 @@ on:
   schedule:
     # 12:00 e 21:00 UTC = 09:00 e 18:00 em Brasília.
     - cron: "0 12,21 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      simular_falha:
+        description: "Simular falha (só testa o alerta)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,8 +31,27 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Falha simulada (só com simular_falha)
+        if: ${{ inputs.simular_falha }}
+        run: |
+          echo "::warning::Falha SIMULADA."
+          exit 1
       - name: Monitoramento somente leitura
         run: bash scripts/wjb-ai/producao/monitorar.sh
+
+  # Fase 10H: rotina agendada que deixa de rodar (sem erro registrado).
+  execucao:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rotinas agendadas executaram no prazo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ci/verificar-execucao-rotinas.sh
 
   alerta:
     needs: monitorar
@@ -42,4 +66,19 @@ jobs:
       - name: Abrir, comentar ou fechar o alerta
         env:
           GH_TOKEN: ${{ github.token }}
-        run: bash scripts/ci/alerta-rotina.sh "Monitoramento da produção" "${{ needs.monitorar.result == 'success' && 'success' || 'failure' }}"
+        run: bash scripts/ci/alerta-rotina.sh "${{ inputs.simular_falha && 'Monitoramento da produção (simulação)' || 'Monitoramento da produção' }}" "${{ needs.monitorar.result == 'success' && 'success' || 'failure' }}"
+
+  alerta-execucao:
+    needs: execucao
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Abrir, comentar ou fechar o alerta de rotina sem execução
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ci/alerta-rotina.sh "Rotina agendada sem execução" "${{ needs.execucao.result == 'success' && 'success' || 'failure' }}"

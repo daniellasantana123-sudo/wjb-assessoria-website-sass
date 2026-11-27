@@ -36,8 +36,17 @@ Execução: ${RUN_URL}
 
 O que fazer: abrir a execução, ver a etapa que falhou e conferir se o site e o banco de produção estão respondendo (\`scripts/wjb-ai/producao/monitorar.sh\`). Este issue fecha sozinho quando a rotina voltar a funcionar."
   if [ -n "$ABERTO" ]; then
-    gh_write issue comment "$ABERTO" --body "Falhou de novo em ${AGORA}. Execução: ${RUN_URL}"
-    echo "Alerta: comentário no issue #${ABERTO}."
+    # Fase 10H: sem notificação repetida. Comenta no máximo uma vez a cada 20 h
+    # enquanto a falha continuar (o issue aberto já avisa que há um problema).
+    ULTIMO=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${ABERTO}/comments" --jq '.[-1].created_at // empty' 2>/dev/null || true)
+    [ -z "$ULTIMO" ] && ULTIMO=$(gh issue view "$ABERTO" --json createdAt --jq .createdAt)
+    T=$(date -u -d "$ULTIMO" +%s 2>/dev/null || date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$ULTIMO" +%s)
+    if [ $(( $(date -u +%s) - T )) -lt 72000 ]; then
+      echo "Alerta: issue #${ABERTO} já avisado há menos de 20 h (sem nova notificação)."
+    else
+      gh_write issue comment "$ABERTO" --body "Continua falhando em ${AGORA}. Execução: ${RUN_URL}"
+      echo "Alerta: comentário no issue #${ABERTO}."
+    fi
   else
     gh_write issue create --title "$TITULO" --label "$LABEL" --body "$CORPO"
     echo "Alerta: issue aberto."
