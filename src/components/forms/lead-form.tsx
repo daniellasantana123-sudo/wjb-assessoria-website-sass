@@ -195,6 +195,10 @@ export function LeadForm({
       noValidate
       className="flex flex-col gap-5"
     >
+      {/* Fase 10E: até a hidratação os campos ficam desativados. Antes disso o
+          react-hook-form, ao registrar os campos, apagava o que já tinha sido
+          digitado (visto no WebKit e em celular lento). */}
+      <fieldset disabled={!hydrated} className="m-0 flex min-w-0 flex-col gap-5 border-0 p-0">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <Label htmlFor="name">Nome completo</Label>
@@ -450,6 +454,7 @@ export function LeadForm({
           ) : null}
         </p>
       </div>
+      </fieldset>
     </form>
   );
 }

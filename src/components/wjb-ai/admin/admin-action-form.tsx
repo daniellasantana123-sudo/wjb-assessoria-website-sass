@@ -57,6 +57,10 @@ export function AdminActionForm({
 
   return (
     <form ref={formRef} onSubmit={onSubmit} method="post" className="flex flex-col gap-3">
+      {/* Fase 10E: até a hidratação os campos ficam desativados. Antes disso o
+          react-hook-form, ao registrar os campos, apagava o que já tinha sido
+          digitado (visto no WebKit e em celular lento). */}
+      <fieldset disabled={!hydrated} className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0">
       {children}
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="sm" variant={variant} disabled={!hydrated || pending}>
@@ -73,6 +77,7 @@ export function AdminActionForm({
           </p>
         ) : null}
       </div>
+      </fieldset>
     </form>
   );
 }

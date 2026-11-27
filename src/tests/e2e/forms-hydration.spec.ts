@@ -29,12 +29,9 @@ test("com a hidratação lenta, o clique cedo espera o formulário ficar pronto 
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, persisted: true }) });
   });
   await page.goto("/contato", { waitUntil: "commit" });
-  await page.getByLabel("Nome completo").fill("Maria Teste");
-  await page.getByLabel("E-mail").fill("maria@example.com");
-  await page.getByLabel("WhatsApp", { exact: true }).fill("11999998888");
-  // Antes da hidratação o botão não aceita clique.
+  // Antes da hidratação o botão não aceita clique (nem os campos aceitam texto).
   await expect(page.getByRole("button", { name: "Enviar mensagem" })).toBeDisabled();
-  // Depois de hidratar, completa e envia (o clique espera o botão habilitar).
+  // Depois de hidratar, preenche e envia.
   await expect(page.getByRole("button", { name: "Enviar mensagem" })).toBeEnabled({ timeout: 30_000 });
   await page.getByLabel("Nome completo").fill("Maria Teste");
   await page.getByLabel("E-mail").fill("maria@example.com");
@@ -68,4 +65,18 @@ test("clique duplo envia uma vez só", async ({ page }) => {
   await button.click({ force: true }).catch(() => {});
   await expect(page.getByText("Mensagem enviada!")).toBeVisible({ timeout: 15_000 });
   expect(posts).toBe(1);
+});
+
+test("o que a pessoa digita não some na hidratação (campos só liberam quando o formulário está pronto)", async ({ page }) => {
+  // Antes da correção: o nome digitado antes da hidratação era apagado
+  // (o react-hook-form aplicava os valores padrão ao registrar os campos).
+  await page.route("**/_next/static/chunks/**", async (route) => {
+    await new Promise((r) => setTimeout(r, 2500));
+    await route.continue();
+  });
+  await page.goto("/contato", { waitUntil: "commit" });
+  await expect(page.getByLabel("Nome completo")).toBeDisabled();
+  await page.getByLabel("Nome completo").fill("Maria Antes", { timeout: 30_000 });
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByLabel("Nome completo")).toHaveValue("Maria Antes");
 });

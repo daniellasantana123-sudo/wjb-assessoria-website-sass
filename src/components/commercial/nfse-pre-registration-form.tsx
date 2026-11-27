@@ -84,6 +84,10 @@ export function NfsePreRegistrationForm({ defaultObjective }: { defaultObjective
 
   return (
     <form onSubmit={onSubmit} method="post" className="flex flex-col gap-4" noValidate>
+      {/* Fase 10E: até a hidratação os campos ficam desativados. Antes disso o
+          react-hook-form, ao registrar os campos, apagava o que já tinha sido
+          digitado (visto no WebKit e em celular lento). */}
+      <fieldset disabled={!hydrated} className="m-0 flex min-w-0 flex-col gap-4 border-0 p-0">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5"><Label htmlFor="pc-name">Nome</Label><Input id="pc-name" name="name" autoComplete="name" required minLength={2} /></div>
         <div className="flex flex-col gap-1.5"><Label htmlFor="pc-email">E-mail</Label><Input id="pc-email" name="email" type="email" autoComplete="email" required /></div>
@@ -111,6 +115,7 @@ export function NfsePreRegistrationForm({ defaultObjective }: { defaultObjective
       <Button type="submit" variant="cta" disabled={!hydrated || status === "sending"} className="self-start">
         {status === "sending" ? "Enviando..." : "Entrar na lista de interesse"}
       </Button>
+      </fieldset>
     </form>
   );
 }

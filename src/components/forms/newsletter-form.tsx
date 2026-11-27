@@ -79,6 +79,10 @@ export function NewsletterForm() {
       noValidate
       className="flex flex-col gap-2"
     >
+      {/* Fase 10E: até a hidratação os campos ficam desativados. Antes disso o
+          react-hook-form, ao registrar os campos, apagava o que já tinha sido
+          digitado (visto no WebKit e em celular lento). */}
+      <fieldset disabled={!hydrated} className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">
       <label htmlFor="newsletter-email" className="text-sm font-medium text-neutral-100">
         Receba nossos conteúdos
       </label>
@@ -114,6 +118,7 @@ export function NewsletterForm() {
           <span className="text-red-400">Não foi possível assinar agora.</span>
         ) : null}
       </p>
+      </fieldset>
     </form>
   );
 }
