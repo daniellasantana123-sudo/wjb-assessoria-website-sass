@@ -15,7 +15,8 @@ name: Qualidade
 
 on:
   push:
-    branches: ["feature/**", "hotfix/**"]
+    # Fase 10H: também na main (CI publicada antes dos módulos novos).
+    branches: ["main", "feature/**", "hotfix/**"]
   pull_request:
   # Fase 10F: `ref` permite validar outra branch com esta CI sem levar o
   # arquivo para ela (ex.: um hotfix a partir da main, que ainda não tem a
@@ -75,8 +76,10 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npx vitest run
 
+  # Fase 10H: o job sempre roda (para poder ser verificação obrigatória da
+  # main). Sem os scripts de homologação do banco (main antes do merge das
+  # Fases 10C em diante), ele registra o aviso e passa; com eles, roda tudo.
   banco:
-    if: ${{ !inputs.ref }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -84,7 +87,12 @@ jobs:
         with:
           ref: ${{ inputs.ref || '' }}
       - name: Migrations, RLS, isolamento, MFA no banco, backup e rollback
-        run: bash scripts/wjb-ai/homologacao/run.sh
+        run: |
+          if [ ! -f scripts/wjb-ai/homologacao/run.sh ]; then
+            echo "::notice::Esta versão não tem os scripts de homologação do banco (só a partir do merge da Fase 10C). Nada a validar no banco."
+            exit 0
+          fi
+          bash scripts/wjb-ai/homologacao/run.sh
 
   e2e:
     runs-on: ubuntu-latest

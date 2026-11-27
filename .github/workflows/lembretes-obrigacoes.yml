@@ -11,7 +11,13 @@ on:
   schedule:
     # 11:00 UTC = 08:00 em Brasília (o GitHub pode atrasar alguns minutos).
     - cron: "0 11 * * *"
-  workflow_dispatch: {}
+  # Fase 10H: `simular_falha` valida o alerta sem chamar a produção.
+  workflow_dispatch:
+    inputs:
+      simular_falha:
+        description: "Simular falha (não chama a produção; só testa o alerta)"
+        type: boolean
+        default: false
 
 # Padrão: só leitura. issues: write fica só no job de alerta (Fase 10F), que
 # não recebe nenhum segredo.
@@ -26,7 +32,12 @@ jobs:
       - name: Disparar lembretes
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SIMULAR: ${{ inputs.simular_falha && 'sim' || 'nao' }}
         run: |
+          if [ "$SIMULAR" = "sim" ]; then
+            echo "::warning::Falha SIMULADA (nenhuma chamada à produção)."
+            exit 1
+          fi
           if [ -z "$CRON_SECRET" ]; then
             echo "::error::Segredo CRON_SECRET não configurado no GitHub."
             exit 1
@@ -52,4 +63,4 @@ jobs:
       - name: Abrir, comentar ou fechar o alerta
         env:
           GH_TOKEN: ${{ github.token }}
-        run: bash scripts/ci/alerta-rotina.sh "Lembretes de obrigações" "${{ needs.lembretes.result == 'success' && 'success' || 'failure' }}"
+        run: bash scripts/ci/alerta-rotina.sh "${{ inputs.simular_falha && 'Lembretes de obrigações (simulação)' || 'Lembretes de obrigações' }}" "${{ needs.lembretes.result == 'success' && 'success' || 'failure' }}"
