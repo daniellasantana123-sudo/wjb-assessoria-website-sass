@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isHostAllowed, normalizeHost } from "@/lib/security/allowed-hosts";
+import { isHostAllowed, isStaticAssetPath, normalizeHost } from "@/lib/security/allowed-hosts";
 
 describe("Fase 10F: só o domínio oficial e o ambiente local são atendidos", () => {
   it("atende a produção, com ou sem www e porta, e o ambiente local", () => {
@@ -63,5 +63,25 @@ describe("proxy: recusa antes de sessão, banco ou integração", () => {
       headers: { host: "wjbassessoriacontabil.com.br" },
     });
     expect((await proxy(prod)).status).not.toBe(421);
+  });
+});
+
+describe("arquivos estáticos (otimizador de imagens busca sem Host)", () => {
+  it("imagem e fonte passam; página, API e caminho com .. não", () => {
+    expect(isStaticAssetPath("/brand/logos/logo-wjb-color.png")).toBe(true);
+    expect(isStaticAssetPath("/images/hero/1.WEBP")).toBe(true);
+    expect(isStaticAssetPath("/manual/fonts/x.woff2")).toBe(true);
+    expect(isStaticAssetPath("/login")).toBe(false);
+    expect(isStaticAssetPath("/api/leads")).toBe(false);
+    expect(isStaticAssetPath("/api/x.png")).toBe(false);
+    expect(isStaticAssetPath("/portal/../x.png")).toBe(false);
+  });
+  it("proxy: pedido interno sem Host para uma imagem passa; sem Host para página continua 421", async () => {
+    const { NextRequest } = await import("next/server");
+    const { proxy } = await import("@/proxy");
+    const img = new NextRequest("http://0.0.0.0:3000/brand/logos/logo-wjb-color.png");
+    expect((await proxy(img)).status).not.toBe(421);
+    const page = new NextRequest("http://0.0.0.0:3000/login");
+    expect((await proxy(page)).status).toBe(421);
   });
 });
