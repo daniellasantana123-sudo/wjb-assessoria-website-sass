@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { adminMockEventAction, adminReconcileAction } from "@/actions/payments";
+import { adminEndBillingSourceAction, adminMockEventAction, adminReconcileAction, adminRefundAction, adminRegisterBillingSourceAction } from "@/actions/payments";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { AdminActionForm } from "@/components/wjb-ai/admin/admin-action-form";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { formatBrlCents } from "@/lib/commercial/pricing";
 import { createClient } from "@/lib/db/supabase/server";
+import { BILLING_SOURCE_LABELS, type BillingSource } from "@/lib/payments/billing-source";
 import { checkStripeKeys, getPaymentsStatus, isLivePaymentsEnabled, stripeKeysFromEnv } from "@/lib/payments/config";
 
 export const metadata: Metadata = { title: "Pagamentos (teste)", robots: { index: false, follow: false } };
@@ -36,6 +38,9 @@ export default async function AdminPagamentosPage({ searchParams }: PageProps<"/
     supabase.from("commercial_subscriptions").select("id, tenant_id, plan_sku, status, mode, provider_subscription_id, current_period_end, cancel_at_period_end").neq("status", "cancelada").order("created_at", { ascending: false }).limit(100),
     supabase.from("tenants").select("id, name"),
   ]);
+  // Fase 10F: origem de cobrança por serviço (0038). Sem a tabela, a seção fica vazia.
+  const { data: sources } = await supabase.from("billing_source_assignments").select("id, tenant_id, service_key, source, status, note, started_at").eq("status", "ativa").order("started_at", { ascending: false }).limit(200);
+  const SERVICE_LABEL: Record<string, string> = { nfse_plano: "Plano de emissão de notas", honorarios_contabeis: "Honorários contábeis" };
   const name = new Map((tenants ?? []).map((t) => [t.id, t.name]));
   const keys = stripeKeysFromEnv();
   const keyCheck = checkStripeKeys(keys);
@@ -52,6 +57,9 @@ export default async function AdminPagamentosPage({ searchParams }: PageProps<"/
         <Badge tone="danger">AMBIENTE DE TESTE · sem cobrança real</Badge>
       </div>
 
+      {sp.origem === "encerrada" ? (
+        <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">Origem de cobrança encerrada.</p>
+      ) : null}
       {simulated ? (
         <p role="status" className="border-border bg-muted/30 rounded-md border px-4 py-3 text-sm font-medium">
           Evento simulado &quot;{simulated}&quot;: {outcome.join(", ") || "sem resultado"}.
@@ -134,13 +142,102 @@ export default async function AdminPagamentosPage({ searchParams }: PageProps<"/
             ))}
           </ul>
         </section>
+        <section aria-labelledby="origens" className="flex min-w-0 flex-col gap-3">
+          <h2 id="origens" className="text-foreground text-lg font-semibold">Origem de cobrança</h2>
+          <p className="text-muted-foreground text-sm">
+            Cada serviço de cada empresa tem uma única origem de cobrança ativa. Se um serviço já é cobrado pelo Omie ou por outro meio, registre aqui: a contratação pela plataforma passa a ser recusada para ele, evitando cobrança em dobro.
+          </p>
+          <ul className="border-border divide-border divide-y rounded-md border text-sm">
+            {(sources ?? []).length === 0 ? <li className="text-muted-foreground px-4 py-2">Nenhuma origem registrada.</li> : null}
+            {(sources ?? []).map((o) => (
+              <li key={o.id} className="flex flex-col gap-2 px-4 py-2">
+                <div className="flex flex-wrap justify-between gap-2">
+                  <span className="min-w-0">{name.get(o.tenant_id) ?? "—"} · {SERVICE_LABEL[o.service_key] ?? o.service_key}</span>
+                  <span className="text-muted-foreground">{BILLING_SOURCE_LABELS[o.source as BillingSource] ?? o.source} · desde {dt(o.started_at)}</span>
+                </div>
+                {isSuper && o.source !== "stripe" ? (
+                  <details className="text-sm">
+                    <summary className="text-primary cursor-pointer">Encerrar esta origem</summary>
+                    <AdminActionForm action={adminEndBillingSourceAction.bind(null, o.id)} submitLabel="Encerrar" variant="outline" resetOnSuccess={false}>
+                      <Label htmlFor={`oe-${o.id}`}>Digite ENCERRAR</Label>
+                      <Input id={`oe-${o.id}`} name="confirmacao" autoComplete="off" required />
+                      <p className="text-muted-foreground text-xs">Faça isso só depois de parar a cobrança no outro sistema. Exige MFA recente.</p>
+                    </AdminActionForm>
+                  </details>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          {isSuper ? (
+            <details className="text-sm">
+              <summary className="text-primary cursor-pointer">Registrar cobrança feita fora da plataforma</summary>
+              <AdminActionForm action={adminRegisterBillingSourceAction} submitLabel="Registrar" variant="outline" resetOnSuccess>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="bs-empresa">Empresa</Label>
+                    <Select id="bs-empresa" name="empresa" required defaultValue="">
+                      <option value="" disabled>Escolha</option>
+                      {(tenants ?? []).map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="bs-servico">Serviço</Label>
+                    <Select id="bs-servico" name="servico" defaultValue="honorarios_contabeis">
+                      <option value="honorarios_contabeis">Honorários contábeis</option>
+                      <option value="nfse_plano">Plano de emissão de notas</option>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="bs-origem">Cobrado por</Label>
+                    <Select id="bs-origem" name="origem" defaultValue="omie">
+                      <option value="omie">Omie</option>
+                      <option value="externo">Outro meio (boleto do banco, transferência...)</option>
+                    </Select>
+                  </div>
+                </div>
+                <Label htmlFor="bs-obs">Observação (opcional, sem dado pessoal)</Label>
+                <Input id="bs-obs" name="observacao" maxLength={500} />
+                <p className="text-muted-foreground text-xs">Exige MFA recente.</p>
+              </AdminActionForm>
+            </details>
+          ) : null}
+        </section>
         <section aria-labelledby="faturas" className="flex min-w-0 flex-col gap-3">
           <h2 id="faturas" className="text-foreground text-lg font-semibold">Faturas</h2>
           <ul className="border-border divide-border divide-y rounded-md border text-sm">
             {(invoices ?? []).map((f) => (
-              <li key={f.provider_invoice_id} className="flex flex-wrap justify-between gap-2 px-4 py-2">
-                <span className="min-w-0">{name.get(f.tenant_id) ?? "—"} · {formatBrlCents(f.amount_due_cents)}{f.amount_refunded_cents ? ` · estorno ${formatBrlCents(f.amount_refunded_cents)}` : ""}{f.disputed ? " · contestada" : ""}</span>
-                <span className="text-muted-foreground">{f.status} · {dt(f.created_at)}</span>
+              <li key={f.provider_invoice_id} className="flex flex-col gap-2 px-4 py-2">
+                <div className="flex flex-wrap justify-between gap-2">
+                  <span className="min-w-0">{name.get(f.tenant_id) ?? "—"} · {formatBrlCents(f.amount_due_cents)}{f.amount_refunded_cents ? ` · estorno ${formatBrlCents(f.amount_refunded_cents)}` : ""}{f.disputed ? " · contestada" : ""}</span>
+                  <span className="text-muted-foreground">{f.status} · {dt(f.created_at)}</span>
+                </div>
+                {isSuper && f.status === "paga" && !f.disputed && f.amount_paid_cents - f.amount_refunded_cents > 0 ? (
+                  <details className="text-sm">
+                    <summary className="text-primary cursor-pointer">Reembolsar (teste)</summary>
+                    <AdminActionForm action={adminRefundAction.bind(null, f.provider_invoice_id)} submitLabel="Reembolsar" variant="outline" resetOnSuccess>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <div className="flex flex-col gap-1">
+                          <Label htmlFor={`rv-${f.provider_invoice_id}`}>Valor (R$)</Label>
+                          <Input id={`rv-${f.provider_invoice_id}`} name="valor" inputMode="decimal" required defaultValue={((f.amount_paid_cents - f.amount_refunded_cents) / 100).toFixed(2).replace(".", ",")} />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Label htmlFor={`rm-${f.provider_invoice_id}`}>Motivo</Label>
+                          <Select id={`rm-${f.provider_invoice_id}`} name="motivo" defaultValue="pedido_do_cliente">
+                            <option value="pedido_do_cliente">Pedido do cliente</option>
+                            <option value="cobranca_duplicada">Cobrança duplicada</option>
+                          </Select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Label htmlFor={`rc-${f.provider_invoice_id}`}>Digite REEMBOLSAR</Label>
+                          <Input id={`rc-${f.provider_invoice_id}`} name="confirmacao" autoComplete="off" required />
+                        </div>
+                      </div>
+                      <p className="text-muted-foreground text-xs">Boleto não tem reembolso pela Stripe. Exige MFA recente.</p>
+                    </AdminActionForm>
+                  </details>
+                ) : null}
               </li>
             ))}
           </ul>

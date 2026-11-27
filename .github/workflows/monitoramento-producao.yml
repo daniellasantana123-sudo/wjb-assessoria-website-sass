@@ -19,7 +19,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
   monitorar:
@@ -34,6 +33,9 @@ jobs:
     needs: monitorar
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { checkStripeKeys, STRIPE_API_VERSION, stripeKeysFromEnv } from "./config";
-import { HANDLED_EVENTS, type CheckoutMethodOptions, type PaymentProvider, type PCharge, type PCheckoutSession, type PInvoice, type PSubscription } from "./types";
+import { HANDLED_EVENTS, type CheckoutMethodOptions, type PaymentProvider, type PCharge, type PCheckoutSession, type PInvoice, type PRefund, type PSubscription } from "./types";
 
 /**
  * Provedor Stripe em MODO DE TESTE (Fase 9.1), pela API REST oficial
@@ -245,6 +245,7 @@ export class StripeTestProvider implements PaymentProvider {
       periodStart: (s.period_start as number) ?? null,
       periodEnd: (s.period_end as number) ?? null,
       hostedInvoiceUrl: (s.hosted_invoice_url as string) ?? null,
+      chargeId: typeof s.charge === "string" ? s.charge : ((s.charge as { id?: string } | null)?.id ?? null),
     };
   }
 
@@ -254,8 +255,16 @@ export class StripeTestProvider implements PaymentProvider {
       id: String(s.id),
       invoiceId: (s.invoice as string) ?? null,
       customerId: (s.customer as string) ?? null,
+      amountCents: Number(s.amount ?? 0),
       amountRefundedCents: Number(s.amount_refunded ?? 0),
       disputed: s.disputed === true,
+      status: String(s.status ?? ""),
+      paymentMethodType: ((s.payment_method_details as { type?: string } | null)?.type as string) ?? null,
     };
+  }
+
+  async createRefund({ chargeId, amountCents, reason, idempotencyKey, metadata }: Parameters<PaymentProvider["createRefund"]>[0]): Promise<PRefund> {
+    const r = await this.call<Record<string, unknown>>("POST", "/refunds", { charge: chargeId, amount: amountCents, reason, metadata }, idempotencyKey);
+    return { id: String(r.id), status: String(r.status ?? ""), amountCents: Number(r.amount ?? 0) };
   }
 }

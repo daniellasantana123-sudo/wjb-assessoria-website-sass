@@ -609,3 +609,53 @@ export async function blockCertificateAction(
   revalidatePath("/admin/nfse/certificados");
   return { ok: "Certificado bloqueado permanentemente." };
 }
+
+/**
+ * Fase 10F: confere o certificado PÚBLICO enviado (.cer/.crt/.pem) antes do
+ * cadastro. Super admin com MFA recente. A chave privada e a senha NUNCA
+ * passam pela plataforma (vão direto para o cofre, pela titular). Nada do
+ * arquivo é gravado; a trilha guarda só o início da impressão digital e os
+ * códigos de bloqueio.
+ */
+export async function validateCertificateUploadAction(
+  _prev: AdminActionState | undefined,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await criticalGuard("super_admin");
+  if (isState(session)) return session;
+  const file = formData.get("certificado");
+  if (!(file instanceof File)) return { error: "Escolha o arquivo do certificado público." };
+  const role = String(formData.get("modelo") ?? "") === "cliente" ? "cliente" : "wjb";
+  let tenantId: string | null = null;
+  let tenantDocument: string | null = null;
+  if (role === "cliente") {
+    const { data: t } = await createAdminClient().from("tenants").select("id, cnpj").eq("id", String(formData.get("empresa") ?? "")).maybeSingle();
+    if (!t) return { error: "Escolha a empresa do certificado." };
+    tenantId = t.id;
+    tenantDocument = t.cnpj ?? null;
+  }
+  const { validateCertificateUpload } = await import("@/lib/wjb-ai/fiscal/certificate-upload");
+  const { SupabaseCertificateRegistry } = await import("@/lib/wjb-ai/fiscal/certificate-lifecycle.repo");
+  const { createIcpBrasilTrustStore, createRevocationChecker } = await import("@/lib/wjb-ai/fiscal/national/certificate-policy");
+  const orNull = <T,>(f: () => T): T | null => {
+    try {
+      return f();
+    } catch {
+      return null;
+    }
+  };
+  const r = await validateCertificateUpload(
+    { file: Buffer.from(await file.arrayBuffer()), role, tenantId, tenantDocument },
+    { trust: orNull(createIcpBrasilTrustStore), revocation: orNull(createRevocationChecker), repo: new SupabaseCertificateRegistry(), requireRealVerification: true },
+  );
+  await audit(session, tenantId, "fiscal.certificate_upload_checked", "fiscal_certificate", r.summary?.fingerprint.slice(0, 16) ?? "invalido", {
+    ok: r.ok,
+    role,
+    codes: r.ok ? [] : r.blockers.map((b) => b.code),
+  });
+  const resumo = r.summary
+    ? `${r.summary.holderKind} ${r.summary.holderMasked}, válido de ${r.summary.validFrom} a ${r.summary.validUntil}, impressão digital ${r.summary.fingerprint.slice(0, 16)}…`
+    : "";
+  if (!r.ok) return { error: `${resumo ? `${resumo}. ` : ""}Não pode ser cadastrado: ${r.blockers.map((b) => b.message).join(" ")}` };
+  return { ok: `Certificado conferido: ${resumo}. Próximo passo: a titular grava a chave cifrada direto no cofre e a equipe cadastra pela referência do cofre.` };
+}

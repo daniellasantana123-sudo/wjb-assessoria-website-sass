@@ -63,6 +63,11 @@ export const PII_FORM_FIELDS = [
   "website",
   "formContext",
   "code",
+  // pré-cadastro da emissão de notas (Fase 8)
+  "perfil",
+  "volume",
+  "objetivo",
+  "marketing",
 ] as const;
 
 export function buildPiiQueryScrubSource(): string {

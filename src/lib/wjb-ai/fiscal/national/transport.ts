@@ -46,7 +46,16 @@ export interface SefinTransport {
     dpsId: string,
     context: SefinCallContext,
   ): Promise<string | null>;
+  /**
+   * Fase 10F: GET /nfse/{chaveAcesso} (Manual dos Contribuintes v1.0, 1.3.2
+   * b). `found: false` só para 404; o resto que não seja 2xx é
+   * indeterminado. O nome do campo do XML na resposta não é público
+   * (`responseNfseField`, inferido): por isso o XML é opcional.
+   */
+  queryNfse(accessKey: string, context: SefinCallContext): Promise<SefinQueryResult>;
 }
+
+export type SefinQueryResult = { found: true; nfseXml?: string } | { found: false };
 
 export class TransportNotAvailableError extends Error {}
 

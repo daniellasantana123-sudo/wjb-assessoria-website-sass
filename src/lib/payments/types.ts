@@ -32,13 +32,27 @@ export interface PInvoice {
   periodStart: number | null;
   periodEnd: number | null;
   hostedInvoiceUrl: string | null;
+  /** Cobrança que pagou a fatura (Fase 10F, para reembolso). */
+  chargeId: string | null;
 }
 export interface PCharge {
   id: string;
   invoiceId: string | null;
   customerId: string | null;
+  /** Valor cobrado (Fase 10F, para o saldo reembolsável). */
+  amountCents: number;
   amountRefundedCents: number;
   disputed: boolean;
+  /** "succeeded", "pending" ou "failed" (status da Stripe). */
+  status: string;
+  /** Tipo do meio de pagamento ("card", "pix", "boleto"...); null se a Stripe não informar. */
+  paymentMethodType: string | null;
+}
+export interface PRefund {
+  id: string;
+  /** "succeeded", "pending", "requires_action", "failed" ou "canceled". */
+  status: string;
+  amountCents: number;
 }
 export interface PEvent {
   id: string;
@@ -83,6 +97,11 @@ export interface PaymentProvider {
   previewPriceChange(input: { customerId: string; subscriptionId: string; newPriceId: string }): Promise<{ amountDueCents: number }>;
   /** Eventos recentes no provedor (reserva para webhook perdido). */
   listEvents(input: { createdGte: number }): Promise<PEvent[]>;
+  /**
+   * Reembolso total ou parcial de uma cobrança (Fase 10F). A chave de
+   * idempotência é obrigatória: dois pedidos iguais = um reembolso só.
+   */
+  createRefund(input: { chargeId: string; amountCents: number; reason: "requested_by_customer" | "duplicate"; idempotencyKey: string; metadata: Record<string, string> }): Promise<PRefund>;
 }
 
 /**

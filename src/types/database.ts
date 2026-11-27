@@ -570,6 +570,36 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["payment_invoices"]["Insert"]>;
         Relationships: [];
       };
+      billing_source_assignments: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          service_key: string;
+          source: "stripe" | "omie" | "externo";
+          status: "ativa" | "encerrada";
+          external_reference: string | null;
+          note: string | null;
+          started_at: string;
+          ended_at: string | null;
+          created_by: string | null;
+          ended_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          tenant_id: string;
+          service_key: string;
+          source: "stripe" | "omie" | "externo";
+          status?: "ativa" | "encerrada";
+          external_reference?: string | null;
+          note?: string | null;
+          started_at?: string;
+          ended_at?: string | null;
+          created_by?: string | null;
+          ended_by?: string | null;
+        };
+        Update: { status?: "encerrada"; ended_at?: string; ended_by?: string | null; note?: string | null };
+        Relationships: [];
+      };
       payment_mock_objects: {
         Row: { id: string; type: string; data: Record<string, unknown>; updated_at: string };
         Insert: { id: string; type: string; data: Record<string, unknown>; updated_at?: string };

@@ -483,9 +483,12 @@ describe("cancelamento (e101101) e substituição (subst) x XSD oficial do relea
     expect(r.output).not.toMatch(/validity error/);
     expect(r.ok).toBe(true);
   });
-  it("eventos ficam fora do portão: caminho da API pendente, nada inventado", () => {
-    expect(SEFIN_API_CONTRACT.eventPath.status).toBe("pendente");
-    expect(unconfirmedContractFields()).toEqual(expect.arrayContaining(["eventPath", "requestEventField"]));
+  it("eventos ficam fora do portão: o JSON do pedido continua não conferido, nada inventado", () => {
+    // Fase 10F: o caminho foi achado no manual oficial (seção 1.5.2); o
+    // campo do JSON segue sem fonte pública, e isso mantém o portão fechado.
+    expect(SEFIN_API_CONTRACT.eventPath).toMatchObject({ name: "/nfse/{chaveAcesso}/eventos", status: "confirmado" });
+    expect(unconfirmedContractFields()).toEqual(expect.arrayContaining(["requestEventField", "baseUrl"]));
+    expect(unconfirmedContractFields()).not.toContain("eventPath");
   });
 });
 

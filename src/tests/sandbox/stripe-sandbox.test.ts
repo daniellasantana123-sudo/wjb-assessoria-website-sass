@@ -202,15 +202,29 @@ describe.runIf(READY).sequential("Stripe Sandbox (modo de teste) com o serviço 
   }, 300_000);
 
   it("8. Estorno aparece na fatura e 9. conciliação não encontra divergência", async () => {
-    const paid = await stripe<{ data: { charge: string | null }[] }>("GET", "/invoices", { subscription: subA, status: "paid", limit: 1 });
-    await stripe("POST", "/refunds", { charge: paid.data[0].charge });
+    const paid = await stripe<{ data: { id: string; charge: string | null; amount_paid: number }[] }>("GET", "/invoices", { subscription: subA, status: "paid", limit: 1 });
+    const invoiceId = paid.data[0].id;
+    await pull();
+    // Fase 10F: reembolso PELO NOSSO SERVIÇO. Dois pedidos simultâneos no mesmo
+    // estado = uma devolução só (mesma chave de idempotência na Stripe).
+    const [r1, r2] = await Promise.all([
+      svc.requestRefund({ userId: ownerA, tenantId: A, providerInvoiceId: invoiceId, amountCents: 100, reason: "pedido_do_cliente" }),
+      svc.requestRefund({ userId: ownerA, tenantId: A, providerInvoiceId: invoiceId, amountCents: 100, reason: "pedido_do_cliente" }),
+    ]);
+    expect([r1.ok, r2.ok]).toContain(true);
+    const ch = await stripe<{ amount_refunded: number }>("GET", `/charges/${paid.data[0].charge}`);
+    expect(ch.amount_refunded).toBe(100);
+    // Outra empresa não reembolsa a fatura de A.
+    expect((await svc.requestRefund({ userId: ownerB, tenantId: B, providerInvoiceId: invoiceId, amountCents: 100, reason: "pedido_do_cliente" })).ok).toBe(false);
+    // Acima do saldo: recusado pela regra, nada devolvido.
+    expect((await svc.requestRefund({ userId: ownerA, tenantId: A, providerInvoiceId: invoiceId, amountCents: paid.data[0].amount_paid, reason: "pedido_do_cliente" })).ok).toBe(false);
     await pull();
     const local = await localSub(A);
-    const { data: inv } = await db().from("payment_invoices").select("amount_refunded_cents").eq("subscription_id", local!.id).gt("amount_refunded_cents", 0);
+    const { data: inv } = await db().from("payment_invoices").select("amount_refunded_cents").eq("subscription_id", local!.id).eq("amount_refunded_cents", 100);
     expect((inv ?? []).length).toBe(1);
     const r = await svc.reconcilePayments();
     expect(r.errors).toBe(0);
-    note("estorno e conciliação", `estorno registrado; conciliação: ${r.subscriptions} assinatura(s) conferida(s), 0 erro`);
+    note("reembolso e conciliação", `reembolso parcial pelo serviço (pedido duplo = 1 devolução); conciliação: ${r.subscriptions} assinatura(s) conferida(s), 0 erro`);
   }, 180_000);
 
   it("10. Cancelamento no fim do período: segue ativo até o fim, depois encerra", async () => {

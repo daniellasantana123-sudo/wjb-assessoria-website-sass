@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { blockCertificateAction } from "@/actions/wjb-ai-admin";
+import { blockCertificateAction, validateCertificateUploadAction } from "@/actions/wjb-ai-admin";
 import { StepUpNotice } from "@/components/auth/step-up-notice";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/navigation/breadcrumb";
@@ -19,6 +19,7 @@ import {
   EXPIRY_MILESTONES,
   expiryMilestone,
 } from "@/lib/wjb-ai/fiscal/certificate-lifecycle";
+import { createAdminClient } from "@/lib/db/supabase/admin";
 import { loadCertificateRegistryView } from "@/lib/wjb-ai/fiscal/certificate-lifecycle.repo";
 
 export const metadata: Metadata = {
@@ -48,6 +49,7 @@ export default async function AdminNfseCertificadosPage() {
   const session = await requireStaffSession();
   const isSuperAdmin = session.staffRole === "super_admin";
   const view = await loadCertificateRegistryView();
+  const { data: tenants } = isSuperAdmin ? await createAdminClient().from("tenants").select("id, name").order("name") : { data: [] };
   const now = new Date();
 
   return (
@@ -142,6 +144,42 @@ export default async function AdminNfseCertificadosPage() {
           </ul>
         )}
       </section>
+
+      {isSuperAdmin ? (
+        <section aria-labelledby="conferir" className="border-border rounded-md border p-6">
+          <h2 id="conferir" className="text-foreground mb-2 text-sm font-semibold">Conferir certificado novo (só a parte pública)</h2>
+          <p className="text-muted-foreground mb-4 text-sm">
+            Envie o certificado <strong>público</strong> (.cer, .crt ou .pem) para conferir formato, titular, CNPJ, cadeia
+            ICP-Brasil, revogação, validade e bloqueios antes do cadastro. <strong>Nunca envie o PFX, a chave privada ou a
+            senha</strong>: arquivos com chave são recusados sem serem lidos. A chave vai direto para o cofre, pela titular.
+            Nada do arquivo é guardado aqui. Exige MFA recente.
+          </p>
+          <AdminActionForm action={validateCertificateUploadAction} submitLabel="Conferir certificado" resetOnSuccess={false}>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="cert-modelo">Modelo</Label>
+                <Select id="cert-modelo" name="modelo" defaultValue="wjb">
+                  <option value="wjb">Certificado da WJB (procuração)</option>
+                  <option value="cliente">Certificado do próprio cliente</option>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="cert-empresa">Empresa (se for do cliente)</Label>
+                <Select id="cert-empresa" name="empresa" defaultValue="">
+                  <option value="">-</option>
+                  {(tenants ?? []).map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="cert-arquivo">Certificado público</Label>
+                <Input id="cert-arquivo" name="certificado" type="file" accept=".cer,.crt,.pem" required />
+              </div>
+            </div>
+          </AdminActionForm>
+        </section>
+      ) : null}
 
       {isSuperAdmin ? (
         <section className="border-border rounded-md border p-6">

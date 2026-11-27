@@ -13,10 +13,10 @@ on:
     - cron: "0 11 * * *"
   workflow_dispatch: {}
 
-# issues: write só para o alerta (Fase 10F); contents: read para o checkout.
+# Padrão: só leitura. issues: write fica só no job de alerta (Fase 10F), que
+# não recebe nenhum segredo.
 permissions:
   contents: read
-  issues: write
 
 jobs:
   lembretes:
@@ -43,6 +43,9 @@ jobs:
     needs: lembretes
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4

@@ -9,8 +9,10 @@ import { toIsoDate } from "@/lib/reports/period";
 
 import { checkoutMethodOptionsFromEnv, getPaymentsStatus } from "./config";
 import { mapInvoiceStatus, mapSubscriptionStatus, nextStatus, priceLookupKey, sessionIsPaid } from "./mapping";
+import { blockedMessage, canChargeWithStripe, type BillingAssignment } from "./billing-source";
 import { MockPaymentProvider } from "./mock-provider";
-import { StripeTestProvider } from "./stripe-provider";
+import { evaluateRefund, REFUND_BLOCK_MESSAGES, type RefundReason } from "./refunds";
+import { StripeApiError, StripeTestProvider } from "./stripe-provider";
 import { HANDLED_EVENTS, type PaymentProvider, type PCheckoutSession, type PEvent } from "./types";
 
 /**
@@ -68,6 +70,24 @@ async function planSnapshotForPrice(providerPriceId: string) {
   return snap ? { planId: price.plan_id, discountBp: price.discount_bp, ...snap } : null;
 }
 
+/**
+ * Origens de cobrança da empresa (0038). Sem a tabela (migration ainda não
+ * aplicada), segue como antes: lista vazia, porque nada pode ter sido
+ * registrado. Qualquer outro erro = "indisponivel" (falha fechada).
+ */
+async function billingAssignments(tenantId: string): Promise<BillingAssignment[] | "indisponivel"> {
+  const { data, error } = await admin().from("billing_source_assignments").select("service_key, source, status").eq("tenant_id", tenantId).eq("status", "ativa");
+  if (error) return error.code === "42P01" || error.code === "PGRST205" ? [] : "indisponivel";
+  return (data ?? []) as BillingAssignment[];
+}
+
+/** Marca a Stripe como origem ativa do serviço (idempotente: o índice único barra duplicata). */
+async function registerStripeBilling(tenantId: string, serviceKey: string, reference: string, actor: string | null) {
+  const { error } = await admin().from("billing_source_assignments").insert({ tenant_id: tenantId, service_key: serviceKey, source: "stripe", external_reference: reference.slice(0, 120), created_by: actor });
+  // 23505 = já existe origem ativa (a própria Stripe, de uma confirmação anterior); 42P01/PGRST205 = 0038 não aplicada.
+  if (error && !["23505", "42P01", "PGRST205"].includes(error.code ?? "")) throw new Error(`origem de cobrança: ${error.code}`);
+}
+
 export type CheckoutResult = { ok: true; url: string } | { ok: false; error: string };
 
 export async function startCheckout(input: { userId: string; tenantId: string; sku: string; accepted: AcceptanceDocument[]; baseUrl: string }): Promise<CheckoutResult> {
@@ -80,6 +100,12 @@ export async function startCheckout(input: { userId: string; tenantId: string; s
   const { data: plan } = await db.from("commercial_plans").select("*").eq("sku", input.sku).eq("status", "approved").eq("product", "emissao").maybeSingle();
   if (!plan) return { ok: false, error: "Plano não encontrado." };
   if (plan.monthly_cents === null || plan.overage_cents === null) return { ok: false, error: "Este plano é sob proposta: fale com a equipe comercial." };
+
+  // Fase 10F: o plano de emissão não pode estar sendo cobrado em outro lugar.
+  const billing = await billingAssignments(input.tenantId);
+  if (billing === "indisponivel") return { ok: false, error: "Não foi possível conferir a forma de cobrança. Tente de novo em instantes." };
+  const check = canChargeWithStripe(billing, "nfse_plano");
+  if (!check.ok) return { ok: false, error: blockedMessage(check.activeSource) };
 
   const { data: open } = await db.from("commercial_subscriptions").select("id, status").eq("tenant_id", input.tenantId).neq("status", "cancelada").maybeSingle();
   if (open) return { ok: false, error: open.status === "pendente_pagamento" ? "Já existe um pagamento em andamento para esta empresa." : "A empresa já tem um plano." };
@@ -198,6 +224,16 @@ async function syncSubscription(provider: PaymentProvider, providerSubId: string
       ...(status === "cancelada" && local.status !== "cancelada" ? { canceled_at: new Date().toISOString(), cancel_reason: "cancelada no provedor de pagamento" } : {}),
     })
     .eq("id", local.id);
+  if (status === "cancelada" && local.status !== "cancelada") {
+    // Fase 10F: assinatura encerrada = a Stripe deixa de ser a origem de cobrança.
+    await db
+      .from("billing_source_assignments")
+      .update({ status: "encerrada", ended_at: new Date().toISOString() })
+      .eq("tenant_id", tenantId)
+      .eq("service_key", "nfse_plano")
+      .eq("source", "stripe")
+      .eq("status", "ativa");
+  }
   return tenantId;
 }
 
@@ -221,6 +257,9 @@ async function applySession(provider: PaymentProvider, s: PCheckoutSession): Pro
     await db.from("commercial_subscriptions").update({ status: "ativa_teste" }).eq("id", c.subscription_id).eq("status", "pendente_pagamento");
   }
   if (c.status === "aberto") await db.from("payment_checkouts").update({ status: "concluido", completed_at: new Date().toISOString() }).eq("id", c.id);
+  // Fase 10F: pagamento confirmado no provedor = a Stripe passa a ser a origem
+  // de cobrança ativa do plano de emissão desta empresa.
+  await registerStripeBilling(c.tenant_id, "nfse_plano", `checkout:${c.id}`, c.created_by ?? null);
   return c.tenant_id;
 }
 
@@ -422,4 +461,84 @@ export async function cancelPaidSubscription(input: { userId: string; tenantId: 
   await syncSubscription(provider, input.providerSubscriptionId, input.tenantId);
   await audit(input.userId, input.tenantId, "payments.cancel_requested", input.subscriptionId, { at_period_end: true });
   return true;
+}
+
+// ---------------- Reembolso (Fase 10F) ----------------
+export type RefundResult = { ok: true; status: string; amountCents: number } | { ok: false; error: string };
+
+/**
+ * Reembolso de uma fatura paga. A empresa vem de quem chama (já validada) e
+ * tudo o que decide o reembolso (valor pago, saldo, meio, contestação) é
+ * buscado DE NOVO no provedor, nunca do banco local nem do formulário.
+ */
+export async function requestRefund(input: {
+  userId: string;
+  tenantId: string;
+  providerInvoiceId: string;
+  amountCents: number;
+  reason: RefundReason;
+}): Promise<RefundResult> {
+  const provider = getProvider();
+  if (!provider) return { ok: false, error: "Pagamentos indisponíveis." };
+  const db = admin();
+  const { data: local } = await db
+    .from("payment_invoices")
+    .select("provider_invoice_id, tenant_id")
+    .eq("provider_invoice_id", input.providerInvoiceId)
+    .eq("tenant_id", input.tenantId)
+    .maybeSingle();
+  if (!local) return { ok: false, error: "Fatura não encontrada para esta empresa." };
+  let charge: Awaited<ReturnType<PaymentProvider["getCharge"]>>;
+  let decision: ReturnType<typeof evaluateRefund>;
+  try {
+    const inv = await provider.getInvoice(input.providerInvoiceId);
+    if ((await tenantByCustomer(inv.customerId)) !== input.tenantId) return { ok: false, error: "Fatura não encontrada para esta empresa." };
+    if (!inv.chargeId) return { ok: false, error: "A fatura não tem cobrança paga para reembolsar." };
+    charge = await provider.getCharge(inv.chargeId);
+    if (charge.invoiceId && charge.invoiceId !== input.providerInvoiceId) return { ok: false, error: "A cobrança não pertence a esta fatura." };
+    decision = evaluateRefund(charge, input.amountCents, input.reason);
+  } catch (e) {
+    await audit(input.userId, input.tenantId, "payments.refund_failed", input.providerInvoiceId, { stage: "consulta", error: shortError(e).slice(0, 120) });
+    return { ok: false, error: "Não foi possível consultar a cobrança no provedor. Nada foi devolvido." };
+  }
+  if (!decision.ok) {
+    await audit(input.userId, input.tenantId, "payments.refund_blocked", input.providerInvoiceId, { code: decision.code });
+    return { ok: false, error: REFUND_BLOCK_MESSAGES[decision.code] };
+  }
+  let refund: Awaited<ReturnType<PaymentProvider["createRefund"]>>;
+  try {
+    refund = await provider.createRefund({
+      chargeId: charge.id,
+      amountCents: decision.amountCents,
+      reason: decision.stripeReason,
+      idempotencyKey: decision.idempotencyKey,
+      metadata: { wjb_tenant: input.tenantId, wjb_invoice: input.providerInvoiceId },
+    });
+  } catch (e) {
+    // Recusa explícita da Stripe (4xx com código) = nada foi devolvido. Rede,
+    // tempo esgotado ou conflito de idempotência (409, clique simultâneo) =
+    // situação INCERTA: a devolução pode ter acontecido.
+    const status = e instanceof StripeApiError ? e.status : null;
+    const certain = status !== null && status >= 400 && status < 500 && status !== 409;
+    await audit(input.userId, input.tenantId, "payments.refund_failed", input.providerInvoiceId, { stage: "reembolso", certain, error: shortError(e).slice(0, 120) });
+    return {
+      ok: false,
+      error: certain
+        ? "A Stripe recusou o reembolso. Nada foi devolvido."
+        : "Situação incerta: o reembolso pode ter sido feito. Confira na Stripe antes de tentar de novo.",
+    };
+  }
+  // A devolução já aconteceu: daqui em diante, falha só atrasa a sincronização.
+  await audit(input.userId, input.tenantId, "payments.refund_requested", input.providerInvoiceId, {
+    amount_cents: refund.amountCents,
+    status: refund.status,
+    reason: input.reason,
+    mode: provider.mode,
+  });
+  try {
+    await applyCharge(provider, charge.id);
+  } catch {
+    // a conciliação e o evento charge.refunded atualizam a fatura depois
+  }
+  return { ok: true, status: refund.status, amountCents: refund.amountCents };
 }

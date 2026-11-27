@@ -28,7 +28,7 @@ pkill -f next-server 2>/dev/null || true
 npm run build > /tmp/wjb-staging-build.log 2>&1 || { echo "build falhou (ver /tmp/wjb-staging-build.log)"; exit 1; }
 (npx next start -p 3000 > /tmp/wjb-staging-start.log 2>&1 &)
 sleep 6
-npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts src/tests/e2e/staging-nfse-fase7.spec.ts src/tests/e2e/staging-nfse-fase8.spec.ts src/tests/e2e/staging-nfse-fase9.spec.ts src/tests/e2e/staging-fase10a.spec.ts src/tests/e2e/staging-fase10b.spec.ts src/tests/e2e/staging-fase10c.spec.ts --workers=1 --reporter=line
+npx playwright test src/tests/e2e/staging-nfse.spec.ts src/tests/e2e/staging-nfse-admin.spec.ts src/tests/e2e/staging-nfse-fase7.spec.ts src/tests/e2e/staging-nfse-fase8.spec.ts src/tests/e2e/staging-nfse-fase9.spec.ts src/tests/e2e/staging-fase10a.spec.ts src/tests/e2e/staging-fase10b.spec.ts src/tests/e2e/staging-fase10c.spec.ts src/tests/e2e/staging-fase10f.spec.ts --workers=1 --reporter=line
 status=$?
 pkill -f next-server 2>/dev/null || true
 

@@ -130,6 +130,41 @@ test("renovação com falha deixa inadimplente (sem acesso); renovação paga re
   await expect(client.getByText(/estornado R\$/).first()).toBeVisible(); // histórico mantém faturas anteriores
 });
 
+test("Fase 10F: reembolso parcial de teste pelo Admin, com confirmação e limite do saldo", async ({ browser }) => {
+  const inicio = new Date(Date.now() - 1000).toISOString();
+  const sa = await login(browser, "SUPERADMIN");
+  await sa.goto("/admin/pagamentos");
+  // Renovação paga gera uma fatura nova, já com a cobrança (cartão de teste) vinculada.
+  const subRow = sa.getByRole("listitem").filter({ hasText: "Empresa Ficticia A · nfse_profissional" });
+  await subRow.getByLabel(/Evento simulado/).selectOption("renovacao_paga");
+  await subRow.getByRole("button", { name: "Simular evento" }).click();
+  await expect(sa.getByRole("status").filter({ hasText: /renovacao_paga": processado/ })).toBeVisible();
+  await sa.reload();
+  const faturas = sa.locator("section[aria-labelledby=faturas]");
+  const inv = faturas.getByRole("listitem").filter({ has: sa.locator("summary", { hasText: "Reembolsar (teste)" }) }).first();
+  await inv.locator("summary", { hasText: "Reembolsar (teste)" }).click();
+  // Sem a palavra de confirmação: nada é devolvido.
+  await inv.getByLabel("Valor (R$)").fill("10,00");
+  await inv.getByLabel("Digite REEMBOLSAR").fill("sim");
+  await inv.getByRole("button", { name: "Reembolsar" }).click();
+  await expect(inv.getByRole("alert").filter({ hasText: "Digite REEMBOLSAR para confirmar." })).toBeVisible();
+  // Acima do saldo: recusado pela regra (o saldo vem do provedor, não do formulário).
+  await inv.getByLabel("Valor (R$)").fill("99999,00");
+  await inv.getByLabel("Digite REEMBOLSAR").fill("REEMBOLSAR");
+  await inv.getByRole("button", { name: "Reembolsar" }).click();
+  await expect(inv.getByRole("alert").filter({ hasText: "maior que o saldo" })).toBeVisible();
+  // Parcial de R$ 10,00 (valor FICTÍCIO de teste).
+  await inv.getByLabel("Valor (R$)").fill("10,00");
+  await inv.getByLabel("Digite REEMBOLSAR").fill("REEMBOLSAR");
+  await inv.getByRole("button", { name: "Reembolsar" }).click();
+  await expect(sa.getByRole("status").filter({ hasText: "Reembolso de teste feito." })).toBeVisible();
+  const { data: rows } = await admin().from("payment_invoices").select("amount_refunded_cents").eq("tenant_id", await tenantId("Empresa Ficticia A")).eq("amount_refunded_cents", 1000).gte("updated_at", inicio);
+  baseExpect(rows?.length).toBe(1);
+  const { data: logs } = await admin().from("audit_log").select("action, metadata").eq("action", "payments.refund_requested").gte("created_at", inicio).order("created_at", { ascending: false }).limit(1);
+  baseExpect(logs?.[0]?.metadata).toMatchObject({ amount_cents: 1000, status: "succeeded", mode: "mock" });
+  baseExpect(JSON.stringify(logs?.[0]?.metadata)).not.toMatch(/@|\d{11}/);
+});
+
 test("cancelamento pago agenda para o fim do período; cancelamento no provedor encerra", async ({ browser }) => {
   const client = await login(browser, "CLIENTEA");
   await client.goto("/portal/plano");
@@ -172,6 +207,49 @@ test("Nota Avulsa: só cadastra a forma de pagamento (nada cobrado) e empresa se
   expect(count ?? 0).toBe(0);
   const { data: ck } = await admin().from("payment_checkouts").select("kind, amount_cents, discount_bp").eq("tenant_id", B).order("created_at", { ascending: false }).limit(1).single();
   expect(ck).toMatchObject({ kind: "setup", amount_cents: 0, discount_bp: 0 });
+});
+
+test("Fase 10F: serviço cobrado fora da plataforma não pode ser contratado pela Stripe (cobrança em dobro)", async ({ browser }) => {
+  const B = await tenantId("Empresa Ficticia B");
+  // Estado limpo para B: sem assinatura aberta e sem origem ativa de execuções anteriores.
+  await admin().from("commercial_subscriptions").update({ status: "cancelada", canceled_at: new Date().toISOString(), cancel_reason: "teste E2E 10F" }).eq("tenant_id", B).neq("status", "cancelada");
+  await admin().from("billing_source_assignments").update({ status: "encerrada", ended_at: new Date().toISOString() }).eq("tenant_id", B).eq("status", "ativa");
+  const sa = await login(browser, "SUPERADMIN");
+  await sa.goto("/admin/pagamentos");
+  const origens = sa.locator("section[aria-labelledby=origens]");
+  await origens.locator("summary", { hasText: "Registrar cobrança feita fora da plataforma" }).click();
+  await origens.getByLabel("Empresa").selectOption({ label: "Empresa Ficticia B" });
+  await origens.getByLabel("Serviço").selectOption("nfse_plano");
+  await origens.getByLabel("Cobrado por").selectOption("externo");
+  await origens.getByRole("button", { name: "Registrar" }).click();
+  await expect(sa.getByRole("status").filter({ hasText: "Origem de cobrança registrada." })).toBeVisible();
+  // A mesma origem de novo: o banco recusa a segunda ativa.
+  await origens.locator("summary", { hasText: "Registrar cobrança feita fora da plataforma" }).click();
+  await origens.getByLabel("Empresa").selectOption({ label: "Empresa Ficticia B" });
+  await origens.getByLabel("Serviço").selectOption("nfse_plano");
+  await origens.getByRole("button", { name: "Registrar" }).click();
+  await expect(origens.getByRole("alert").filter({ hasText: "Já existe uma origem de cobrança ativa" })).toBeVisible();
+
+  // O cliente B tenta contratar pela plataforma: recusado com a explicação.
+  const client = await login(browser, "CLIENTEB");
+  await client.goto("/portal/plano");
+  const card = client.getByRole("listitem").filter({ has: client.getByRole("heading", { name: "Nota Avulsa", exact: true }) });
+  await card.locator("summary", { hasText: "Contratar (pagamento de teste)" }).click();
+  for (const box of await card.getByRole("checkbox").all()) await box.check();
+  await card.getByRole("button", { name: /Cadastrar forma de pagamento \(teste\)/ }).click();
+  await expect(card.getByRole("alert").filter({ hasText: "já é cobrado por Outro meio" })).toBeVisible();
+  const { count } = await admin().from("payment_checkouts").select("id", { count: "exact", head: true }).eq("tenant_id", B).eq("status", "aberto");
+  expect(count ?? 0).toBe(0);
+
+  // Encerrar a origem libera a contratação (só depois de parar a cobrança no outro meio).
+  await sa.reload();
+  const row = origens.getByRole("listitem").filter({ hasText: "Empresa Ficticia B · Plano de emissão de notas" });
+  await row.locator("summary", { hasText: "Encerrar esta origem" }).click();
+  await row.getByLabel("Digite ENCERRAR").fill("ENCERRAR");
+  await row.getByRole("button", { name: "Encerrar" }).click();
+  await sa.waitForURL(/origem=encerrada/);
+  const { count: ativas } = await admin().from("billing_source_assignments").select("id", { count: "exact", head: true }).eq("tenant_id", B).eq("status", "ativa");
+  expect(ativas ?? 0).toBe(0);
 });
 
 test("contador vê pagamentos só para leitura; super admin concilia sem erro", async ({ browser }) => {

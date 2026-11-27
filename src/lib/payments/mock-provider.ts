@@ -4,7 +4,9 @@ import { randomUUID } from "node:crypto";
 
 import { createAdminClient } from "@/lib/db/supabase/admin";
 
-import type { PaymentProvider, PCharge, PCheckoutSession, PEvent, PInvoice, PSubscription } from "./types";
+import { createHash } from "node:crypto";
+
+import type { PaymentProvider, PCharge, PCheckoutSession, PEvent, PInvoice, PRefund, PSubscription } from "./types";
 
 /**
  * Provedor SIMULADO (Fase 9.1): imita a Stripe sem rede nem dinheiro, para
@@ -102,11 +104,37 @@ export class MockPaymentProvider implements PaymentProvider {
   }
   async getInvoice(id: string): Promise<PInvoice> {
     const s = await load(id);
-    return { id, status: s.status as PInvoice["status"], customerId: (s.customer as string) ?? null, subscriptionId: (s.subscription as string) ?? null, amountDueCents: Number(s.amount_due), amountPaidCents: Number(s.amount_paid), currency: "brl", periodStart: (s.period_start as number) ?? null, periodEnd: (s.period_end as number) ?? null, hostedInvoiceUrl: null };
+    return { id, status: s.status as PInvoice["status"], customerId: (s.customer as string) ?? null, subscriptionId: (s.subscription as string) ?? null, amountDueCents: Number(s.amount_due), amountPaidCents: Number(s.amount_paid), currency: "brl", periodStart: (s.period_start as number) ?? null, periodEnd: (s.period_end as number) ?? null, hostedInvoiceUrl: null, chargeId: (s.charge as string) ?? null };
   }
   async getCharge(id: string): Promise<PCharge> {
     const s = await load(id);
-    return { id, invoiceId: (s.invoice as string) ?? null, customerId: (s.customer as string) ?? null, amountRefundedCents: Number(s.amount_refunded ?? 0), disputed: s.disputed === true };
+    return {
+      id,
+      invoiceId: (s.invoice as string) ?? null,
+      customerId: (s.customer as string) ?? null,
+      amountCents: Number(s.amount ?? s.amount_refunded ?? 0),
+      amountRefundedCents: Number(s.amount_refunded ?? 0),
+      disputed: s.disputed === true,
+      status: String(s.status ?? "succeeded"),
+      paymentMethodType: (s.payment_method_type as string) ?? "card",
+    };
+  }
+
+  /** Mesma chave = mesmo reembolso, como na Stripe. */
+  async createRefund({ chargeId, amountCents, idempotencyKey }: Parameters<PaymentProvider["createRefund"]>[0]): Promise<PRefund> {
+    const id = `re_mock_${createHash("sha256").update(idempotencyKey).digest("hex").slice(0, 16)}`;
+    try {
+      const existing = await load(id);
+      return { id, status: String(existing.status), amountCents: Number(existing.amount) };
+    } catch {
+      // primeiro pedido com esta chave
+    }
+    const ch = await load(chargeId);
+    const refunded = Number(ch.amount_refunded ?? 0) + amountCents;
+    if (refunded > Number(ch.amount ?? 0)) throw new Error("mock: reembolso acima do valor cobrado");
+    await save(chargeId, "charge", { ...ch, amount_refunded: refunded });
+    await save(id, "refund", { id, charge: chargeId, amount: amountCents, status: "succeeded" });
+    return { id, status: "succeeded", amountCents };
   }
 }
 
@@ -126,7 +154,9 @@ export async function mockPayCheckout(sessionId: string, outcome: "aprovado" | "
   const invId = `in_mock_${randomUUID().slice(0, 12)}`;
   const t = now();
   await save(subId, "subscription", { id: subId, status: "active", customer: s.customer, current_period_end: t + MONTH, cancel_at_period_end: false, price: s.price });
-  await save(invId, "invoice", { id: invId, status: "paid", customer: s.customer, subscription: subId, amount_due: price.unit_amount, amount_paid: price.unit_amount, period_start: t, period_end: t + MONTH });
+  const chId = `ch_mock_${randomUUID().slice(0, 12)}`;
+  await save(chId, "charge", { id: chId, invoice: invId, customer: s.customer, amount: price.unit_amount, amount_refunded: 0, disputed: false, status: "succeeded", payment_method_type: "card" });
+  await save(invId, "invoice", { id: invId, status: "paid", customer: s.customer, subscription: subId, amount_due: price.unit_amount, amount_paid: price.unit_amount, period_start: t, period_end: t + MONTH, charge: chId });
   await save(sessionId, "checkout_session", { ...s, status: "complete", payment_status: "paid", subscription: subId });
   // Ordem diferente da natural de propósito: o tratador não depende da ordem.
   return [evt("invoice.paid", invId), evt("checkout.session.completed", sessionId), evt("customer.subscription.updated", subId)];
@@ -139,15 +169,24 @@ export async function mockRenewal(subscriptionId: string, outcome: "paga" | "fal
   const invId = `in_mock_${randomUUID().slice(0, 12)}`;
   const t = now();
   const paid = outcome === "paga";
-  await save(invId, "invoice", { id: invId, status: paid ? "paid" : "open", customer: sub.customer, subscription: subscriptionId, amount_due: price.unit_amount, amount_paid: paid ? price.unit_amount : 0, period_start: t, period_end: t + MONTH });
+  const chId = paid ? `ch_mock_${randomUUID().slice(0, 12)}` : null;
+  if (chId) await save(chId, "charge", { id: chId, invoice: invId, customer: sub.customer, amount: price.unit_amount, amount_refunded: 0, disputed: false, status: "succeeded", payment_method_type: "card" });
+  await save(invId, "invoice", { id: invId, status: paid ? "paid" : "open", customer: sub.customer, subscription: subscriptionId, amount_due: price.unit_amount, amount_paid: paid ? price.unit_amount : 0, period_start: t, period_end: t + MONTH, charge: chId });
   await save(subscriptionId, "subscription", { ...sub, status: paid ? "active" : "past_due", current_period_end: paid ? t + MONTH : sub.current_period_end });
   return [evt(paid ? "invoice.paid" : "invoice.payment_failed", invId), evt("customer.subscription.updated", subscriptionId)];
 }
 
 export async function mockRefundOrDispute(invoiceId: string, kind: "estorno" | "contestacao"): Promise<PEvent[]> {
   const inv = await load(invoiceId);
-  const chId = `ch_mock_${randomUUID().slice(0, 12)}`;
-  await save(chId, "charge", { id: chId, invoice: invoiceId, customer: inv.customer, amount_refunded: kind === "estorno" ? inv.amount_paid : 0, disputed: kind === "contestacao" });
+  // Fase 10F: usa a cobrança da fatura quando existe (faturas antigas do simulado não tinham).
+  const chId = (inv.charge as string) ?? `ch_mock_${randomUUID().slice(0, 12)}`;
+  let prev: Obj = {};
+  try {
+    prev = await load(chId);
+  } catch {
+    // fatura antiga, sem cobrança registrada
+  }
+  await save(chId, "charge", { status: "succeeded", payment_method_type: "card", amount: inv.amount_paid, ...prev, id: chId, invoice: invoiceId, customer: inv.customer, amount_refunded: kind === "estorno" ? inv.amount_paid : Number(prev.amount_refunded ?? 0), disputed: kind === "contestacao" });
   return kind === "estorno" ? [evt("charge.refunded", chId)] : [evt("charge.dispute.created", `dp_mock_${chId}`, { relatedChargeId: chId })];
 }
 

@@ -5,6 +5,7 @@ import { verifyXmlSignature } from "@/lib/wjb-ai/fiscal/national/xmldsig";
 import type {
   SefinCallContext,
   SefinEmitResult,
+  SefinQueryResult,
   SefinTransport,
 } from "@/lib/wjb-ai/fiscal/national/transport";
 
@@ -126,5 +127,16 @@ export class SimulatedSefinTransport implements SefinTransport {
     const viaProcuracao =
       this.procuradorIsActor && this.procuracoes.has(`${g.emitter}>${holder}`);
     return isActor || viaProcuracao ? g.accessKey : null;
+  }
+
+  /** Mesma regra de sigilo do GET /dps: só ator da nota (ou procurador, se ligado). */
+  async queryNfse(accessKey: string, context: SefinCallContext): Promise<SefinQueryResult> {
+    const g = [...this.generated.values()].find((x) => x.accessKey === accessKey);
+    if (!g) return { found: false };
+    const holder = context.certificateHolderDocument;
+    const allowed =
+      holder === g.emitter || holder === g.taker || (this.procuradorIsActor && this.procuracoes.has(`${g.emitter}>${holder}`));
+    if (!allowed) throw new Error("SIMULADO: titular do certificado não é ator da nota (403).");
+    return { found: true };
   }
 }

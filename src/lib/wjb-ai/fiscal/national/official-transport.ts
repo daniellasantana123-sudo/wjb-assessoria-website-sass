@@ -5,6 +5,7 @@ import { maskDocument } from "@/lib/wjb-ai/fiscal/mask";
 import type {
   SefinCallContext,
   SefinEmitResult,
+  SefinQueryResult,
   SefinTransport,
 } from "@/lib/wjb-ai/fiscal/national/transport";
 
@@ -35,18 +36,20 @@ export const SEFIN_API_CONTRACT = {
   /** URL base de produção restrita (doc 25, 3.1). */
   baseUrl: {
     name: "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional",
-    status: "confirmado",
-    source: "gov.br/nfse - documentação técnica (doc 25, 3.1)",
+    // Fase 10F: a página oficial só publica o endereço do swagger
+    // (`/API/SefinNacional/docs/index`); a base da API é DEDUZIDA dele.
+    status: "inferido",
+    source: "deduzida do swagger em gov.br/nfse > APIs prod. restrita e produção; conferir no swagger autenticado",
   },
   emitPath: {
     name: "/nfse",
     status: "confirmado",
-    source: "Manual de Contribuintes - Emissor Público API (doc 24)",
+    source: "Manual dos Contribuintes - Emissor Público Nacional API v1.0 (17/03/2025), 1.3.2 a (POST /nfse)",
   },
   dpsPath: {
     name: "/dps/{id}",
     status: "confirmado",
-    source: "Manual de Contribuintes - Emissor Público API; FAQ v1.5",
+    source: "Manual dos Contribuintes - Emissor Público Nacional API v1.0 (17/03/2025), 1.4.2 a/b (GET e HEAD); FAQ v1.5, 26.4",
   },
   /** Campo do JSON de envio com a DPS assinada em GZip + Base64. */
   requestDpsField: {
@@ -101,13 +104,26 @@ export const SEFIN_API_CONTRACT = {
       "códigos HTTP não publicados; restrição deliberada (revisão de segurança)",
   },
   /**
-   * Fase 10C: eventos (cancelamento). O XML do pedido segue o XSD oficial,
-   * mas o caminho da API e o JSON só existem no swagger autenticado.
+   * Eventos (cancelamento e manifestação). Fase 10F: caminho achado no manual
+   * oficial (lido localmente, texto extraído do PDF). O JSON do pedido
+   * continua só no swagger autenticado (`requestEventField`).
    */
   eventPath: {
-    name: "(não publicado)",
-    status: "pendente",
-    source: "caminho da API de eventos não encontrado em documento público lido",
+    name: "/nfse/{chaveAcesso}/eventos",
+    status: "confirmado",
+    source: "Manual dos Contribuintes - Emissor Público Nacional API v1.0 (17/03/2025), 1.5.2 a (POST) e b/c/d (GET por chave, tipo e sequencial)",
+  },
+  /** Fase 10F: consulta da NFS-e pela chave de acesso. */
+  nfseQueryPath: {
+    name: "/nfse/{chaveAcesso}",
+    status: "confirmado",
+    source: "Manual dos Contribuintes - Emissor Público Nacional API v1.0 (17/03/2025), 1.3.2 b",
+  },
+  /** Fase 10F: consulta dos eventos de uma NFS-e. */
+  eventQueryPath: {
+    name: "/nfse/{chaveAcesso}/eventos/{tipoEvento}/{numSeqEvento}",
+    status: "confirmado",
+    source: "Manual dos Contribuintes - Emissor Público Nacional API v1.0 (17/03/2025), 1.5.2 b, c e d",
   },
   requestEventField: {
     name: "eventoViaXmlGZipBase64",
@@ -325,5 +341,22 @@ export class OfficialSefinTransport implements SefinTransport {
       return typeof key === "string" && this.validKey(key) ? key : null;
     }
     throw new SefinIndeterminateError(`GET /dps respondeu ${res.status}.`);
+  }
+
+  async queryNfse(accessKey: string): Promise<SefinQueryResult> {
+    if (!this.validKey(accessKey)) throw new Error("Chave de acesso inválida.");
+    const res = await this.client.send({
+      method: "GET",
+      url: this.url(this.contract.nfseQueryPath.name.replace("{chaveAcesso}", accessKey)),
+      headers: { accept: "application/json" },
+      timeoutMs: this.timeoutMs,
+    });
+    if (res.status === 404) return { found: false };
+    if (res.status >= 200 && res.status < 300) {
+      const nfse = safeJson(res.body)?.[this.contract.responseNfseField.name];
+      return { found: true, nfseXml: typeof nfse === "string" ? nfse : undefined };
+    }
+    // 403 (titular não é ator), 5xx, tempo esgotado: nada é concluído.
+    throw new SefinIndeterminateError(`GET /nfse respondeu ${res.status}.`);
   }
 }

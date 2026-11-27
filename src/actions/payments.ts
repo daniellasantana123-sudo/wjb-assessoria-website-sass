@@ -4,13 +4,15 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { requireStaffSession } from "@/lib/auth/dal";
+import { checkRecentStepUp, requireStaffSession, STEP_UP_MESSAGES } from "@/lib/auth/dal";
 import { ACCEPTANCE_DOCUMENTS, type AcceptanceDocument } from "@/lib/commercial/pricing";
 import { requireOwnerContext } from "@/lib/commercial/owner-context";
 import { createAdminClient } from "@/lib/db/supabase/admin";
 import { getPaymentsStatus, isPaymentsEnabled } from "@/lib/payments/config";
 import { mockCancelNow, mockPayCheckout, mockRefundOrDispute, mockRenewal } from "@/lib/payments/mock-provider";
-import { cancelPaidSubscription, cancelPendingCheckout, changePaidPlan, getProvider, handlePaymentEvent, openBillingPortal, reconcilePayments, startCheckout } from "@/lib/payments/service";
+import { isValidServiceKey } from "@/lib/payments/billing-source";
+import { parseBrlToCents, type RefundReason } from "@/lib/payments/refunds";
+import { cancelPaidSubscription, cancelPendingCheckout, changePaidPlan, getProvider, handlePaymentEvent, openBillingPortal, reconcilePayments, requestRefund, startCheckout } from "@/lib/payments/service";
 
 export interface PaymentActionState {
   error?: string;
@@ -20,7 +22,10 @@ export interface PaymentActionState {
 /** Origem da requisição atual (URLs de retorno do checkout apontam para o mesmo ambiente). */
 async function origin() {
   const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  // Fase 10F: só o Host, que o proxy já conferiu contra a lista de endereços
+  // autorizados. X-Forwarded-Host pode vir do próprio navegador e apontaria o
+  // retorno do Checkout para outro domínio.
+  const host = h.get("host") ?? "localhost:3000";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
   return `${proto}://${host}`;
 }
@@ -130,4 +135,74 @@ export async function adminMockEventAction(subscriptionId: string, _prev: Paymen
   revalidatePath("/admin/pagamentos");
   // A linha da assinatura pode sumir (ex.: cancelada) e levar o formulário junto: o resultado vai num aviso da página.
   redirect(`/admin/pagamentos?simulado=${kind}&resultado=${results.join(",")}`);
+}
+
+/**
+ * Reembolso (Fase 10F, só modo de teste ou simulado): super admin com MFA
+ * recente. A empresa sai da fatura no banco, nunca do formulário; o valor
+ * pago, o saldo e o meio são conferidos de novo no provedor.
+ */
+export async function adminRefundAction(providerInvoiceId: string, _prev: PaymentActionState | undefined, formData: FormData): Promise<PaymentActionState> {
+  if (!isPaymentsEnabled()) return { error: "Pagamentos indisponíveis." };
+  const admin = await superAdmin();
+  if (!admin) return { error: "Sem permissão." };
+  const step = await checkRecentStepUp();
+  if (!step.ok) return { error: STEP_UP_MESSAGES[step.reason] };
+  if (String(formData.get("confirmacao") ?? "").trim().toUpperCase() !== "REEMBOLSAR") return { error: "Digite REEMBOLSAR para confirmar." };
+  const amountCents = parseBrlToCents(String(formData.get("valor") ?? ""));
+  const reasonRaw = String(formData.get("motivo") ?? "");
+  const reason: RefundReason | null = reasonRaw === "pedido_do_cliente" || reasonRaw === "cobranca_duplicada" ? reasonRaw : null;
+  if (!reason) return { error: "Escolha o motivo." };
+  if (!Number.isFinite(amountCents)) return { error: "Valor inválido. Use, por exemplo, 49,90." };
+  const { data: inv } = await createAdminClient().from("payment_invoices").select("tenant_id").eq("provider_invoice_id", providerInvoiceId).maybeSingle();
+  if (!inv) return { error: "Fatura não encontrada." };
+  const r = await requestRefund({ userId: admin.userId, tenantId: inv.tenant_id, providerInvoiceId, amountCents, reason });
+  revalidatePath("/admin/pagamentos");
+  if (!r.ok) return { error: r.error };
+  return { ok: r.status === "succeeded" ? "Reembolso de teste feito." : `Reembolso pedido; situação na Stripe: ${r.status}.` };
+}
+
+/**
+ * Origem de cobrança (Fase 10F, migration 0038). Registra que um serviço da
+ * empresa é cobrado fora da plataforma (Omie ou outro meio): com isso, a
+ * contratação pela Stripe do mesmo serviço é recusada. Super admin com MFA
+ * recente. O banco garante uma só origem ativa por empresa e serviço.
+ */
+export async function adminRegisterBillingSourceAction(_prev: PaymentActionState | undefined, formData: FormData): Promise<PaymentActionState> {
+  const admin = await superAdmin();
+  if (!admin) return { error: "Sem permissão." };
+  const step = await checkRecentStepUp();
+  if (!step.ok) return { error: STEP_UP_MESSAGES[step.reason] };
+  const tenantId = String(formData.get("empresa") ?? "");
+  const serviceKey = String(formData.get("servico") ?? "");
+  const source = String(formData.get("origem") ?? "");
+  const note = String(formData.get("observacao") ?? "").trim().slice(0, 500) || null;
+  if (!isValidServiceKey(serviceKey)) return { error: "Serviço inválido." };
+  if (source !== "omie" && source !== "externo") return { error: "Escolha Omie ou outro meio. A Stripe é registrada sozinha, quando o pagamento é confirmado." };
+  const db = createAdminClient();
+  const { data: tenant } = await db.from("tenants").select("id").eq("id", tenantId).maybeSingle();
+  if (!tenant) return { error: "Empresa não encontrada." };
+  const { error } = await db.from("billing_source_assignments").insert({ tenant_id: tenant.id, service_key: serviceKey, source, note, created_by: admin.userId });
+  if (error?.code === "23505") return { error: "Já existe uma origem de cobrança ativa para este serviço desta empresa. Encerre a atual antes." };
+  if (error) return { error: "Não foi possível registrar agora." };
+  await db.from("audit_log").insert({ actor_id: admin.userId, tenant_id: tenant.id, action: "payments.billing_source_registered", entity: "payments", entity_id: tenant.id, metadata: { service_key: serviceKey, source } });
+  revalidatePath("/admin/pagamentos");
+  return { ok: "Origem de cobrança registrada." };
+}
+
+export async function adminEndBillingSourceAction(assignmentId: string, _prev: PaymentActionState | undefined, formData: FormData): Promise<PaymentActionState> {
+  const admin = await superAdmin();
+  if (!admin) return { error: "Sem permissão." };
+  const step = await checkRecentStepUp();
+  if (!step.ok) return { error: STEP_UP_MESSAGES[step.reason] };
+  if (String(formData.get("confirmacao") ?? "").trim().toUpperCase() !== "ENCERRAR") return { error: "Digite ENCERRAR para confirmar." };
+  const db = createAdminClient();
+  const { data: row } = await db.from("billing_source_assignments").select("id, tenant_id, service_key, source, status").eq("id", assignmentId).maybeSingle();
+  if (!row || row.status !== "ativa") return { error: "Origem não encontrada ou já encerrada." };
+  if (row.source === "stripe") return { error: "A origem Stripe encerra sozinha quando a assinatura é cancelada." };
+  const { error } = await db.from("billing_source_assignments").update({ status: "encerrada", ended_at: new Date().toISOString(), ended_by: admin.userId }).eq("id", row.id).eq("status", "ativa");
+  if (error) return { error: "Não foi possível encerrar agora." };
+  await db.from("audit_log").insert({ actor_id: admin.userId, tenant_id: row.tenant_id, action: "payments.billing_source_ended", entity: "payments", entity_id: row.id, metadata: { service_key: row.service_key, source: row.source } });
+  revalidatePath("/admin/pagamentos");
+  redirect("/admin/pagamentos?origem=encerrada");
 }
