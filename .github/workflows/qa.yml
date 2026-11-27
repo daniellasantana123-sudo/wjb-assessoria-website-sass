@@ -1,0 +1,128 @@
+# Qualidade em Linux (Fases 10D/10E). Não usa segredos nem acessa homologação
+# ou produção: as telas que exigem login pulam sozinhas sem credenciais de
+# teste, e o banco dos testes é um Postgres descartável dentro do runner.
+#
+# Jobs:
+# - estatico: lint, TypeScript, detecção de segredos, auditoria de dependências
+# - unitarios: Vitest em Node 22 (o da produção, conforme o log de build da
+#   Hostinger) e 24. Node 20 não é suportado: @supabase/* e undici (jsdom)
+#   exigem Node >= 22 (achado na CI, Fase 10E); package.json declara engines.
+# - banco: migrations, RLS, isolamento entre empresas, MFA no banco, backup e
+#   rollback (scripts/wjb-ai/homologacao/run.sh, Postgres 17 em Docker)
+# - e2e: build + segurança do artefato + E2E em Chromium, Firefox, WebKit e
+#   iPhone emulado
+name: Qualidade
+
+on:
+  push:
+    # Fase 10H: também na main (CI publicada antes dos módulos novos).
+    branches: ["main", "feature/**", "hotfix/**"]
+  pull_request:
+  # Fase 10F: `ref` permite validar outra branch com esta CI sem levar o
+  # arquivo para ela (ex.: um hotfix a partir da main, que ainda não tem a
+  # CI). O job `banco` pula nesse caso: os scripts de homologação do banco só
+  # existem nas branches das Fases 10C em diante.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, etiqueta ou commit a testar (vazio = esta branch)"
+        required: false
+        default: ""
+
+concurrency:
+  group: qa-${{ github.ref }}-${{ inputs.ref || 'self' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  estatico:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Detecção de segredos
+        run: bash scripts/ci/verificar-segredos.sh
+      - name: Dependências (produção)
+        run: npm audit --omit=dev
+
+  unitarios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Ferramentas dos testes de XSD e assinatura
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libxml2-utils
+      - run: npm ci --no-audit --no-fund
+      - run: npx vitest run
+
+  # Fase 10H: o job sempre roda (para poder ser verificação obrigatória da
+  # main). Sem os scripts de homologação do banco (main antes do merge das
+  # Fases 10C em diante), ele registra o aviso e passa; com eles, roda tudo.
+  banco:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
+      - name: Migrations, RLS, isolamento, MFA no banco, backup e rollback
+        run: |
+          if [ ! -f scripts/wjb-ai/homologacao/run.sh ]; then
+            echo "::notice::Esta versão não tem os scripts de homologação do banco (só a partir do merge da Fase 10C). Nada a validar no banco."
+            exit 0
+          fi
+          bash scripts/wjb-ai/homologacao/run.sh
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SAAS_PUBLIC_ENABLED: "true"
+      NEXT_PUBLIC_SAAS_PUBLIC_ENABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || '' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run build
+      - name: Segurança do artefato de build
+        run: bash scripts/ci/verificar-build.sh
+      - name: E2E em Chromium, Firefox, WebKit e iPhone emulado
+        run: |
+          (npx next start -p 3000 > next.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/ && break; sleep 1; done
+          npx playwright test -c playwright.crossbrowser.config.ts --reporter=line
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            test-results/
+            next.log
+          retention-days: 7
