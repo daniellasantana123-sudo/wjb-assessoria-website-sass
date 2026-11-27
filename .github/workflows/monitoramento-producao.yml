@@ -1,0 +1,45 @@
+# Fase 10F: monitoramento diário da produção, SOMENTE LEITURA, sem segredos.
+# Reaproveita scripts/wjb-ai/producao/monitorar.sh (páginas públicas, áreas
+# protegidas, redirecionamentos, cabeçalhos de segurança, API de contato
+# recusando dado inválido sem gravar nada, prévias públicas).
+# Falha abre um issue "Falha na rotina: Monitoramento da produção" (e-mail
+# para quem acompanha o repositório); sucesso fecha o alerta.
+#
+# Atenção: rotinas agendadas só rodam a partir da branch padrão (main). Até o
+# merge, isto só roda manualmente. O CDN da Hostinger (hcdn) já bloqueou
+# navegadores automatizados; se ele bloquear o runner do GitHub, o alerta vai
+# disparar por isso. Nesse caso, a primeira linha do log mostra códigos 403.
+name: Monitoramento da produção
+
+on:
+  schedule:
+    # 12:00 e 21:00 UTC = 09:00 e 18:00 em Brasília.
+    - cron: "0 12,21 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  monitorar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Monitoramento somente leitura
+        run: bash scripts/wjb-ai/producao/monitorar.sh
+
+  alerta:
+    needs: monitorar
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Abrir, comentar ou fechar o alerta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ci/alerta-rotina.sh "Monitoramento da produção" "${{ needs.monitorar.result == 'success' && 'success' || 'failure' }}"
